@@ -1,0 +1,43 @@
+{
+    "pageButtons": [
+        {
+            "btnName": "btnAgendar",
+            "btnParam": "campanha_id",
+            "btnTarget": "_modal",
+            "btnClass": "btn btn-sm btn-info",
+            "btnRoute": "c_campanha",
+            "btnMethod": "CampanhaAgendaEditar",
+            "btnLabel": "Agendar",
+            "btnTitle": "Editar a Agenda de atividades da Assistência atual"            
+        },{
+            "btnName": "btnImprimir",
+            "btnParam": "campanha_id",
+            "btnTarget": "_blank",
+            "btnClass": "btn btn-sm btn-warning",
+            "btnRoute": "c_pdf",
+            "btnMethod": "campanha",
+            "btnLabel": "Imprimir",
+            "btnTitle": "Imprimir a a Assistência atual"            
+        },{
+            "btnName": "btnDuplicar",
+            "btnParam": "campanha_id",
+            "btnTarget": "_self",
+            "btnClass": "btn btn-sm btn-info",
+            "btnRoute": "c_campanha",
+            "btnMethod": "CampanhaDuplicarModal", 
+            "btnLabel": "Duplicar",
+            "btnTitle": "Duplicar a Assistência atual para um Ano Letivo desejado"            
+        }
+    ],
+    "pageFilters": [
+        {   
+            "titulo": "Fitrar por Tipo de Assistência",
+            "sqlStatement": "",
+            "arrDropdownOpcoes": { "= '1'":"Campanha", "= '2'":"Programa", "= '3'":"Projeto", "= '4'":"Evento" },  
+            "ColunaEstrangeira": "gap_campanha.assistencia_tipo_fk",
+            "Default": "= ''",
+            "ativo": "SIM"                        
+        }
+    ]
+
+}
