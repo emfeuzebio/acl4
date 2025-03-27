@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('acl.entity.title'))
+@section('title', __(config('app.name')) . ' ' . __('acl.entity.title'))
 
 @section('css')
     {{-- Add here extra stylesheets --}}
@@ -174,12 +174,6 @@
             </div>
         </div>
     </div>    
-
-    <ul>
-    @foreach(auth()->user()->profiles as $profile)
-        <li>{{ $profile->id }} {{ $profile->name }}</li>
-    @endforeach
-    </ul>    
 
 @stop
 

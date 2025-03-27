@@ -26,88 +26,90 @@
 @section('content')
 
     <!-- Data of DataTables -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-md-3 text-left h5"><b>@yield('table_title')</b></div>
-                        
-                        <!-- message area -->
-                        <div class="col-md-4 text-left">
-                            <div style="padding: 0px;  background-color: transparent;">
-                                <div id="alert" class="alert alert-danger" style="margin-bottom: 0px; display: none; padding: 2px 5px 2px 5px;">
-                                    <a class="close" onClick="$('.alert').hide()">&times;</a>  
-                                    <div class="alert-content">Mensagem</div>
-                                </div>
-                            </div>                         
-                        </div>
-                                             
-                        <!-- buttons area -->
-                        <div class="col-md-5 text-right">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="row">
+                            <div class="col-md-3 text-left h5"><b>@yield('table_title')</b></div>
+                            
+                            <!-- message area -->
+                            <div class="col-md-4 text-left">
+                                <div style="padding: 0px;  background-color: transparent;">
+                                    <div id="alert" class="alert alert-danger" style="margin-bottom: 0px; display: none; padding: 2px 5px 2px 5px;">
+                                        <a class="close" onClick="$('.alert').hide()">&times;</a>  
+                                        <div class="alert-content">Mensagem</div>
+                                    </div>
+                                </div>                         
+                            </div>
+                                                
+                            <!-- buttons area -->
+                            <div class="col-md-5 text-right">
 
-                            <!-- extra buttons from entity config json -->
-                            @foreach(optional($entityConfig ?? null)->pageButtons ?? [] as $button)
-                                <button id="{{ $button->btnName }}" class="{{ $button->btnClass }}" data-toggle="tooltip" 
-                                     title="{{ $button->btnTitle }}" >{{ $button->btnLabel }}
-                                </button>
-                            @endforeach
+                                <!-- extra buttons from entity config json -->
+                                @foreach(optional($entityConfig ?? null)->pageButtons ?? [] as $button)
+                                    <button id="{{ $button->btnName }}" class="{{ $button->btnClass }}" data-toggle="tooltip" 
+                                        title="{{ $button->btnTitle }}" >{{ $button->btnLabel }}
+                                    </button>
+                                @endforeach
 
-                            <button id="btnRefresh" class="btnRefresh btn btn-default btn-sm" data-toggle="tooltip" title="{{ __('acl.crud.btnRefreshTip') }}"><i class="fas fa-fw fa-redo"></i> {{ __('acl.crud.btnRefresh') }}</button>
-                            <button id="btnInsertNew" style="display: none;" class="btnInsertNew btn btn-success btn-sm" data-toggle="tooltip" title="{{ __('acl.crud.btnInsertNewTip') }}"><i class="fas fa-fw fa-plus"></i> {{ __('acl.crud.btnInsertNew') }}</button>
+                                <button id="btnRefresh" class="btnRefresh btn btn-default btn-sm" data-toggle="tooltip" title="{{ __('acl.crud.btnRefreshTip') }}"><i class="fas fa-fw fa-redo"></i> {{ __('acl.crud.btnRefresh') }}</button>
+                                <button id="btnInsertNew" style="display: none;" class="btnInsertNew btn btn-success btn-sm" data-toggle="tooltip" title="{{ __('acl.crud.btnInsertNewTip') }}"><i class="fas fa-fw fa-plus"></i> {{ __('acl.crud.btnInsertNew') }}</button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- filters area -->
-                <div class="card-header" id="filter_area" style="display: none;">
-                    <div class="row">
-                        <div id="filterDiv1" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
-                            <label id="filterLabel1" class="form-label">Filter 1</label>
-                            <select id="filterSelect1" name="filterSelect1" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
-                                <option value="">{{ __('acl.crud.todes')}}</option>
-                                @foreach($filterOptions1 ?? (object) [] as $option) 
-                                <option value="{{$option->id}}">{{$option->description}}</option>
-                                @endforeach
-                            </select>
+                    <!-- filters area -->
+                    <div class="card-header" id="filter_area" style="display: none;">
+                        <div class="row">
+                            <div id="filterDiv1" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
+                                <label id="filterLabel1" class="form-label">Filter 1</label>
+                                <select id="filterSelect1" name="filterSelect1" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
+                                    <option value="">{{ __('acl.crud.todes')}}</option>
+                                    @foreach($filterOptions1 ?? (object) [] as $option) 
+                                    <option value="{{$option->id}}">{{$option->description}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div id="filterDiv2" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
+                                <label id="filterLabel2" class="form-label">Filter 2 </label>
+                                <select id="filterSelect2" name="filterSelect2" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
+                                    <option value="">{{ __('acl.crud.todes')}}</option>
+                                    @foreach($filterOptions2 ?? (object) [] as $option) 
+                                    <option value="{{$option->id}}">{{$option->description}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div id="filterDiv3" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
+                                <label id="filterLabel3" class="form-label">Filter 3</label>
+                                <select id="filterSelect3" name="filterSelect3" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
+                                    <option value="">{{ __('acl.crud.todes')}}</option>
+                                    @foreach($filterOptions3 ?? (object) [] as $option) 
+                                    <option value="{{$option->id}}">{{$option->description}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div id="filterDiv4" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
+                                <label id="filterLabel4" class="form-label">Filter 4</label>
+                                <select id="filterSelect4" name="filterSelect4" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
+                                    <option value="">{{ __('acl.crud.todes')}}</option>
+                                    <option value="SIM">SIM</option>
+                                    <option value="NÃO">NÃO</option>
+                                </select>
+                            </div>
                         </div>
-                        <div id="filterDiv2" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
-                            <label id="filterLabel2" class="form-label">Filter 2 </label>
-                            <select id="filterSelect2" name="filterSelect2" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
-                                <option value="">{{ __('acl.crud.todes')}}</option>
-                                @foreach($filterOptions2 ?? (object) [] as $option) 
-                                <option value="{{$option->id}}">{{$option->description}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div id="filterDiv3" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
-                            <label id="filterLabel3" class="form-label">Filter 3</label>
-                            <select id="filterSelect3" name="filterSelect3" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
-                                <option value="">{{ __('acl.crud.todes')}}</option>
-                                @foreach($filterOptions3 ?? (object) [] as $option) 
-                                <option value="{{$option->id}}">{{$option->description}}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div id="filterDiv4" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
-                            <label id="filterLabel4" class="form-label">Filter 4</label>
-                            <select id="filterSelect4" name="filterSelect4" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
-                                <option value="">{{ __('acl.crud.todes')}}</option>
-                                <option value="SIM">SIM</option>
-                                <option value="NÃO">NÃO</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>                
+                    </div>                
 
-                <div class="card-body">
-                    <div class="table-responsive col-md-12">
-                        <table id="datatables" class="table table-striped table-bordered table-hover table-sm compact" style="width:100%">
-                            <thead></thead>
-                            <tbody></tbody>
-                            <tfoot></tfoot>                
-                        </table>
-                        <br/>
+                    <div class="card-body">
+                        <div class="table-responsive col-md-12">
+                            <table id="datatables" class="table table-striped table-bordered table-hover table-sm compact" style="width:100%">
+                                <thead></thead>
+                                <tbody></tbody>
+                                <tfoot></tfoot>                
+                            </table>
+                            <br/>
+                        </div>
                     </div>
                 </div>
             </div>

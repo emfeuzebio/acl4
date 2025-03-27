@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', __('acl.profile.title'))
+@section('title', __(config('app.name')) . ' ' . __('acl.profile.title'))
 
 @section('css')
     {{-- Add here extra stylesheets --}}

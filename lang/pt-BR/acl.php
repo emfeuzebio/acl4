@@ -73,7 +73,7 @@ return [
     // Static Form User Profile
     // Entidade Perfil de Acesso
     'userprofile' => [
-        'title' => 'ACL 2 Perfil de Usuário',
+        'title' => 'Perfil de Usuário',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -127,7 +127,7 @@ return [
 
     // Entidade Organização
     'organization' => [
-        'title' => 'ACL 2 Organizações',
+        'title' => 'Organizações',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -165,7 +165,7 @@ return [
 
     // Entidade Sistema
     'system' => [
-        'title' => 'ACL 2 Sistemas',
+        'title' => 'Sistemas',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -208,7 +208,7 @@ return [
 
     // Entidade Entidade
     'entity' => [
-        'title' => 'ACL 2 Entidades',
+        'title' => 'Entidades',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -252,7 +252,7 @@ return [
 
     // Entidade Ações
     'action' => [
-        'title' => 'ACL 2 Ações',
+        'title' => 'Ações',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -296,7 +296,7 @@ return [
 
     // Entidade Usuários
     'user' => [
-        'title' => 'ACL 2 Usuários',
+        'title' => 'Usuários',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -343,7 +343,7 @@ return [
 
     // Entidade Perfil de Acesso
     'profile' => [
-        'title' => 'ACL 2 Perfis de Acesso',
+        'title' => 'Perfis de Acesso',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',

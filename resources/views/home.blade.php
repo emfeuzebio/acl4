@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'ACL 2 Dashboard v1')
+@section('title', __(config('app.name')) . ' Dashboard v1')
 
 @section('css')
     {{-- Add here extra stylesheets --}}
