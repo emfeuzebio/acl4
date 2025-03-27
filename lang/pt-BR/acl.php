@@ -73,7 +73,7 @@ return [
     // Static Form User Profile
     // Entidade Perfil de Acesso
     'userprofile' => [
-        'title' => 'ACL 4 Perfil de Usuário',
+        'title' => 'ACL 2 Perfil de Usuário',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -103,6 +103,21 @@ return [
         ],        
     ],        
 
+    'dictionary' => [
+        'organizations' => 'Organizações',
+        'systems' => 'Sistemas',
+        'users' => 'Usuários',
+        'roles' => 'Perfis de Acesso',
+        'entities' => 'Entidades',
+
+        'moreInfor' => 'Mais Informações',
+        'listLogins' => 'Lista dos últimos Logins',
+        'showAllLogins' => 'Ver Todos Logins',
+
+        'listTokens' => 'Lista de Tokens Ativos e Expirados',
+    ],
+
+
     // other buttons APAGAR
     // 'extraButtons' => [
     //     'btnPrint' => 'Imprimir',
@@ -112,7 +127,7 @@ return [
 
     // Entidade Organização
     'organization' => [
-        'title' => 'ACL 4 Organizações',
+        'title' => 'ACL 2 Organizações',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -150,7 +165,7 @@ return [
 
     // Entidade Sistema
     'system' => [
-        'title' => 'ACL 4 Sistemas',
+        'title' => 'ACL 2 Sistemas',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -193,7 +208,7 @@ return [
 
     // Entidade Entidade
     'entity' => [
-        'title' => 'ACL 4 Entidades',
+        'title' => 'ACL 2 Entidades',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -237,7 +252,7 @@ return [
 
     // Entidade Ações
     'action' => [
-        'title' => 'ACL 4 Ações',
+        'title' => 'ACL 2 Ações',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -281,7 +296,7 @@ return [
 
     // Entidade Usuários
     'user' => [
-        'title' => 'ACL 4 Usuários',
+        'title' => 'ACL 2 Usuários',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -328,7 +343,7 @@ return [
 
     // Entidade Perfil de Acesso
     'profile' => [
-        'title' => 'ACL 4 Perfis de Acesso',
+        'title' => 'ACL 2 Perfis de Acesso',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
@@ -374,6 +389,4 @@ return [
         ],        
     ],
 
-
 ];
-

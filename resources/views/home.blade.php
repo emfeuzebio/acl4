@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'ACL Dashboard')
+@section('title', 'ACL 2 Dashboard v1')
 
 @section('css')
     {{-- Add here extra stylesheets --}}
@@ -15,8 +15,7 @@
         <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
                 <li class="breadcrumb-item"><a href="/home">Home</a></li>
-                <li class="breadcrumb-item ">Administração</li>
-                <li class="breadcrumb-item active">Cadastro</li>
+                <li class="breadcrumb-item ">Dashboard v1</li>
             </ol>
         </div>
     </div>    
@@ -34,68 +33,257 @@
     </div>
 @endif
 
-@section('content_body')
-    <!-- <p style="color: blue;">Welcome to this beautiful admin panel.</p> -->
-    <input type="hidden" id="teste" value="Hello JQuery funcionando Ok!">
+@section('content')
 
-    <!-- DataTables de Dados -->
+  <!-- Mantém um limite máximo de largura (bom para evitar layouts muito largos). -->
+  <div class="container">
+
+  <!-- Ocupa 100% da largura da tela, mas mantém espaçamento interno. -->
+  <!-- <div class="container-fluid"> -->
+
+    <!-- Cards -->
     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-md-4 text-left h5"><b>Cadastro</b></div>
-                        
-                        <!--área de mensagens-->
-                        <div class="col-md-5 text-left">
-                            <div style="padding: 0px;  background-color: transparent;">
-                                <div id="alert" class="alert alert-danger" style="margin-bottom: 0px; display: none; padding: 2px 5px 2px 5px;">
-                                    <a class="close" onClick="$('.alert').hide()">&times;</a>  
-                                    <div class="alert-content">Mensagem</div>
-                                </div>
-                            </div>                         
-                        </div>
-                                                
-                        <div class="col-md-3 text-right">
-                            <button id="btnRefresh" class="btn btn-default btn-sm btnRefresh" data-toggle="tooltip" title="Atualizar a tabela (Alt+R)">Refresh</button>
-                            <button id="btnInserirNovo" class="btnInserirNovo btn btn-success btn-sm" data-toggle="tooltip" title="Adicionar um novo registro (Alt+N)" >Inserir Novo</button>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="card-body">
-                    <table id="datatables" class="table table-striped table-bordered table-hover table-sm compact" style="width:100%">
-                        <thead>
-                            <th>Name</th>
-                            <th>Position</th>
-                            <th>Age</th>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>100</td>
-                                <td>Marcos da Silva</td>
-                                <td>Imóvel</td>
-                            </tr>
-                            <tr>
-                                <td>101</td>
-                                <td>Mauro da Onda</td>
-                                <td>Carros</td>
-                            </tr>
-                            <tr id="10">
-                                <td>102</td>
-                                <td>Sandra Maria</td>
-                                <td>
-                                    <button class="btnExcluir btn btn-danger btn-xs"  data-toggle="tooltip" title="Excluir o registro atual">Excluir</button>
-                                    <button class="btnEditar  btn btn-primary btn-xs" data-toggle="tooltip" title="Editar o registro atual">Editar</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                        <tfoot></tfoot>                
-                    </table>                 
+        <div class="col-md-2 col-sm-6 col-12">
+            <div class="small-box bg-info">
+                <div class="inner">
+                    <h3>2</h3>
+                    <p>{{ __('acl.dictionary.organizations') }}</p>
                 </div>
+                <div class="icon">
+                    <i class="fas fa-building"></i>
+                </div>
+                <a href="/organization" class="small-box-footer">
+                {{ __('acl.dictionary.moreInfor') }} <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>  
+        </div>
+
+        <div class="col-md-2 col-sm-6 col-12">
+            <div class="small-box bg-secondary">
+                <div class="inner">
+                    <h3>3</h3>
+                    <p>{{ __('acl.dictionary.systems') }}</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-desktop"></i>
+                </div>
+                <a href="/system" class="small-box-footer">
+                {{ __('acl.dictionary.moreInfor') }} <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>  
+        </div>
+
+        <div class="col-md-2 col-sm-6 col-12">
+            <div class="small-box bg-primary">
+                <div class="inner">
+                    <h3>11</h3>
+                    <p>{{ __('acl.dictionary.entities') }}</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-cube"></i>
+                </div>
+                <a href="/entity" class="small-box-footer">
+                {{ __('acl.dictionary.moreInfor') }} <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>  
+        </div>
+
+        <div class="col-md-3 col-sm-6 col-12">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3>8</h3>
+                    <p>{{ __('acl.dictionary.roles') }}</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <a href="/profile" class="small-box-footer">
+                {{ __('acl.dictionary.moreInfor') }} <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>  
+        </div>
+
+        <div class="col-md-3 col-sm-6 col-12">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3>5</h3>
+                    <p>{{ __('acl.dictionary.users') }}</p>
+                </div>
+                <div class="icon">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <a href="/user" class="small-box-footer">
+                {{ __('acl.dictionary.moreInfor') }} <i class="fas fa-arrow-circle-right"></i>
+                </a>
+            </div>  
+        </div>
+
+        
+        
+
+    </div>
+
+    <!-- List Logins -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+            <div class="card-header border-transparent">
+              <h3 class="card-title">{{ __('acl.dictionary.listLogins') }}</h3>
+              <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+              </div>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table m-0">
+                  <thead>
+                  <tr>
+                    <th>User ID</th>
+                    <th>IP</th>
+                    <th>Status</th>
+                    <th>Browser</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <tr>
+                    <td><a href="pages/examples/invoice.html">OR9842</a></td>
+                    <td>Call of Duty IV</td>
+                    <td><span class="badge badge-success">Shipped</span></td>
+                    <td>
+                      <div class="sparkbar" data-color="#00a65a" data-height="20">90,80,90,-70,61,-83,63</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><a href="pages/examples/invoice.html">OR1848</a></td>
+                    <td>Samsung Smart TV</td>
+                    <td><span class="badge badge-warning">Pending</span></td>
+                    <td>
+                      <div class="sparkbar" data-color="#f39c12" data-height="20">90,80,-90,70,61,-83,68</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><a href="pages/examples/invoice.html">OR7429</a></td>
+                    <td>iPhone 6 Plus</td>
+                    <td><span class="badge badge-danger">Delivered</span></td>
+                    <td>
+                      <div class="sparkbar" data-color="#f56954" data-height="20">90,-80,90,70,-61,83,63</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><a href="pages/examples/invoice.html">OR7429</a></td>
+                    <td>Samsung Smart TV</td>
+                    <td><span class="badge badge-info">Processing</span></td>
+                    <td>
+                      <div class="sparkbar" data-color="#00c0ef" data-height="20">90,80,-90,70,-61,83,63</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><a href="pages/examples/invoice.html">OR1848</a></td>
+                    <td>Samsung Smart TV</td>
+                    <td><span class="badge badge-warning">Pending</span></td>
+                    <td>
+                      <div class="sparkbar" data-color="#f39c12" data-height="20">90,80,-90,70,61,-83,68</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><a href="pages/examples/invoice.html">OR7429</a></td>
+                    <td>iPhone 6 Plus</td>
+                    <td><span class="badge badge-danger">Delivered</span></td>
+                    <td>
+                      <div class="sparkbar" data-color="#f56954" data-height="20">90,-80,90,70,-61,83,63</div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td><a href="pages/examples/invoice.html">OR9842</a></td>
+                    <td>Call of Duty IV</td>
+                    <td><span class="badge badge-success">Shipped</span></td>
+                    <td>
+                      <div class="sparkbar" data-color="#00a65a" data-height="20">90,80,90,-70,61,-83,63</div>
+                    </td>
+                  </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!-- /.table-responsive -->
+            </div>
+            <div class="card-footer clearfix">
+              <a href="javascript:void(0)" class="btn btn-sm btn-secondary float-right">{{ __('acl.dictionary.showAllLogins') }}</a>
             </div>
         </div>
-    </div>    
+      </div>
+    </div>
+
+    <!-- List Tokens -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ __('acl.dictionary.listTokens') }}</h3>
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+              </div>
+
+            </div>
+            <div class="card-body">
+                <table id="tabela-tokens" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Token</th>
+                            <th>IP</th>
+                            <th>Navegador</th>
+                            <th>Emitido em</th>
+                            <th>Expira em</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>admin</td>
+                            <td>eyJhbGciOiJ...9zZWQi</td>
+                            <td>192.168.1.1</td>
+                            <td>Chrome</td>
+                            <td>26/03/2025 14:00</td>
+                            <td>26/03/2025 16:00</td>
+                            <td><span class="badge badge-success">Válido</span></td>
+                        </tr>
+                        <tr>
+                            <td>user1</td>
+                            <td>eyJhbGciOiJ...xNhdXRo</td>
+                            <td>203.0.113.45</td>
+                            <td>Firefox</td>
+                            <td>26/03/2025 13:00</td>
+                            <td>26/03/2025 15:00</td>
+                            <td><span class="badge badge-danger">Expirado</span></td>
+                        </tr>
+                        <tr>
+                            <td>guest</td>
+                            <td>eyJhbGciOiJ...uJpbmZv</td>
+                            <td>192.168.2.10</td>
+                            <td>Edge</td>
+                            <td>26/03/2025 12:30</td>
+                            <td>26/03/2025 14:30</td>
+                            <td><span class="badge badge-warning">Quase Expirando</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
 @stop
 
