@@ -10,7 +10,10 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\Authorization;
 use Illuminate\Support\Facades\Auth;
 
-class User extends Authenticatable
+use Tymon\JWTAuth\Contracts\JWTSubject;
+
+// class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -191,4 +194,30 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Organization::class, 'acl_organization_user');
     }   
+
+    // JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT 
+
+    /**
+     * Return the identificator to JWT.
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+
+    /**
+     * Retorna um array de claims personalizadas para JWT.
+     */
+    public function getJWTCustomClaims()
+    {
+        // Carrega informações no payload do token
+        return [
+            'iss' => 'https://acl4.fazcomphp.com.br/',              // Emissor do token
+            'aud' => 'http://apifeb.voluntary.com.br',              // Público-alvo (Audience) do token
+            'user_id' => $this->id,                                 // ID do usuário
+            'user_name' => $this->name,                                  // Nome do usuário
+            'user_roles' => $this->profiles->pluck('name')->toArray(),   // Roles do usuário
+            'user_abilities' => $this->getAclRoutes(),                   // "abilities" (Authorizaions) do usuário 
+        ];
+    }    
 }
