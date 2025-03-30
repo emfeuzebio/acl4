@@ -124,6 +124,70 @@
 
     </div>
 
+    <!-- List Tokens -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">{{ __('acl.dictionary.listTokens') }}</h3>
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+              </div>
+
+            </div>
+            <div class="card-body">
+                <table id="tabela-tokens" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Token</th>
+                            <th>IP</th>
+                            <th>Navegador</th>
+                            <th>Emitido em</th>
+                            <th>Expira em</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>admin</td>
+                            <td>eyJhbGciOiJ...9zZWQi</td>
+                            <td>192.168.1.1</td>
+                            <td>Chrome</td>
+                            <td>26/03/2025 14:00</td>
+                            <td>26/03/2025 16:00</td>
+                            <td><span class="badge badge-success">Válido</span></td>
+                        </tr>
+                        <tr>
+                            <td>user1</td>
+                            <td>eyJhbGciOiJ...xNhdXRo</td>
+                            <td>203.0.113.45</td>
+                            <td>Firefox</td>
+                            <td>26/03/2025 13:00</td>
+                            <td>26/03/2025 15:00</td>
+                            <td><span class="badge badge-danger">Expirado</span></td>
+                        </tr>
+                        <tr>
+                            <td>guest</td>
+                            <td>eyJhbGciOiJ...uJpbmZv</td>
+                            <td>192.168.2.10</td>
+                            <td>Edge</td>
+                            <td>26/03/2025 12:30</td>
+                            <td>26/03/2025 14:30</td>
+                            <td><span class="badge badge-warning">Quase Expirando</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+      </div>
+    </div>
+
     <!-- List Logins -->
     <div class="row">
       <div class="col-12">
@@ -219,140 +283,79 @@
       </div>
     </div>
 
-    <!-- List Tokens -->
-    <div class="row">
-      <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">{{ __('acl.dictionary.listTokens') }}</h3>
-                <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove">
-                    <i class="fas fa-times"></i>
-                  </button>
-              </div>
-
-            </div>
-            <div class="card-body">
-                <table id="tabela-tokens" class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Usuário</th>
-                            <th>Token</th>
-                            <th>IP</th>
-                            <th>Navegador</th>
-                            <th>Emitido em</th>
-                            <th>Expira em</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>admin</td>
-                            <td>eyJhbGciOiJ...9zZWQi</td>
-                            <td>192.168.1.1</td>
-                            <td>Chrome</td>
-                            <td>26/03/2025 14:00</td>
-                            <td>26/03/2025 16:00</td>
-                            <td><span class="badge badge-success">Válido</span></td>
-                        </tr>
-                        <tr>
-                            <td>user1</td>
-                            <td>eyJhbGciOiJ...xNhdXRo</td>
-                            <td>203.0.113.45</td>
-                            <td>Firefox</td>
-                            <td>26/03/2025 13:00</td>
-                            <td>26/03/2025 15:00</td>
-                            <td><span class="badge badge-danger">Expirado</span></td>
-                        </tr>
-                        <tr>
-                            <td>guest</td>
-                            <td>eyJhbGciOiJ...uJpbmZv</td>
-                            <td>192.168.2.10</td>
-                            <td>Edge</td>
-                            <td>26/03/2025 12:30</td>
-                            <td>26/03/2025 14:30</td>
-                            <td><span class="badge badge-warning">Quase Expirando</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 
 @stop
 
 @section('js')
+
     <!-- JS da própria página blade -->
     <script type="text/javascript">
 
         $(document).ready(function() {
 
-            // Lista a tabela de dados de registros    
-            // $('#datatables').DataTable({
-            //      // serverSide: true,
-            //     processing: true,
-            //     responsive: true,
-            //     autoWidth: true,
-            //     // order: [ 0, 'desc' ],
-            //     lengthMenu: [[5, 10, 15, 30, 50, -1], [5, 10, 15, 30, 50, "Todos"]], 
-            //     ajax: "organization",
-            //     // ajax: {
-            //     //     type: "GET",
-            //     //     url: "{{url("perfil")}}",                             // rota
-            //     //     dataSrc: function (json) {
-            //     //         let autorizacoes = json.autorizacoes;           // Rotas autorizadas
+            /** 
+             * manages X-CSRF-TOKEN and redirects to login if not authenticated
+             */
+            $.ajaxSetup({
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },  // validate the X-CSRF-TOKEN
+                statusCode: { 401: function() { window.location.href = "/login";} },        // 401-UNAUTHORIZED redirects to login
+            });
 
-            //     //         // controle do botão Inserir Novo
-            //     //         if (json.autorizacoes.includes('perfil.store')) { $("#btnInserirNovo").show(); } else { $("#btnInserirNovo").hide(); }
+            /*
+            * List the record data table
+            */
+            $('#tabela-tokens').DataTable({
+                processing: true,
+                responsive: true,
+                autoWidth: true,
+                // order: [ 0, 'desc' ],
+                lengthMenu: [[5, 10, 15, 30, 50, -1], [5, 10, 15, 30, 50, "{{ __('acl.crud.todos')}}"]], 
+                language: { url: "{{ asset('vendor/datatables/DataTables.pt_BR.json') }}" },
+                ajax: {
+                    type: "GET",
+                    url: "api/auth/listTokens",
+                },   
+                rowId: 'id',    // set line id <tr id=""> as the id columns field 
+                columns: [ 
+                    {"data": "id", "name": "organization.id", "class": "dt-right", "title": "#"},
+                    {"data": "name", "name": "organization.name", "class": "dt-left", "width": "250px", "title": "{{ __('acl.organization.columns.name-name') }}",
+                        render: function (data) { return '<b>' + data + '</b>';}},
+                    {"data": "acronym", "name": "organization.acronym", "class": "dt-left", "width": "50px", "title": "{{ __('acl.organization.columns.acronym-name') }}"},
+                    {"data": "description", "name": "organization.description", "class": "dt-left", "width": "auto", "title": "{{ __('acl.organization.columns.description-name') }}",},
+                    
+                    // {"data": "active", "name": "organization.active", "class": "dt-center", "width": "50px", "title": "{{ __('acl.organization.columns.active-name') }}",
+                    //     render: function (data) { return '<span class="' + ( data == 'Y' ? 'text-primary' : 'text-danger') + '">' + ( data == 'Y' ? '{{ __('acl.crud.columns_data.yes') }}' : '{{ __('acl.crud.columns_data.no') }}' ) + '</span>';}
+                    // },
+                    // {"data": null, "actions": "", "orderable": false, "class": "dt-center", "width": "100px", "title": "{{ __('acl.organization.columns.actions-name') }}",
+                    //     render: function (data, type, row) {  
 
-            //     //         // controle do botão Salvar do Modal de Edição
-            //     //         if (json.autorizacoes.includes('perfil.update')) { $("#btnSalvar").show(); } else { $("#btnSalvar").hide(); }
-                        
-            //     //         return json.data;                           // Retorna lista de dados para o DataTables
-            //     //     },                    
-            //     // },                 
-            //     rowId: 'id',
-            //     columns: [
-            //         {"data": "id", "name": "organization.id", "class": "dt-right", "title": "#"},
-            //         {"data": "name", "name": "organization.nome", "class": "dt-left", "title": "Nome",
-            //             render: function (data) { return '<b>' + data + '</b>';}},
-            //         {"data": "acronym", "name": "organization.sigla", "class": "dt-left", "title": "Sigla"},
-            //         {"data": "description", "name": "organization.descricao", "class": "dt-left", "title": "Descrição"},
-            //         {"data": "active", "name": "organization.ativo", "class": "dt-center", "title": "Ativo",  
-            //             render: function (data) { return '<span class="' + ( data == 'SIM' ? 'text-primary' : 'text-danger') + '">' + data + '</span>';}
-            //         },
-            //         {"data": "id", "botoes": "", "orderable": false, "class": "dt-center", "title": "Ações", "width": "80px", 
-            //             render: function(data, type, row) {
+                    //         btnEdit = '';                 
+                    //         btnDestroy = '';                
+                    //         // console.log(data); 
 
-            //                 btnEditar = '';                 // esconde botoes
-            //                 btnExcluir = '';                // esconde botoes
+                    //         // button Show control
+                    //         if (row.authorizations.includes(entity + '.show')) {
+                    //             btnEdit = '<button type="button" class="btnEdit btn btn-info btn-xs" data-operation="ver" data-toggle="tooltip" title="{{ __('acl.crud.btnShowTip') }}">{{ __('acl.crud.btnShow') }}</button> ';
+                    //         }
 
-            //                 // controle botão Ver
-            //                 if (row.autorizations.includes('perfil.show')) {
-            //                     btnEditar = '<button class="btnEditar btn btn-primary btn-xs" data-operacao="ver" data-toggle="tooltip" title="Ver o registro atual">Ver</button> ';
-            //                 }
+                    //         // button Edit control
+                    //         if (row.authorizations.includes(entity + '.update')) {
+                    //             btnEdit = '<button type="button" class="btnEdit btn btn-primary btn-xs" data-operation="save" data-toggle="tooltip" title="{{ __('acl.crud.btnEditTip') }}">{{ __('acl.crud.btnEdit') }}</button> ';
+                    //         }
 
-            //                 // controle botão Editar
-            //                 if (row.autorizations.includes('perfil.update')) {
-            //                     btnEditar = '<button class="btnEditar btn btn-primary btn-xs" data-operacao="salvar" data-toggle="tooltip" title="Editar o registro atual">Editar</button> ';
-            //                 }
+                    //         // button Destroy control
+                    //         if (row.authorizations.includes(entity + '.destroy')) {
+                    //             btnDestroy = '<button type="button" class="btnDestroy btn btn-danger btn-xs" data-operation="excluir" data-toggle="tooltip" title="{{ __('acl.crud.btnDestroyTip') }}">{{ __('acl.crud.btnDestroy') }}</button> ';
+                    //         }
 
-            //                 // // controle botão Excluir
-            //                 if (row.autorizations.includes('perfil.destroy')) {
-            //                     btnExcluir = '<button class="btnExcluir btn btn-danger btn-xs" data-toggle="tooltip" title="Excluir o registro atual">Excluir</button> ';
-            //                 }
+                    //         return btnEdit + btnDestroy; 
+                    //     }
+                    // },
+                ],
+            });
 
-            //                 return btnEditar + btnExcluir; 
-            //             }                
-            //         }                
-            //     ]                
-            // });           
+
 
             // console.log("Hi, I'm using the Laravel-AdminLTE package!");
             // Teste de funcionamento do JQuery

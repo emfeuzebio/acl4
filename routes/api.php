@@ -35,7 +35,7 @@ Route::get( 'auth/listTokens', [AuthController::class, 'listTokens']);
 // JWT
 Route::GET('/test', function (Request $request) {
 
-    return response()->json(['token' => 'Guard API response Ok']);
+    return response()->json(['token' => 'ACL 4 - Guard API Response Ok']);
 });
 
 // // Rota Protegida (para testar o token)

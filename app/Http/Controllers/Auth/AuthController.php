@@ -19,6 +19,9 @@ class AuthController extends Controller
     {
         // nesse caso ['login', 'register'] não dependem de estar autenticado
         $this->middleware('auth:api', ['except' => ['login', 'register','loginTable','me','logout','Revoke','listTokens']]);
+
+        // atualizar o status dos tokens expirados
+        Token::where('expires_at', '<', now())->update(['status' => 'expired']);
     }
 
     // Login COM token persistente em banco de dados
@@ -36,19 +39,44 @@ class AuthController extends Controller
                 $user = User::where('email', $credentials['email'])->first();
 
                 if (! $user || ! Hash::check($credentials['password'], $user->password)) {
-                    return response()->json(['error' => 'Credenciais inválidas'], 401);
+                    return response()->json(['error' => 'Credenciais inválidas'], Response::HTTP_UNAUTHORIZED);   // 401
                 }
 
                 // PASSO 2 - Verifica se já existe um token ativo para o usuário
                 $existingToken = Token::where('user_id', $user->id)
-                    ->where('status', 'active')
-                    ->where('expires_at', '>', now()) // Verifica se ainda está válido
+                    ->where('status', 'active')         // Verifica se está ativo
+                    ->where('expires_at', '>', Carbon::now())   // Verifica se ainda está válido
                     ->first();
 
                 // PASSO 3 - Caso exista, reutiliza o mesmo, SENÃO cria um novo
                 if ($existingToken) {
+
                     // Se já existir um token válido, reutiliza o mesmo
                     $token = $existingToken->token;
+
+
+                    // TODO antes de devolver o Token recuperado do BD,
+                    // devemos verificar se o token RECEBIDO NO request está expirado
+                    // e se o token do BD está expirado, se sim, devemos invalidar o token do BD
+
+                        // Verifica o timestamp de expiração (exp) do token                                        
+                        // $tokenRequest = JWTAuth::getToken();
+                        // $payload = JWTAuth::parseToken()->getPayload();
+                        // $payload = JWTAuth::setToken($tokenRequest)->getPayload();
+                        // die($tokenRequest);
+                        // die($existingToken);
+
+
+                        // $exp = $payload->get('exp');
+                        // $currentTime = Carbon::now()->timestamp;
+
+                        // if ($exp < $currentTime) {
+                        //     // Se a expiração for menor que o timestamp atual, o token expirou
+                        //     return response()->json(['error' => 'Token expirado'], Response::HTTP_UNAUTHORIZED);   // 401
+                        // }
+
+                        // print_r($payload);
+                        // die('token existente');
                 } else {
                     // senão, cria um novo, mas se as credenciais estiverem incorretas, exception
                     if (! $token = JWTAuth::attempt($credentials)) {
@@ -59,10 +87,14 @@ class AuthController extends Controller
                 // Cria a instância do token e pega o payload no formato de array
                 $payload = JWTAuth::setToken($token)->getPayload();
 
-                // Pega a data de expiração diretamente do payload
-                $expiresAt = Carbon::createFromTimestamp($payload['exp']);             
+                // Só pega a data de expiração diretamente do payload e transforma em Timestamp
+                // $expiresAt = Carbon::createFromTimestamp($payload['exp']);
+                
+                // recalcula e renova a data de expiração
+                $expiresAt = Carbon::now()->addMinutes(config('jwt.ttl'));
 
-                // Cria um novo token no banco de dados ou atualiza se já existir se for o mesmo user_id e token
+                // Cria um novo token no banco de dados ou atualiza se já existir se for o mesmo (user_id, Token e active)
+                // permitir que um usuário tenha vários tokens ativos (multi-dispositivos), mas sem repetição do mesmo token
                 Token::updateOrCreate(
                     ['user_id' => $payload['user_id'], 'token' => $token, 'status' => 'active'], // Verifica user_id + token
                     [
@@ -87,7 +119,7 @@ class AuthController extends Controller
         // Recupera as credenciais do request
         $credentials = $request->only('email', 'password');
 
-        // Tenta realizar a autenticação
+        // Tenta realizar a autenticação: 'attempt' GERA UM NOVO TOKEN
         try {
             // Se as credenciais estiverem incorretas
             if (! $token = JWTAuth::attempt($credentials)) {
@@ -127,7 +159,6 @@ class AuthController extends Controller
     
     public function me(Request $request)
     {
-        // TODO payload deve ser igual ao login
         try {
 
             // Verifica se o token foi enviado no cabeçalho Authorization
@@ -137,7 +168,16 @@ class AuthController extends Controller
 
             // Recupera o usuário autenticado
             $user = JWTAuth::parseToken()->authenticate();
-            return response()->json($user);
+            // return response()->json($user);
+
+            // Recupera o token do header Authorization
+            $token = JWTAuth::getToken();
+
+            // Decodificar o payload para obter o ID do usuário
+            $payload = JWTAuth::setToken($token)->getPayload();
+
+            // retorna o payload igual ao login que contém todas informações do token JWT recebido no cabeçalho
+            return response()->json($payload);
         } catch (JWTException $e) {
             // Caso o token não seja válido ou ocorra outro erro
             return response()->json(['error' => 'Token inválido. ' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);   // 401
