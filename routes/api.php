@@ -28,7 +28,7 @@ Route::post('auth/login', [AuthController::class, 'login']);
 Route::post('auth/loginTable', [AuthController::class, 'loginTable']);
 Route::post('auth/logout', [AuthController::class, 'logout']);
 Route::post('auth/refresh', [AuthController::class, 'refresh']);
-Route::get( 'auth/Revoke', [AuthController::class, 'Revoke']);
+Route::post('auth/revoke', [AuthController::class, 'revoke']);
 Route::get( 'auth/listTokens', [AuthController::class, 'listTokens']);
 
 

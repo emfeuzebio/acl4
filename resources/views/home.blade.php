@@ -5,6 +5,15 @@
 @section('css')
     {{-- Add here extra stylesheets --}}
     {{-- <link rel="stylesheet" href="/css/admin_custom.css"> --}}
+
+    <style>
+
+        .text-cd {
+            font-size: 11px;      
+            letter-spacing: -0.7px; 
+        }
+
+    </style>
 @stop
 
 @section('content_header')
@@ -141,48 +150,14 @@
 
             </div>
             <div class="card-body">
-                <table id="tabela-tokens" class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th>Usuário</th>
-                            <th>Token</th>
-                            <th>IP</th>
-                            <th>Navegador</th>
-                            <th>Emitido em</th>
-                            <th>Expira em</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>admin</td>
-                            <td>eyJhbGciOiJ...9zZWQi</td>
-                            <td>192.168.1.1</td>
-                            <td>Chrome</td>
-                            <td>26/03/2025 14:00</td>
-                            <td>26/03/2025 16:00</td>
-                            <td><span class="badge badge-success">Válido</span></td>
-                        </tr>
-                        <tr>
-                            <td>user1</td>
-                            <td>eyJhbGciOiJ...xNhdXRo</td>
-                            <td>203.0.113.45</td>
-                            <td>Firefox</td>
-                            <td>26/03/2025 13:00</td>
-                            <td>26/03/2025 15:00</td>
-                            <td><span class="badge badge-danger">Expirado</span></td>
-                        </tr>
-                        <tr>
-                            <td>guest</td>
-                            <td>eyJhbGciOiJ...uJpbmZv</td>
-                            <td>192.168.2.10</td>
-                            <td>Edge</td>
-                            <td>26/03/2025 12:30</td>
-                            <td>26/03/2025 14:30</td>
-                            <td><span class="badge badge-warning">Quase Expirando</span></td>
-                        </tr>
-                    </tbody>
-                </table>
+              <div class="table-responsive col-md-12">
+                  <table id="tbtListTokens" class="table table-striped table-bordered table-hover table-sm compact" style="width:100%">
+                      <thead></thead>
+                      <tbody></tbody>
+                      <tfoot></tfoot>                
+                  </table>
+                  <br/>
+              </div>
             </div>
         </div>
       </div>
@@ -305,56 +280,98 @@
             /*
             * List the record data table
             */
-            $('#tabela-tokens').DataTable({
+            $('#tbtListTokens').DataTable({
                 processing: true,
                 responsive: true,
                 autoWidth: true,
-                // order: [ 0, 'desc' ],
+                order: [ 0, 'desc' ],
                 lengthMenu: [[5, 10, 15, 30, 50, -1], [5, 10, 15, 30, 50, "{{ __('acl.crud.todos')}}"]], 
                 language: { url: "{{ asset('vendor/datatables/DataTables.pt_BR.json') }}" },
                 ajax: {
                     type: "GET",
                     url: "api/auth/listTokens",
+                    dataSrc: '',  // dispense the data object
                 },   
                 rowId: 'id',    // set line id <tr id=""> as the id columns field 
                 columns: [ 
-                    {"data": "id", "name": "organization.id", "class": "dt-right", "title": "#"},
-                    {"data": "name", "name": "organization.name", "class": "dt-left", "width": "250px", "title": "{{ __('acl.organization.columns.name-name') }}",
+                    {"data": "id",        "class": "dt-right",  "width": "10px",  "title": "#"},
+                    {"data": "user.name",   "class": "dt-left",   "width": "100px", "title": "{{ __('acl.dashboard.columns.user-name') }}",
                         render: function (data) { return '<b>' + data + '</b>';}},
-                    {"data": "acronym", "name": "organization.acronym", "class": "dt-left", "width": "50px", "title": "{{ __('acl.organization.columns.acronym-name') }}"},
-                    {"data": "description", "name": "organization.description", "class": "dt-left", "width": "auto", "title": "{{ __('acl.organization.columns.description-name') }}",},
-                    
-                    // {"data": "active", "name": "organization.active", "class": "dt-center", "width": "50px", "title": "{{ __('acl.organization.columns.active-name') }}",
-                    //     render: function (data) { return '<span class="' + ( data == 'Y' ? 'text-primary' : 'text-danger') + '">' + ( data == 'Y' ? '{{ __('acl.crud.columns_data.yes') }}' : '{{ __('acl.crud.columns_data.no') }}' ) + '</span>';}
-                    // },
-                    // {"data": null, "actions": "", "orderable": false, "class": "dt-center", "width": "100px", "title": "{{ __('acl.organization.columns.actions-name') }}",
-                    //     render: function (data, type, row) {  
+                    {"data": "ip",        "class": "dt-center", "width": "50px",  "title": "{{ __('acl.dashboard.columns.ip-name') }}"},
+                    {"data": "browser",   "class": "dt-left",   "width": "auto",  "title": "{{ __('acl.dashboard.columns.browser-name') }}",
+                        render: function (data) { return '<span class="text-cd">' + data + '</span>';}},
+                    {"data": "created_at","class": "dt-left",   "width": "100px", "title": "{{ __('acl.dashboard.columns.create_at-name') }}",
+                        render: function (data) { return '<span class="text-cd">' + data + '</span>';}},
+                    {"data": "expires_at","class": "dt-left",   "width": "100px", "title": "{{ __('acl.dashboard.columns.expire_at-name') }}",
+                      render: function (data) { return '<span class="text-xs">' + data + '</span>';}},
+                    {"data": "status",    "class": "dt-center", "width": "70px",  "title": "{{ __('acl.dashboard.columns.status-name') }}",
+                      render: function (data, type, row) { 
 
-                    //         btnEdit = '';                 
-                    //         btnDestroy = '';                
-                    //         // console.log(data); 
+                        switch (row.status) {
+                          case 'active':
+                            return '<span class="badge badge-success">Active</span>';
+                          case 'refreshed':
+                            return '<span class="badge badge-success">Refreshed</span>';
+                          case 'expired':
+                            return '<span class="badge badge-danger">Expired</span>';
+                          case 'invalidated':
+                            return '<span class="badge badge-danger">Invalidated</span>';
+                          case 'revoked':
+                            return '<span class="badge badge-warning">Revoked</span>';
+                          default:
+                          return '<span class="badge badge-warning">unnowned</span>';
+                        }                        
+                      }
+                    },
+                    {"data": null, "actions": "", "orderable": false, "class": "dt-center", "width": "120px", "title": "{{ __('acl.dashboard.columns.actions-name') }}",
+                        render: function (data, type, row) { 
+                          
+                            btnRevoke = '';
+                            btnRefreshTkn = '';
 
-                    //         // button Show control
-                    //         if (row.authorizations.includes(entity + '.show')) {
-                    //             btnEdit = '<button type="button" class="btnEdit btn btn-info btn-xs" data-operation="ver" data-toggle="tooltip" title="{{ __('acl.crud.btnShowTip') }}">{{ __('acl.crud.btnShow') }}</button> ';
-                    //         }
-
-                    //         // button Edit control
-                    //         if (row.authorizations.includes(entity + '.update')) {
-                    //             btnEdit = '<button type="button" class="btnEdit btn btn-primary btn-xs" data-operation="save" data-toggle="tooltip" title="{{ __('acl.crud.btnEditTip') }}">{{ __('acl.crud.btnEdit') }}</button> ';
-                    //         }
-
-                    //         // button Destroy control
-                    //         if (row.authorizations.includes(entity + '.destroy')) {
-                    //             btnDestroy = '<button type="button" class="btnDestroy btn btn-danger btn-xs" data-operation="excluir" data-toggle="tooltip" title="{{ __('acl.crud.btnDestroyTip') }}">{{ __('acl.crud.btnDestroy') }}</button> ';
-                    //         }
-
-                    //         return btnEdit + btnDestroy; 
-                    //     }
-                    // },
+                            // button Show control
+                            // if (row.authorizations.includes(entity + '.show')) {
+                              btnRevoke = '<button type="button" class="btnRevoke btn btn-danger btn-xs" data-toggle="tooltip" title="{{ __('acl.crud.btnRevokeTip') }}">{{ __('acl.crud.btnRevoke') }}</button> ';
+                            // }
+                            btnRefreshTkn = '<button type="button" class="btnRefreshTkn btn btn-success btn-xs" data-toggle="tooltip" title="">Renovar</button> ';
+                          
+                          return btnRevoke + btnRefreshTkn;
+                          // return btnEdit + btnDestroy; 
+                        }
+                    },
                 ],
             });
 
+
+            /*
+            * Delete Route: btnDeleteRout . tblActionsBody
+            */
+            $("#tbtListTokens").delegate('tr td .btnRevoke', 'click', function (e) {
+                e.stopImmediatePropagation();   
+
+                id = $(this).parents('tr').attr('id');
+                actionName = $(this).parents('tr').find('td:eq(2)').text();
+                // alert('btnDeleteRout: ' + id + ' actionName: ' + actionName);
+
+                //se confirmar a Exclusão, exclui o Registro via Ajax
+                
+                    $.ajax({
+                        type: "POST",
+                        url: "{{ url("api/auth/revoke") }}", 
+                        data: {"tokenId": id},
+                        dataType: 'json',
+                        success: function (response) {
+                            $('#tbtListTokens').DataTable().ajax.reload(null, false);
+                            $('#msgOperationAction').removeClass().addClass('alert alert-success').html('Excluiu a Ação: <b>' + response.action + '</b> com sucesso.').show().delay(5000).fadeOut(1000);
+                        },
+                        error: function (error) {
+                            if (ERROR_HTTP_STATUS.has(error.status)) { window.location.href = "{{ url('/login') }}"; return; } 
+                            $('#alertModal .modal-body').html(error.responseJSON.message)
+                            $('#alertModal').modal('show');
+                        }
+                    });
+                
+            });                  
 
 
             // console.log("Hi, I'm using the Laravel-AdminLTE package!");

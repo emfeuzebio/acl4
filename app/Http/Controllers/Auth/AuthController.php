@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\TokenResource;
 use App\Models\Token;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -18,7 +19,7 @@ class AuthController extends Controller
     public function __construct()
     {
         // nesse caso ['login', 'register'] não dependem de estar autenticado
-        $this->middleware('auth:api', ['except' => ['login', 'register','loginTable','me','logout','Revoke','listTokens']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register','loginTable','me','logout','revoke','listTokens']]);
 
         // atualizar o status dos tokens expirados
         Token::where('expires_at', '<', now())->update(['status' => 'expired']);
@@ -217,35 +218,35 @@ class AuthController extends Controller
         // if (!$user || !$user->hasRole('admin')) {
         //     return response()->json(['error' => 'Acesso negado'], 403);
         // }
-    
-        // TODO testar tudo
 
-        // Recuperar todos os tokens e seus status
-        $tokens = Token::with('user')->get();
+        // Recuperar todos os tokens e seus status e o respectivo usuário
+        // $tokens = Token::with('user')->orderBy('created_at','desc')->get();
+        $tokens = Token::with('user')->latest('created_at')->get();
+        $tokensResource = TokenResource::collection($tokens);   // Aplica um recurso para a coleção de tokens
 
-        return response()->json($tokens);
+        return response()->json($tokensResource);
     }    
 
-    public function Revoke($tokenId)
+    public function revoke(Request $request)
     {
         // TODO testar tudo
         // Verificar se o usuário autenticado é admin
-        $user = JWTAuth::parseToken()->authenticate();
-        if (!$user || !$user->hasRole('admin')) {
-            return response()->json(['error' => 'Acesso negado. '], Response::HTTP_FORBIDDEN);   // 403
-        }
+        // $user = JWTAuth::parseToken()->authenticate();
+        // if (!$user || !$user->hasRole('admin')) {
+        //     return response()->json(['error' => 'Acesso negado. '], Response::HTTP_FORBIDDEN);   // 403
+        // }
 
         // Encontrar o token pelo ID
-        $token = Token::find($tokenId);
+        $token = Token::find($request->tokenId);
 
         if (!$token) {
             return response()->json(['error' => 'Token não encontrado'], Response::HTTP_NOT_FOUND);   // 404
         }
 
         // Alterar o status do token para "expired"
-        $token->status = 'expired';
+        $token->status = 'revoked';
         $token->save();
 
-        return response()->json(['message' => 'Token cancelado com sucesso.'], Response::HTTP_OK);   // 200
+        return response()->json(['message' => 'Token Revogado com sucesso.'], Response::HTTP_OK);   // 200
     }    
 }

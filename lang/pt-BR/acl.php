@@ -43,6 +43,9 @@ return [
         'btnClose' => 'Cancelar',
         'btnCloseTip' => 'Fechar e Cancelar a operação (Esc ou Alt+C)',
 
+        'btnRevoke' => 'Revogar',
+        'btnRevokeTip' => 'Revogar o Token',
+
         'columns_data' => [
             'yes' => 'SIM',
             'no' => 'NÃO',
@@ -116,6 +119,35 @@ return [
 
         'listTokens' => 'Lista de Tokens Ativos e Expirados',
     ],
+
+
+    // Entidade Organização
+    'dashboard' => [
+        'title' => 'Organizações',
+        'page_title' => '',
+        'page_subtitle' => '',
+        'breadcrumb1' => 'Início',
+        'breadcrumb2' => 'Dashboard v1',
+        'table_title' => 'Dashboard',
+        'entityName' => 'dashboard',
+
+        'columns' => [
+
+            'user-name' => 'Usuário',
+            'token-name' => 'Token', 
+            'ip-name' => 'IP', 
+            'browser-name' => 'Navegador', 
+            'create_at-name' => 'Emitido em', 
+            'expire_at-name' => 'Expira em', 
+            'status-name' => 'Status', 
+
+            // actions bottons 
+            'actions-name' => 'Ações',
+            'revoke-name' => 'Revogar',
+            'refresh-name' => 'Renovar',
+        ],
+    ],
+
 
 
     // other buttons APAGAR
