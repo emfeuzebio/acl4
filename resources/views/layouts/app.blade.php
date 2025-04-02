@@ -1,5 +1,9 @@
 @extends('adminlte::page')
 
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
 {{-- Extend and customize the browser title --}}
 @section('title')
     {{ config('adminlte.title') }}

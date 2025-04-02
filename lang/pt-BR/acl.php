@@ -46,6 +46,9 @@ return [
         'btnRevoke' => 'Revogar',
         'btnRevokeTip' => 'Revogar o Token',
 
+        'btnRefreshToken' => 'Renovar',
+        'btnRefreshTokenTip' => 'Renovar o Token',
+
         'columns_data' => [
             'yes' => 'SIM',
             'no' => 'NÃO',
@@ -118,8 +121,8 @@ return [
         'showAllLogins' => 'Ver Todos Logins',
 
         'listTokens' => 'Lista de Tokens Ativos e Expirados',
+        'graphLastUsers' => 'Gráfico dos Novos Usuários nos Últimos 30 Dias',
     ],
-
 
     // Entidade Organização
     'dashboard' => [

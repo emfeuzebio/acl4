@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ActionController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\HomeController;
@@ -28,8 +29,9 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('home', [HomeController::class, 'index'])->name('home');
-// Route::get('datatable', [DataTableController::class, 'index']);
+// Route::get('home', [HomeController::class, 'index'])->name('home');
+// Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+Route::get('home', [DashboardController::class, 'index'])->name('home');
 
 Route::middleware(['auth', 'AccessControlList'])->group(function () {
 

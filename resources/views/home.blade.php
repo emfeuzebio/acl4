@@ -56,7 +56,7 @@
         <div class="col-md-2 col-sm-6 col-12">
             <div class="small-box bg-info">
                 <div class="inner">
-                    <h3>2</h3>
+                    <h3>{{ $dashboardData['total_organizations'] }}</h3>
                     <p>{{ __('acl.dictionary.organizations') }}</p>
                 </div>
                 <div class="icon">
@@ -71,7 +71,7 @@
         <div class="col-md-2 col-sm-6 col-12">
             <div class="small-box bg-secondary">
                 <div class="inner">
-                    <h3>3</h3>
+                    <h3>{{ $dashboardData['total_systems'] }}</h3>
                     <p>{{ __('acl.dictionary.systems') }}</p>
                 </div>
                 <div class="icon">
@@ -86,7 +86,7 @@
         <div class="col-md-2 col-sm-6 col-12">
             <div class="small-box bg-primary">
                 <div class="inner">
-                    <h3>11</h3>
+                    <h3>{{ $dashboardData['total_entities'] }} </h3>
                     <p>{{ __('acl.dictionary.entities') }}</p>
                 </div>
                 <div class="icon">
@@ -101,7 +101,7 @@
         <div class="col-md-3 col-sm-6 col-12">
             <div class="small-box bg-success">
                 <div class="inner">
-                    <h3>8</h3>
+                    <h3>{{ $dashboardData['total_profiles'] }}</h3>
                     <p>{{ __('acl.dictionary.roles') }}</p>
                 </div>
                 <div class="icon">
@@ -116,7 +116,7 @@
         <div class="col-md-3 col-sm-6 col-12">
             <div class="small-box bg-danger">
                 <div class="inner">
-                    <h3>5</h3>
+                    <h3>{{ $dashboardData['total_users'] }}</h3>
                     <p>{{ __('acl.dictionary.users') }}</p>
                 </div>
                 <div class="icon">
@@ -137,15 +137,32 @@
     <div class="row">
       <div class="col-12">
         <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">{{ __('acl.dictionary.listTokens') }}</h3>
-                <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                  </button>
-                  <button type="button" class="btn btn-tool" data-card-widget="remove">
-                    <i class="fas fa-times"></i>
-                  </button>
+            <div class="card-header d-flex align-items-center justify-content-between">
+
+              <div class="col-md-4">
+                  <h3 class="card-title">{{ __('acl.dictionary.listTokens') }}</h3>
+              </div>
+
+              <!-- Coluna Central: Área de Mensagens -->
+              <div class="col-md-4 text-center">
+                <div style="padding: 0px;  background-color: transparent;">
+                    <div id="msgOperation" class="alert alert-danger" style="margin-bottom: 0px; display: none; padding: 1px 5px 1px 5px;">
+                      <a class="close" onClick="$('.alert').hide()">&times;</a>  
+                      <div id="alert-operation" class="alert-content">Mensagem</div>
+                  </div>
+                </div>                
+              </div>              
+
+              <!-- Coluna Direita: Ferramentas -->
+              <div class="col-md-4 text-right">
+                  <div class="card-tools">
+                      <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                          <i class="fas fa-minus"></i>
+                      </button>
+                      <button type="button" class="btn btn-tool" data-card-widget="remove">
+                          <i class="fas fa-times"></i>
+                      </button>
+                  </div>
               </div>
 
             </div>
@@ -163,7 +180,41 @@
       </div>
     </div>
 
+    <!-- Graph New Users -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+            <div class="card-header border-transparent">
+              <h3 class="card-title">{{ __('acl.dictionary.graphLastUsers') }}</h3>
+              <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                  <button type="button" class="btn btn-tool" data-card-widget="remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive col-md-12">
+
+                <!-- Gráfico de Novos Usuários -->
+                <div class="mt-0">
+                    <!-- <h4>📈 Novos Usuários nos Últimos 30 Dias</h4> -->
+                    <!-- <canvas id="userChart" width="100%" height="20"></canvas> -->
+                    <canvas id="userChart" height="200"></canvas>
+                    <!-- <canvas id="userChart"></canvas> -->
+                </div>            
+
+              </div>
+
+            </div>
+        </div>
+      </div>
+    </div>
+
     <!-- List Logins -->
+    <!--
     <div class="row">
       <div class="col-12">
         <div class="card">
@@ -257,12 +308,47 @@
         </div>
       </div>
     </div>
+    -->
 
   </div>
 
 @stop
 
 @section('js')
+
+    <!-- Adiciona gráfico na Home -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+
+      document.addEventListener('DOMContentLoaded', function () {
+          var ctx = document.getElementById('userChart').getContext('2d');
+          var userChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                  labels: ['Últimos 30 Dias'],
+                  datasets: [{
+                      label: 'Usuários',
+                      data: [{{ $dashboardData['new_users_last_30d'] }}],
+                      backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false, // Permite altura personalizada
+                layout: {
+                    padding: {
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 0
+                    }
+                }
+            }                
+          });
+      });
+
+    </script>
 
     <!-- JS da própria página blade -->
     <script type="text/javascript">
@@ -327,24 +413,23 @@
                         render: function (data, type, row) { 
                           
                             btnRevoke = '';
-                            btnRefreshTkn = '';
+                            btnRefreshToken = '';
 
                             // button Show control
                             // if (row.authorizations.includes(entity + '.show')) {
                               btnRevoke = '<button type="button" class="btnRevoke btn btn-danger btn-xs" data-toggle="tooltip" title="{{ __('acl.crud.btnRevokeTip') }}">{{ __('acl.crud.btnRevoke') }}</button> ';
                             // }
-                            btnRefreshTkn = '<button type="button" class="btnRefreshTkn btn btn-success btn-xs" data-toggle="tooltip" title="">Renovar</button> ';
+                            btnRefreshToken = '<button type="button" class="btnRefreshToken btn btn-success btn-xs" data-toggle="tooltip" title="{{ __('acl.crud.btnRefreshTokenTip') }}">{{ __('acl.crud.btnRefreshToken') }}</button> ';
                           
-                          return btnRevoke + btnRefreshTkn;
+                          return btnRevoke + btnRefreshToken;
                           // return btnEdit + btnDestroy; 
                         }
                     },
                 ],
             });
 
-
             /*
-            * Delete Route: btnDeleteRout . tblActionsBody
+            * Revoke the current Token
             */
             $("#tbtListTokens").delegate('tr td .btnRevoke', 'click', function (e) {
                 e.stopImmediatePropagation();   
@@ -362,25 +447,60 @@
                         dataType: 'json',
                         success: function (response) {
                             $('#tbtListTokens').DataTable().ajax.reload(null, false);
-                            $('#msgOperationAction').removeClass().addClass('alert alert-success').html('Excluiu a Ação: <b>' + response.action + '</b> com sucesso.').show().delay(5000).fadeOut(1000);
+                            $("#msgOperation .alert-content").html(response.message);
+                            $('#msgOperation').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
                         },
                         error: function (error) {
-                            if (ERROR_HTTP_STATUS.has(error.status)) { window.location.href = "{{ url('/login') }}"; return; } 
-                            $('#alertModal .modal-body').html(error.responseJSON.message)
-                            $('#alertModal').modal('show');
+                            // if (ERROR_HTTP_STATUS.has(error.status)) { window.location.href = "{{ url('/login') }}"; return; } 
+                            // $('#alertModal .modal-body').html(error.message)
+                            // $('#alertModal').modal('show');
+                            // $('#alertModal .modal-body').html(error.responseJSON.message)
+
+                            let errorMessage = JSON.parse(error.responseText);
+                            $("#msgOperation .alert-content").html(errorMessage.error);
+                            $('#msgOperation').removeClass().addClass('alert alert-danger').show().delay(5000).fadeOut(1000);
                         }
                     });
                 
             });                  
 
+            /*
+            * Refresh the current Token
+            */
+            $("#tbtListTokens").delegate('tr td .btnRefreshToken', 'click', function (e) {
+                e.stopImmediatePropagation();   
 
-            // console.log("Hi, I'm using the Laravel-AdminLTE package!");
-            // Teste de funcionamento do JQuery
-            var teste = $('#teste').val();
-            console.log("JQuery:" + teste);
+                id = $(this).parents('tr').attr('id');
+                // actionName = $(this).parents('tr').find('td:eq(2)').text();
+                // alert('btnDeleteRout: ' + id + ' actionName: ' + actionName);
+
+                //se confirmar a Exclusão, exclui o Registro via Ajax
+                
+                    $.ajax({
+                        type: "POST",
+                        url: "{{ url("api/auth/forceRefresh") }}", 
+                        data: {"tokenId": id},
+                        dataType: 'json',
+                        success: function (response) {
+                            $('#tbtListTokens').DataTable().ajax.reload(null, false);
+                            $("#msgOperation .alert-content").html(errorMessage.error);
+                            $('#msgOperation').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
+                        },
+                        error: function (error) {
+                            // if (ERROR_HTTP_STATUS.has(error.status)) { window.location.href = "{{ url('/login') }}"; return; } 
+                            // $('#alertModal .modal-body').html(error.message)
+                            // $('#alertModal').modal('show');
+
+                            let errorMessage = JSON.parse(error.responseText);
+                            $("#msgOperation .alert-content").html(errorMessage.error);
+                            $('#msgOperation').removeClass().addClass('alert alert-danger').show().delay(5000).fadeOut(1000);
+                        }
+                    });
+            });                  
 
         });            
 
     </script>
 
 @stop 
+

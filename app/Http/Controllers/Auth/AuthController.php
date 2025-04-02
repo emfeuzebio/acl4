@@ -19,7 +19,7 @@ class AuthController extends Controller
     public function __construct()
     {
         // nesse caso ['login', 'register'] não dependem de estar autenticado
-        $this->middleware('auth:api', ['except' => ['login', 'register','loginTable','me','logout','revoke','listTokens']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register','loginTable','me','logout','revoke','listTokens','refresh','forceRefresh']]);
 
         // atualizar o status dos tokens expirados
         Token::where('expires_at', '<', now())->update(['status' => 'expired']);
@@ -210,6 +210,55 @@ class AuthController extends Controller
             return response()->json(['error' => 'Refresh token inválido ou expirado' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);   // 401
         }
     }
+
+    public function forceRefresh(Request $request)
+    {
+        // Verifica se o usuário autenticado é um admin
+        // $admin = auth()->user();
+        // if (!$admin || !$admin->hasRole('Administrator')) {
+        //     return response()->json(['error' => 'Acesso negado'], 403);
+        // }
+
+        // TODO não pode renovar um token expirado ou revogado, somente ativo
+    
+        // Obtém o ID do token a ser atualizado
+        $tokenId = $request->input('tokenId');
+    
+        // Busca o token na tabela
+        $tokenEntry = Token::find($tokenId);
+    
+        if (! $tokenEntry) {
+            return response()->json(['error' => 'Token não encontrado'], Response::HTTP_NOT_FOUND);   // 404
+        }
+    
+        // Verifica se o token está expirado
+        if (Carbon::parse($tokenEntry->expires_at)->isPast()) {
+            return response()->json(['error' => 'Token expirado, faça login novamente'], Response::HTTP_NOT_FOUND);   // 401
+        }
+    
+        // Obtém o usuário associado ao token
+        $user = User::find($tokenEntry->user_id);
+        if (! $user) {
+            return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_NOT_FOUND);   // 404
+        }
+    
+        // Gera um novo token para o usuário
+        $newToken = JWTAuth::fromUser($user);
+    
+        // Atualiza a entrada na tabela de tokens
+        $tokenEntry->update([
+            'token' => $newToken,
+            'expires_at' => now()->addMinutes(config('jwt.ttl')),
+            'updated_at' => now(),
+        ]);
+    
+        return response()->json([
+            'message' => 'Token atualizado com sucesso!',
+            'error' => 'Token atualizado com sucesso!',
+            'new_token' => $newToken,
+        ]);
+    }
+    
 
     public function listTokens()
     {
