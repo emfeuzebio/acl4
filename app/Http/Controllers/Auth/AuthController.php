@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserRegisterRequest;
+use App\Http\Requests\UserRequest;
 use App\Http\Resources\TokenResource;
 use App\Models\Token;
 use Illuminate\Http\Request;
@@ -10,16 +12,17 @@ use Illuminate\Http\Response;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\JsonResponse;
 
 class AuthController extends Controller
 {
     public function __construct()
     {
         // nesse caso ['login', 'register'] não dependem de estar autenticado
-        $this->middleware('auth:api', ['except' => ['login', 'register','loginTable','me','logout','revoke','listTokens','refresh','forceRefresh']]);
+        // $this->middleware('auth:api', ['except' => ['login', 'register','loginTable','me','logout','revoke','listTokens','refresh','forceRefresh']]);
 
         // atualizar o status dos tokens expirados
         Token::where('expires_at', '<', now())->update(['status' => 'expired']);
@@ -28,7 +31,6 @@ class AuthController extends Controller
     // Login COM token persistente em banco de dados
     // TODO não está criando nova linha no BD para login do outro usuário, somente ao primeiro
     // precisa atualizar o updated_at e o expires_at toda ver que o mesmo user ficar login ou refresh
-    // refresh não testado
     public function loginTable(Request $request)
     {
             // Recupera as credenciais do request
@@ -131,6 +133,71 @@ class AuthController extends Controller
         }
 
         return response()->json(compact('token'));
+    }
+
+    // public function register(UserRegisterRequest $request): JsonResponse
+    public function register(UserRegisterRequest $request)
+    {
+        // dd($request->all());
+
+        // $validatedData = $request->validate([
+        //     'name' => 'required|string|max:255',
+        //     'email' => 'required|string|email|max:255|unique:users',
+        //     'password' => 'required|string|min:8|confirmed',
+        //     // 'password_confirmation' => 'required|string|min:8',
+        // ]);
+
+        // die('registerX(Request $request)');
+        $credentials = $request->only('name','email','password');
+
+        // return response()->json($credentials, Response::HTTP_CREATED);        
+        // print_r($credentials);
+
+
+            // Valida os dados de entrada
+            // $validatedData = $request->validate([
+            //     'name' => 'required|string|min:6',
+            //     'email' => 'required|string|email|max:255|unique:users,email',
+            //     'password' => 'required|string|min:6|confirmed',
+            // ]);
+            
+            // // Cria o usuário no banco de dados
+            // $user = User::create([
+            //     'name' => $validatedData['name'],
+            //     'email' => $validatedData['email'],
+            //     'password' => Hash::make($validatedData['password']), // Hash seguro
+            // ]);
+        // die('registerX(UserRequest $request)');
+
+        // STEP 1 - Lest's insert the User
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password), // Hash seguro
+            'active' => 'Y',
+        ]); 
+    
+        // Gera o token JWT para o usuário recém-registrado
+        $token = JWTAuth::fromUser($user);
+        $expiresAt = now()->addMinutes(config('jwt.ttl', 60)); // Expira conforme config
+    
+        // Registra o token na tabela `acl_tokens`
+        Token::create([
+            'user_id' => $user->id,
+            'token' => $token,
+            'expires_at' => $expiresAt,
+            'status' => 'active',
+            'ip' => $request->ip(),
+            'browser' => $request->header('User-Agent'),
+        ]);
+    
+        // Retorna a resposta JSON com o usuário e token
+        return response()->json([
+            'message' => 'Usuário registrado com sucesso!',
+            'user' => $user,
+            'token' => $token,
+            'expires_at' => $expiresAt,
+        ], Response::HTTP_CREATED);
     }
 
     public function logout(Request $request)

@@ -2,10 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
-use Tymon\JWTAuth\Facades\JWTAuth;
-
 
 /*
 |--------------------------------------------------------------------------
@@ -18,18 +15,20 @@ use Tymon\JWTAuth\Facades\JWTAuth;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
 // JWT Tokens
+Route::post('/auth/register', [AuthController::class, 'register']);
+
 Route::post('auth/me', [AuthController::class, 'me']);
 Route::post('auth/login', [AuthController::class, 'login']);
 Route::post('auth/loginTable', [AuthController::class, 'loginTable']);
 Route::post('auth/logout', [AuthController::class, 'logout']);
 Route::post('auth/refresh', [AuthController::class, 'refresh']);
-Route::post('auth/forceRefresh', [AuthController::class, 'forceRefresh']);
 Route::post('auth/revoke', [AuthController::class, 'revoke']);
+Route::post('auth/forceRefresh', [AuthController::class, 'forceRefresh']);
 Route::get( 'auth/listTokens', [AuthController::class, 'listTokens']);
 
 
