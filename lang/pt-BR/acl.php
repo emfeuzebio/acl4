@@ -46,6 +46,9 @@ return [
         'btnRevoke' => 'Revogar',
         'btnRevokeTip' => 'Revogar o Token',
 
+        'btnLogout' => 'Logout',
+        'btnLogoutTip' => 'Efetuar Logout no Usuário',
+
         'btnRefreshToken' => 'Renovar',
         'btnRefreshTokenTip' => 'Renovar o Token',
 
@@ -134,6 +137,10 @@ return [
         'table_title' => 'Dashboard',
         'entityName' => 'dashboard',
 
+        'modalLogoutUserTitle' => 'Deslogar',
+        'modalLogoutUserText' => 'Você está certo que deseja Deslogar o Usuário: ',
+
+
         'columns' => [
 
             'user-name' => 'Usuário',
@@ -143,6 +150,7 @@ return [
             'create_at-name' => 'Emitido em', 
             'expire_at-name' => 'Expira em', 
             'status-name' => 'Status', 
+            'lastActivity-name' => 'Última Atividade em', 
 
             // actions bottons 
             'actions-name' => 'Ações',

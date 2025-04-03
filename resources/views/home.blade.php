@@ -180,6 +180,53 @@
       </div>
     </div>
 
+    <!-- List Logins -->
+    <div class="row">
+      <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex align-items-center justify-content-between">
+
+              <div class="col-md-4">
+                  <h3 class="card-title">{{ __('acl.dictionary.listLogins') }}</h3>
+              </div>
+
+              <!-- Coluna Central: Área de Mensagens -->
+              <div class="col-md-4 text-center">
+                <div style="padding: 0px;  background-color: transparent;">
+                    <div id="msgOperationLogins" class="alert alert-danger" style="margin-bottom: 0px; display: none; padding: 1px 5px 1px 5px;">
+                      <a class="close" onClick="$('.alert').hide()">&times;</a>  
+                      <div id="alert-operation" class="alert-content">Mensagem</div>
+                  </div>
+                </div>                
+              </div>              
+
+              <!-- Coluna Direita: Ferramentas -->
+              <div class="col-md-4 text-right">
+                  <div class="card-tools">
+                      <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                          <i class="fas fa-minus"></i>
+                      </button>
+                      <button type="button" class="btn btn-tool" data-card-widget="remove">
+                          <i class="fas fa-times"></i>
+                      </button>
+                  </div>
+              </div>
+
+            </div>
+            <div class="card-body">
+              <div class="table-responsive col-md-12">
+                  <table id="tbtListLogins" class="table table-striped table-bordered table-hover table-sm compact" style="width:100%">
+                      <thead></thead>
+                      <tbody></tbody>
+                      <tfoot></tfoot>                
+                  </table>
+                  <br/>
+              </div>
+            </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Graph New Users -->
     <div class="row">
       <div class="col-12">
@@ -312,6 +359,26 @@
 
   </div>
 
+<!-- modal confirm operation -->
+<div class="modal fade" id="confirmaModal" tabindex="-1" aria-hidden="true" data-backdrop="static">
+  <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title">Confirm</h4>
+              <button type="button" class="close btnCancelar" data-bs-dismiss="modal" data-toggle="tooltip" title="Cancelar a operação (Esc ou Alt+C)" onClick="$('#confirmaModal').text('');$('#confirmaExcluirModal').modal('hide');">&times;</button>
+          </div>
+          <div class="modal-body">
+              <p></p>
+              <label id="msgConfirm" class="error invalid-feedback" style="color: red; display: none; font-size: 12px;"></label> 
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal" data-toggle="tooltip" title="Cancelar a operação (Esc ou Alt+C)" onClick="$('#confirmaModal').text('');$('#confirmaExcluirModal').modal('hide');"><i class="fas fa-fw fa-times"></i>Cancelar</button>
+              <button type="button" class="btn btn-sm btn-danger"    data-toggle="tooltip" title="Confirmar a Operação" id="confirm"><i class="fas fa-fw fa-sign-out-alt"></i>Forçar Logout</button>
+          </div>
+      </div>
+  </div>
+</div>  
+
 @stop
 
 @section('js')
@@ -364,8 +431,8 @@
             });
 
             /*
-            * List the record data table
-            */
+             * List the record data table
+             */
             $('#tbtListTokens').DataTable({
                 processing: true,
                 responsive: true,
@@ -427,6 +494,120 @@
                     },
                 ],
             });
+
+            /*
+             * List the record data table
+             */
+            $('#tbtListLogins').DataTable({
+                processing: true,
+                responsive: true,
+                autoWidth: true,
+                order: [ 0, 'desc' ],
+                lengthMenu: [[5, 10, 15, 30, 50, -1], [5, 10, 15, 30, 50, "{{ __('acl.crud.todos')}}"]], 
+                language: { url: "{{ asset('vendor/datatables/DataTables.pt_BR.json') }}" },
+                ajax: {
+                    type: "GET",
+                    url: "listLogins",
+                    dataSrc: '',  // dispense the data object
+                },   
+                rowId: 'id',    // set line id <tr id=""> as the id columns field 
+                columns: [ 
+                    {"data": "id",        "class": "dt-right",  "width": "10px",  "title": "#"},
+                    {"data": "name",   "class": "dt-left",   "width": "100px", "title": "{{ __('acl.dashboard.columns.user-name') }}",
+                        render: function (data) { return '<b>' + data + '</b>';}},
+                    {"data": "ip_address",        "class": "dt-center", "width": "50px",  "title": "{{ __('acl.dashboard.columns.ip-name') }}"},
+                    {"data": "user_agent",   "class": "dt-left",   "width": "auto",  "title": "{{ __('acl.dashboard.columns.browser-name') }}",
+                        render: function (data) { return '<span class="text-cd">' + data + '</span>';}},
+                    {"data": "last_activity","class": "dt-left",   "width": "160px", "title": "{{ __('acl.dashboard.columns.lastActivity-name') }}",
+                        render: function (data) { return '<span class="dt-center">' + data + '</span>';}},
+                    // {"data": "status",    "class": "dt-center", "width": "70px",  "title": "{{ __('acl.dashboard.columns.status-name') }}",
+                    //   render: function (data, type, row) { 
+
+                    //     switch (row.status) {
+                    //       case 'active':
+                    //         return '<span class="badge badge-success">Active</span>';
+                    //       case 'refreshed':
+                    //         return '<span class="badge badge-success">Refreshed</span>';
+                    //       case 'expired':
+                    //         return '<span class="badge badge-danger">Expired</span>';
+                    //       case 'invalidated':
+                    //         return '<span class="badge badge-danger">Invalidated</span>';
+                    //       case 'revoked':
+                    //         return '<span class="badge badge-warning">Revoked</span>';
+                    //       default:
+                    //       return '<span class="badge badge-warning">unnowned</span>';
+                    //     }                        
+                    //   }
+                    // },
+                    {"data": null, "actions": "", "orderable": false, "class": "dt-center", "width": "120px", "title": "{{ __('acl.dashboard.columns.actions-name') }}",
+                        render: function (data, type, row) { 
+                          
+                            btnLogout = '';
+                            // btnRefreshToken = '';
+
+                            // button Show control
+                            // if (row.authorizations.includes(entity + '.show')) {
+                              btnLogout = '<button type="button" class="btnlogoutUser btn btn-danger btn-xs" data-toggle="tooltip" title="{{ __('acl.crud.btnLogoutTip') }}">{{ __('acl.crud.btnLogout') }}</button> ';
+                            // }
+                            // btnRefreshToken = '<button type="button" class="btnRefreshToken btn btn-success btn-xs" data-toggle="tooltip" title="{{ __('acl.crud.btnRefreshTokenTip') }}">{{ __('acl.crud.btnRefreshToken') }}</button> ';
+                          
+                          return btnLogout;
+                          // return btnRevoke + btnRefreshToken;
+                          // return btnEdit + btnDestroy; 
+                        }
+                    },
+                ],
+            });
+
+            $(document).ready(function () {
+              setInterval(function () {
+                $('#tbtListTokens').DataTable().ajax.reload(null, false);
+                $('#tbtListLogins').DataTable().ajax.reload(null, false);
+              }, 10000); // Atualiza a cada 10 segundos
+            });            
+
+            /*
+            * logoutUser button action
+            */
+            $("#tbtListLogins").delegate('tr td .btnlogoutUser', 'click', function (e) {
+                e.stopImmediatePropagation();            
+
+                id = $(this).parents('tr').attr("id");
+                userName = $(this).parents('tr').find('td:eq(1)').text();
+
+                // abre Form Modal Bootstrap e pede confirmação
+                $('#msgConfirm').text('');
+                $('#confirmaModal .modal-title').html("{{ __('acl.dashboard.modalLogoutUserTitle') }} ");
+                $("#confirmaModal .modal-body p").html('').html("{{ __('acl.dashboard.modalLogoutUserText') }} <b>" + userName + '</b>?');
+                $('#confirmaModal').modal('show');
+
+                // se confirmar a Exclusão, exclui o Registro via Ajax
+                $('#confirmaModal').find('.modal-footer #confirm').on('click', function (e) {
+                    e.stopImmediatePropagation();
+                    // alert('btnlogoutUser: ' + id);
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/logoutUser",
+                        data: { "id": id },
+                        dataType: 'json',
+                        success: function (response) {
+
+                          $("#msgOperationLogins .alert-content").html(response.message);
+                          $('#msgOperationLogins').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
+
+                          $('#confirmaModal').modal('hide');
+                          $('#tbtListLogins').DataTable().ajax.reload(null, false);
+                        },
+                        error: function (error) {
+                            if (ERROR_HTTP_STATUS.has(error.status)) { window.location.href = "{{ url('/login') }}"; return; } 
+                            $('#msgOperationLogins').removeClass().addClass('alert alert-danger').show().delay(5000).fadeOut(1000);
+                            $('#msgConfirm').html(error.responseJSON.message).show();
+                        }
+                    });
+                });
+            }); 
+
 
             /*
             * Revoke the current Token

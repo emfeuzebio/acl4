@@ -31,7 +31,9 @@ Auth::routes();
 
 // Route::get('home', [HomeController::class, 'index'])->name('home');
 // Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
-Route::get('home', [DashboardController::class, 'index'])->name('home');
+Route::get ('home', [DashboardController::class, 'index'])->name('home');
+Route::get ('listLogins', [DashboardController::class, 'listLogins'])->name('listLogins');
+Route::post('logoutUser', [DashboardController::class, 'logoutUser'])->name('logoutUser');
 
 Route::middleware(['auth', 'AccessControlList'])->group(function () {
 
