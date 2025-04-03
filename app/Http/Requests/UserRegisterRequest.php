@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -24,9 +23,7 @@ class UserRegisterRequest extends FormRequest
     {
         return [
             'name' => 'required|string|min:5',
-            // 'email' => 'required|string|email|max:255|unique:users,email',
-            // 'email' => 'required|string|email|max:255|unique:users,email,NULL,id,deleted_at,NULL',
-            // 'email' => 'required|string|email|max:255|unique:users,email' . $this->id,
+            'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
         ];
     }
@@ -48,14 +45,14 @@ class UserRegisterRequest extends FormRequest
         ];
     }
 
-    public function withValidator(Validator $validator)
-    {
-        $validator->after(function ($validator) {
-            if (User::where('email', $this->email)->exists()) {
-                $validator->errors()->add('email', 'Este e-mail já está cadastrado.');
-            }
+    // public function withValidator(Validator $validator)
+    // {
+    //     $validator->after(function ($validator) {
+    //         if (User::where('email', $this->email)->exists()) {
+    //             $validator->errors()->add('email', 'Este e-mail já está cadastrado.');
+    //         }
 
-            // $validator->errors()->add('email', 'Este e-mail já está cadastrado.');
-        });
-    }    
+    //         // $validator->errors()->add('email', 'Este e-mail já está cadastrado.');
+    //     });
+    // }    
 }
