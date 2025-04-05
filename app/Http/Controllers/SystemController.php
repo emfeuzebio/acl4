@@ -110,7 +110,7 @@ class SystemController extends Controller
     public function store(SystemRequest $request)
     {
         $system = System::Create(
-            $request->only(['name', 'acronym', 'description', 'active'])
+            $request->only(['name','acronym','url','icon','description','active'])
         ); 
 
         return response()->json($system);
@@ -291,7 +291,7 @@ class SystemController extends Controller
     public function update(SystemRequest $request)
     {
         $system = System::findOrFail($request->id);
-        $system->update($request->only(['name', 'acronym', 'description', 'active']));
+        $system->update($request->only(['name','acronym','url','icon','description','active']));
 
         return response()->json($system);
     }     

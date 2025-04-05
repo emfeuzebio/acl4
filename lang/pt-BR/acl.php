@@ -236,6 +236,14 @@ return [
             'acronym-tip' => 'Informe a Sigla do Sistema',
             'acronym-placeholder' => 'ACL', 
 
+            'url-name' => 'Link', 
+            'url-tip' => 'Informe o Link de acesso ao Sistema',
+            'url-placeholder' => 'https://site.com.br', 
+
+            'icon-name' => 'Ícone', 
+            'icon-tip' => 'Informe o nome da imagem do Ícone do Sistema',
+            'icon-placeholder' => 'nome-do-arquivo.png', 
+
             'description-name' => 'Descrição',
             'description-tip' => 'Informe a Descrição do Sistema',
             'description-placeholder' => 'Sistema ACL Lista de Controle de Acesso', 

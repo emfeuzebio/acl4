@@ -17,9 +17,11 @@ return new class extends Migration
                 // $table->unsignedInteger('organization_id');          // chave estrangeira
                 $table->string('name', 128);
                 $table->string('acronym', 30);
+                $table->string('url', 255)->nullable();
+                $table->string('icon', 60)->nullable();
                 $table->text('description')->nullable();
                 $table->enum('active', ['Y', 'N'])->default('Y');
-                $table->timestamps();                                   // created_at e updated_at fields
+                $table->timestamps();                             // created_at e updated_at fields
 
                 $table->unique(["name"], 'name_ukey');
                 $table->unique(["acronym"], 'acronym_ukey');

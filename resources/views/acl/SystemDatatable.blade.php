@@ -57,6 +57,18 @@
                             <div id="error-acronym" class="error invalid-feedback" style="display: none;"></div>
                         </div>
                         
+                        <div class="form-group">
+                            <label class="form-label">{{ __('acl.system.columns.url-name') }}</label>
+                            <input class="form-control" value="" type="text" id="url" name="url" placeholder="{{ __('acl.system.columns.url-placeholder') }}" data-toggle="tooltip" title="{{ __('acl.system.columns.url-tip') }}" >
+                            <div id="error-url" class="error invalid-feedback" style="display: none;"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">{{ __('acl.system.columns.icon-name') }}</label>
+                            <input class="form-control" value="" type="text" id="icon" name="icon" placeholder="{{ __('acl.system.columns.icon-placeholder') }}" data-toggle="tooltip" title="{{ __('acl.system.columns.icon-tip') }}" >
+                            <div id="error-icon" class="error invalid-feedback" style="display: none;"></div>
+                        </div>
+                        
                         <div class="form-group input-group-sm">
                             <label class="form-label">{{ __('acl.system.columns.description-name') }}</label>
                             <textarea class="form-control" id="description" name="description" placeholder="{{ __('acl.system.columns.description-placeholder') }}" data-toggle="tooltip" title="{{ __('acl.system.columns.description-tip') }}" rows="4"></textarea>
@@ -163,14 +175,22 @@
                 columns: [ 
                     {"data": "id", "name": "system.id", "class": "dt-right", "title": "#", "width": "20px"},
                     // {"data": "organization.acronym", "name": "organization.organization_id", "class": "dt-left", "width": "50px", "title": "{{ __('acl.system.columns.organization_id-name') }}"},
-                    {"data": "name", "name": "system.name", "class": "dt-left", "width": "200px", "title": "{{ __('acl.system.columns.name-name') }}",
-                        render: function (data) { return '<b>' + data + '</b>';}},
-                    {"data": "acronym", "name": "system.acronym", "class": "dt-left", "width": "50px", "title": "{{ __('acl.system.columns.acronym-name') }}"},
-                    {"data": "description", "name": "system.description", "class": "dt-left", "width": "30%", "title": "{{ __('acl.system.columns.description-name') }}",},
+                    {"data": "name", "name": "system.name", "class": "dt-left", "width": "180px", "title": "{{ __('acl.system.columns.name-name') }}",
+                        render: function (data, type, row) { return '<b>' + data + '</b>';}},
+                    {"data": "acronym", "name": "system.acronym", "class": "dt-left", "width": "70px", "title": "{{ __('acl.system.columns.acronym-name') }}"},
+                    {"data": "description", "name": "system.description", "class": "dt-left", "width": "25%", "title": "{{ __('acl.system.columns.description-name') }}",},
+                    {"data": "url", "name": "system.url", "class": "dt-left", "width": "180px", "title": "{{ __('acl.system.columns.url-name') }}",
+                        render: function (data, type, row) { return ( data ? '<a href="' + data + '" target="_blank">' + data + '</a>' : '' ); },
+                    },
+                    {"data": "icon", "name": "system.icon", "class": "dt-center", "width": "10px", orderable: false, searchable: false, "title": "{{ __('acl.system.columns.icon-name') }}",
+                        render: function (data, type, row) { 
+                            let iconUrl = '/storage/systems/icons/' + data;
+                            return ( data ? `<img src="${iconUrl}" alt="Ícone" width="25" height="25" style="object-fit: contain;">` : '' ); },
+                    },
                     {"data": "active", "name": "system.active", "class": "dt-center", "width": "50px", "title": "{{ __('acl.system.columns.active-name') }}",
                         render: function (data) { return '<span class="' + ( data == 'Y' ? 'text-primary' : 'text-danger') + '">' + ( data == 'Y' ? '{{ __('acl.crud.columns_data.yes') }}' : '{{ __('acl.crud.columns_data.no') }}' ) + '</span>';}
                     },
-                    {"data": null, "actions": "", "orderable": false, "class": "dt-center", "width": "100px", "title": "{{ __('acl.system.columns.actions-name') }}",
+                    {"data": null, "actions": "", "orderable": false, "class": "dt-center", "width": "120px", "title": "{{ __('acl.system.columns.actions-name') }}",
                         render: function (data, type, row) {  
 
                             btnEdit = '';                 

@@ -32,6 +32,8 @@ class SystemRequest extends FormRequest
             // A sigla não pode repetir na mesma organização (organizacao_id,sigla são únicas)
             // 'acronym' => 'required|string|min:3|max:20|unique:acl_systems,acronym,' . $this->id . ',id,organization_id,' . $this->organization_id,
             'acronym' => 'required|string|min:3|max:20|unique:acl_systems,acronym,' . $this->id,
+            'url' => 'required|string|min:12|max:60|unique:acl_systems,url,' . $this->id,
+            'icon' => 'string|min:6|max:255|',
             'description' => 'required|min:6',            
             'active' => ['required','in:"Y","N"'],
         ];

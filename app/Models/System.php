@@ -16,6 +16,8 @@ class System extends Model
             'organization_id', 
             'name',
             'acronym',
+            'url',
+            'icon',
             'description', 
             'active',
         ];
