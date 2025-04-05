@@ -196,6 +196,8 @@ Route::get('/admin/migrateFreshSeed', function () {
     if (1 == 1) { // Verifique se o usuário é um administrador
 
         $output = '';
+
+        $linkToImages = Artisan::call('php artisan storage:link');
  
         $exitCode = Artisan::call('migrate:fresh --force');
         $output .= Artisan::output();                   // Capturando a saída
