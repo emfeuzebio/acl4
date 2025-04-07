@@ -236,8 +236,8 @@ class User extends Authenticatable implements JWTSubject
          */
         $systemId = request()->header('SystemId') ?? request()->get('systemId');
 
-        $user_systems = $this->grantedSystems($systemId);
-        $aud = $systemId && $user_systems ? $user_systems[0]['url'] : '';   // tendo systemId e um System, retorna a url do primeiro sistema
+        $user_systems = $this->grantedSystems($systemId); 
+        $aud = $systemId && $user_systems ? $user_systems[0]['url'] ?? '' : '';   // tendo systemId e um System, retorna a url do primeiro sistema
         
         // Carrega informações no payload do token
         return [
