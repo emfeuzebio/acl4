@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Authorization;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -158,11 +159,6 @@ class User extends Authenticatable implements JWTSubject
 
         return $authorizations;            
     }  
-    
-    public function getAclRoutes()
-    {
-        return $this->authorizations()->pluck('action.route')->unique()->toArray();
-    }    
 
     // One-to-many relationship - lowercase plural. "A User can have many Profiles children"
     // User is PARENT of Profiles
@@ -197,6 +193,29 @@ class User extends Authenticatable implements JWTSubject
 
     // JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT 
 
+    public function grantedActions(): array
+    {
+        return $this->authorizations()->pluck('action.route')->unique()->toArray();
+    }    
+
+    public function grantedRoles(): array
+    {
+        return $this->profiles->pluck('name')->toArray();
+    }    
+
+    public function grantedSystems($systemId = false): array
+    {
+        return $this->systems()
+            ->where('acl_systems.active', 'Y')
+            ->when($systemId, fn ($query) => $query->where('acl_systems.id', $systemId))
+            ->orderBy('acl_systems.name')
+            ->select('acl_systems.id', 'acl_systems.name', 'acl_systems.acronym', 'acl_systems.url', 'acl_systems.icon', 'acl_systems.description')
+            ->get()
+            ->makeHidden('pivot')       // não mostra o pivot que é padrão
+            ->toArray();
+    }
+
+
     /**
      * Return the identificator to JWT.
      */
@@ -210,14 +229,26 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getJWTCustomClaims()
     {
+        /**
+         * A rquisição pode vir de duas formas:
+         *  1. Sem o SystemId, se for assim, devolve a lista de Systems do usuário ao Frontend para o Usuário escolher apenas 1
+         *  2. Com o SystemId, se for assim, devolve todas as informações necessárias ao acesso do SystemId escolhido
+         */
+        $systemId = request()->header('SystemId') ?? request()->get('systemId');
+
+        $user_systems = $this->grantedSystems($systemId);
+        $aud = $systemId && $user_systems ? $user_systems[0]['url'] : '';   // tendo systemId e um System, retorna a url do primeiro sistema
+        
         // Carrega informações no payload do token
         return [
-            'iss' => 'https://acl4.fazcomphp.com.br/',              // Emissor do token
-            'aud' => 'http://apifeb.voluntary.com.br',              // Público-alvo (Audience) do token
-            'user_id' => $this->id,                                 // ID do usuário
-            'user_name' => $this->name,                                  // Nome do usuário
-            'user_roles' => $this->profiles->pluck('name')->toArray(),   // Roles do usuário
-            'user_abilities' => $this->getAclRoutes(),                   // "abilities" (Authorizaions) do usuário 
+            'iss' => env('APP_URL', 'http://localhost'),                    // Emissor do token
+            'exp' => now()->addMinutes(config('jwt.ttl', 60)),              // Tempo de expiração do token
+            'aud' => $aud,                                                  // Público-alvo (Audience) do token
+            'user_id' => $this->id,                                         // ID do usuário
+            'user_name' => $this->name,                                     // Nome do usuário
+            'user_systems' => $user_systems,                                // systemas aos quais o usuário tem acesso
+            'user_roles' => $systemId ? $this->grantedRoles() : [],         // Roles do usuário
+            'user_abilities' => $systemId ? $this->grantedActions() : [],   // "abilities" (Authorizaions) do usuário 
         ];
     }    
 }

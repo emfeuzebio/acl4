@@ -30,7 +30,7 @@ class LoginController extends Controller
         $user->load('profiles.authorizations.action');
 
         // Armazenando na sessão para uso na interface AdminLTE
-        // session(['abilities' => $user->getAclRoutes()]);
+        // session(['abilities' => $user->grantedActions()]);
     }
 
     /**

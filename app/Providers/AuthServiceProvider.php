@@ -38,14 +38,14 @@ class AuthServiceProvider extends ServiceProvider
 
         // $user = Auth::user();                // Isso não funciona porque aqui o Auth ainda não tem o User
         $user = User::first();                  // Então pegamos o corrente User
-        $abilities = $user->getAclRoutes();     // load the active authorizations for all Users
+        $abilities = $user->grantedActions();     // load the active authorizations for all Users
         // dd($abilities);   
 
         // iterates through all active abilities for all Users, i.e. through all active authorizations
         // and create a Gate for each authorizations with the name like route only to User Logged
         foreach ($abilities as $route) {
             Gate::define($route, function (User $user) use ($route) {
-                return in_array($route, $user->getAclRoutes());     // autoriza apenas os os User Logado
+                return in_array($route, $user->grantedActions());     // autoriza apenas os os User Logado
                 // return true;                                     // autoriza todos
             });
         }
@@ -93,8 +93,8 @@ class AuthServiceProvider extends ServiceProvider
             //         return false; // Se não houver rota, nega o acesso
             //     }
             //     // print_r($route);
-            //     // dd($user->getAclRoutes());
-            //     return in_array($route, $user->getAclRoutes());
+            //     // dd($user->grantedActions());
+            //     return in_array($route, $user->grantedActions());
             // });             
 
     }

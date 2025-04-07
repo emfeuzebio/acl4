@@ -90,7 +90,7 @@ class AccessControlList
 
 
                         // $currentRoute = $request->route()->getName();
-                        // $allowedRoutes = $user->getAclRoutes();
+                        // $allowedRoutes = $user->grantedActions();
                         // // dd($allowedRoutes);
 
                         // if (! in_array($currentRoute, $allowedRoutes)) {
@@ -121,7 +121,7 @@ class AccessControlList
             // return $next($request);        
 
 
-        // $allowedRoutes = $user->getAclRoutes();
+        // $allowedRoutes = $user->grantedActions();
         // // dd($allowedRoutes);
 
         // $currentRoute = $request->route()->getName();

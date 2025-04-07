@@ -64,8 +64,7 @@ class AuthController extends Controller
                 // PASSO 4 - Cria a instância do token e pega o payload no formato de array
                 $payload = JWTAuth::setToken($token)->getPayload();
 
-                // Recalcula e renova a data de expiração
-                $expiresAt = Carbon::now()->addMinutes(config('jwt.ttl', 60));   // Expira conforme config
+                // Recalcula e renova a data de expiração - o Model esta fazendo isso
 
                 /**
                  * PASSO 5 - Persiste o Token
@@ -75,11 +74,11 @@ class AuthController extends Controller
                 Token::updateOrCreate(
                     ['user_id' => $payload['user_id'], 'token' => $token, 'status' => 'active'], // Verifica user_id + token
                     [
-                        'expires_at' => $expiresAt,
-                        'updated_at' => Carbon::now(),
-                        'status' => 'active',
-                        'ip' => $request->ip(),            
-                        'browser' => $request->header('User-Agent'),
+                        'expires_at' => $payload['exp'],                // quando expira o token
+                        'updated_at' => $payload['iat'],                // data de criação/atualização do token
+                        'status' => 'active',                           // status do token
+                        'ip' => $request->ip(),                         // IP do usuário
+                        'browser' => $request->header('User-Agent'),    // User-Agent (browser) do usuário
                     ]
                 );                       
 
