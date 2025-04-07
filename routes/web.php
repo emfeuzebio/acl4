@@ -197,7 +197,7 @@ Route::get('/admin/migrateFreshSeed', function () {
 
         $output = '';
 
-        $linkToImages = Artisan::call('php artisan storage:link');
+        // $linkToImages = Artisan::call('php artisan storage:link');
  
         $exitCode = Artisan::call('migrate:fresh --force');
         $output .= Artisan::output();                   // Capturando a saída
