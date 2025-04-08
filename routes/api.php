@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\VeiculoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +19,22 @@ use Illuminate\Support\Facades\Route;
 // Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 //     return $request->user();
 // });
+
+Route::middleware('CheckJWTToken')->group(function () {
+
+    Route::apiResource('veiculo', VeiculoController::class);            // Funcionou Ok Sem validacão de abilities
+
+    // Controla Autorizacões na Entidade Veiculo 
+    Route::controller(VeiculoController::class)->group(function () {    
+        // Route::get('veiculo',          'index')->name('veiculo.index');                          // SELECT * SEM validacão de abilities
+        Route::get('veiculo',          'index')->middleware('CheckJWTAbilities:veiculo.index');     // SELECT * COM validacão de abilities baseado no nome da rota
+        Route::get('veiculo/{id}',      'show')->middleware('CheckJWTAbilities:veiculo.show');      // SELECT ID  
+        Route::put('veiculo/{id}',    'update')->middleware('CheckJWTAbilities:veiculo.update');    // UPDATE ID
+        Route::post('veiculo',         'store')->middleware('CheckJWTAbilities:veiculo.store');     // INSERT       
+        Route::delete('veiculo/{id}','destroy')->middleware('CheckJWTAbilities:veiculo.destroy');   // DELETE ID
+    });
+
+});
 
 // JWT Tokens
 Route::post('auth/me',          [AuthController::class, 'me']);

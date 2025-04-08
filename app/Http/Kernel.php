@@ -3,6 +3,8 @@
 namespace App\Http;
 
 use App\Http\Middleware\AccessControlList;
+use App\Http\Middleware\CheckJWTAbilities;
+use App\Http\Middleware\CheckJWTToken;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -67,6 +69,8 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
         // Add middleware ACL
-        'AccessControlList' => AccessControlList::class,                            
+        'AccessControlList' => AccessControlList::class,
+        'CheckJWTToken' => CheckJWTToken::class,
+        'CheckJWTAbilities' => CheckJWTAbilities::class,
     ];
 }
