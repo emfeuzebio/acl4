@@ -234,7 +234,7 @@ class User extends Authenticatable implements JWTSubject
          *  1. Sem o SystemId, se for assim, devolve a lista de Systems do usuário ao Frontend para o Usuário escolher apenas 1
          *  2. Com o SystemId, se for assim, devolve todas as informações necessárias ao acesso do SystemId escolhido
          */
-        $systemId = request()->header('SystemId') ?? request()->get('systemId');
+        $systemId = request()->header('systemId') ?? request()->get('systemId');
         // echo "systemId: $systemId \n";
 
         $user_systems = $this->grantedSystems($systemId); 
