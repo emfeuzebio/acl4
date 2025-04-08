@@ -21,8 +21,10 @@ return new class extends Migration
                 $table->string('capacidade', 100)->nullable();
                 $table->string('motorista', 100)->nullable();
                 $table->string('telefone', 15)->nullable();
-                $table->string('observacao', 15)->nullable();
+                $table->text('observacao', 15)->nullable();
                 $table->enum('ativo', ['Y', 'N'])->default('Y');
+                $table->timestamps();                               
+
                 // $table->timestamps();
                 // $table->unique(["menu_id","profile_id"], 'menu_id_profile_id_ukey');
                 // $table->foreign('organizacao_id','<tabela>_<coluna_estrangeira>_foreign')
