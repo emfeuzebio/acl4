@@ -65,6 +65,7 @@ class DatabaseSeeder extends Seeder
             FEB_AuthorizationsSeeder::class,
             FEB_OrganizationsUsersSeeder::class,
             FEB_ProfilesUsersSeeder::class,
+            FEB_VeiculosSeeder::class,
         ]);  
 
         // Call Default Seeders

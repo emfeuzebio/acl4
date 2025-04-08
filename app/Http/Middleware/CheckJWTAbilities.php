@@ -33,7 +33,7 @@ class CheckJWTAbilities
             foreach ($authorizations as $ability) {
                 if (!in_array($ability, $abilities)) {
                     return response()->json([
-                        'error' => 'Ação não permitida: falta da ability [' . $ability . ']'
+                        'error' => 'Ação [' . $ability . '] não autorizada! O Usuário não têm esta ability.'
                     ], Response::HTTP_FORBIDDEN);
                 }
             }            

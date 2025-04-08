@@ -24,7 +24,7 @@ class FEB_ProfilesSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
-                'system_id' => '2',
+                'system_id' => '1',
                 'name' => 'Gerente de Transportes',
                 'acronym' => 'Ger Trnsp',
                 'description' => 'Gerencia os Transportes',
