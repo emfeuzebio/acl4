@@ -27,12 +27,13 @@ class VeiculoRequest extends FormRequest
             'descricao' => 'required|min:4',        
             'tipo' => ['required','in:"Automóvel","Van","Micrônibus","Ônibus"'],
             'marca_modelo' => 'required|min:4',
-            'capacidade' => 'required',
+            'capacidade' => 'required|numeric|min:1|max:99',
             'motorista' => '',
-            'telefone' => 'required',
+            'telefone' => 'required|regex:/^\(\d{2}\) \d{5}-\d{4}$/|max:15',
             'observacao' => '',            
             'ativo' => ['required','in:"Y","N"'],
         ];
+        
 
         // vamos aplicar a validação apenas nos campos enviados no patch
         if ($this->isMethod('patch')) {
@@ -52,4 +53,11 @@ class VeiculoRequest extends FormRequest
         
         return $rules;
     }
+
+    public function messages(): array
+    {
+        return [
+            'telefone.regex' => 'O telefone deve estar no formato (99) 99999-9999.',
+        ];
+    }    
 }
