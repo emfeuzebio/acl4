@@ -23,10 +23,73 @@ class AuthController extends Controller
     public function __construct()
     {
         // nesse caso ['login', 'register'] não dependem de estar autenticado
-        $this->middleware('auth:api', ['except' => ['login', 'register','loginTable','me','logout','revoke','listTokens','refresh','forceRefresh']]);
+        $this->middleware('auth:api', ['except' => ['login', 'register','loginTable','me','logout','revoke','listTokens','refresh','forceRefresh','loginSystem']]);
 
         // atualizar o status dos tokens expirados
         Token::where('expires_at', '<', now())->update(['status' => 'expired']);
+    }
+
+    public function loginSystem(Request $request)
+    {
+        try {
+            // verifica se recebeu o SystemId no request
+            $systemId = $request->input('systemId');
+            if (! $systemId) {
+                return response()->json(['error' => 'Informar o SystemId é obrigatório.'], Response::HTTP_UNAUTHORIZED);   // 401
+            }
+
+            // Verifica se o token foi enviado no cabeçalho Authorization
+            if (! $token = $request->bearerToken()) {
+                return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
+            }            
+
+            // Valida e obtém o usuário autenticado
+            $user = JWTAuth::parseToken()->authenticate();
+            // if (! JWTAuth::parseToken()->authenticate()) {
+            if (! $user) {
+                return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
+            }            
+
+            // Recupera o token do header Authorization
+            $token = JWTAuth::getToken();
+
+            // Decodificar o payload para obter o ID do usuário
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $userId = $payload['sub']; // ID do usuário no token
+
+            // Verifica na tabela `acl_tokens` se o token ainda está ativo
+            $tokenExists = Token::where('token', $token)    // Comparação direta com o token
+                // ->where('user_id', $userId)                 // pelo User ID não dá porque um User pode ter mais de um Token
+                ->where('status', 'active')                 // Apenas tokens ativos são válidos
+                ->exists();     
+                
+            // Se o token foi revogado ou não encontrado, retorna erro 401
+            if (! $tokenExists) {
+                return response()->json(['error' => 'Token revogado ou expirado'], Response::HTTP_UNAUTHORIZED);
+            }    
+            
+            /**
+             * Ao fazer o refresh todo o token é remontado, ou seja, o payload é recriado
+             * Ou seja, Recalcula e renova a data de expiração e inclui as abilities
+             */
+            // Gera novo token com claims automáticas
+            $newToken = JWTAuth::fromUser($user);
+            return response()->json(compact('newToken'));
+
+            // retorna o payload igual ao login que contém todas informações do token JWT recebido no cabeçalho
+            // return response()->json($payload);
+
+
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Token inválido. ' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);   // 401
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Erro inesperado',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
+        }       
     }
 
     // Login COM token persistente em banco de dados
@@ -233,7 +296,7 @@ class AuthController extends Controller
                 'message' => 'Token renovado com sucesso!',
                 'token' => $newToken,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json(['error' => 'Refresh token inválido ou expirado' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);   // 401
         }
     }

@@ -40,6 +40,7 @@ Route::middleware('CheckJWTToken')->group(function () {
 // JWT Tokens
 Route::post('auth/me',          [AuthController::class, 'me']);
 Route::post('auth/login',       [AuthController::class, 'login']);
+Route::post('auth/loginSystem', [AuthController::class, 'loginSystem']);
 Route::post('auth/loginTable',  [AuthController::class, 'loginTable']);
 Route::post('auth/logout',      [AuthController::class, 'logout']);
 Route::post('auth/refresh',     [AuthController::class, 'refresh']);
