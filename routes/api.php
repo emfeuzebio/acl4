@@ -29,7 +29,7 @@ Route::middleware('CheckJWTToken')->group(function () {
     Route::controller(VeiculoController::class)->group(function () {    
         // Route::get('veiculo',          'index')->name('veiculo.index');                          // SELECT * SEM validacão de abilities
         Route::get('veiculo',          'index')->middleware('CheckJWTAbilities:veiculo.index');     // SELECT * COM validacão de abilities baseado no nome da rota
-        // Route::get('veiculo/{id}',      'show')->middleware('CheckJWTAbilities:veiculo.show');      // SELECT ID  
+        Route::get('veiculo/{id}',      'show')->middleware('CheckJWTAbilities:veiculo.show');      // SELECT ID  
         // Route::put('veiculo/{id}',    'update')->middleware('CheckJWTAbilities:veiculo.update');    // UPDATE ID
         Route::post('veiculo',         'store')->middleware('CheckJWTAbilities:veiculo.store');     // INSERT       
         Route::delete('veiculo/{id}','destroy')->middleware('CheckJWTAbilities:veiculo.destroy');   // DELETE ID
