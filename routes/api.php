@@ -22,7 +22,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('CheckJWTToken')->group(function () {
 
-    Route::apiResource('veiculo', VeiculoController::class);            // Funcionou Ok Sem validacão de abilities
+    // Funcionou Ok Sem validacão de abilities
+        // Route::apiResource('veiculo', VeiculoController::class);            
 
     // Controla Autorizacões na Entidade Veiculo 
     Route::controller(VeiculoController::class)->group(function () {    
