@@ -28,14 +28,28 @@ class AuthController extends Controller
     public function __construct()
     {
         // nesse caso ['login', 'register'] não dependem de estar autenticado
-        $this->middleware('auth:api', ['except' => ['login', 'register','loginTable','me','logout','revoke','listTokens','refresh','forceRefresh','loginSystem']]);
+        $this->middleware('auth:api', ['except' => [
+            'login',
+            'selectSystem',
+            'forgotpassword',
+            'resetPassword',
+            'me',
+            'register',
+            'logout',
+            'revoke',
+            'refresh',
+            'listTokens',
+            'forceRefresh',
+            'loginWithoutBD',
+            ]
+        ]);
 
         // atualizar o status dos tokens expirados
         Token::where('expires_at', '<', now())->update(['status' => 'expired']);
     }
 
     // Login COM token persistente em banco de dados
-    public function loginTable(Request $request)
+    public function login(Request $request)
     {
         try {
 
@@ -156,25 +170,6 @@ class AuthController extends Controller
                 'line' => $e->getLine(),
             ], 500);
         }       
-    }
-
-    // Login sem banco de dados
-    public function login(Request $request)
-    {
-        // Recupera as credenciais do request
-        $credentials = $request->only('email', 'password');
-
-        // Tenta realizar a autenticação: 'attempt' GERA UM NOVO TOKEN
-        try {
-            // Se as credenciais estiverem incorretas
-            if (! $token = JWTAuth::attempt($credentials)) {
-                return response()->json(['error' => 'Credenciais inválidas'], Response::HTTP_UNAUTHORIZED);   // 401
-            }
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Não foi possível criar o token. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
-        }
-
-        return response()->json(compact('token'));
     }
 
     public function register(UserRegisterRequest $request): JsonResponse
@@ -509,6 +504,25 @@ class AuthController extends Controller
                 'message' => $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500          
         }
+    }
+
+    // Login sem banco de dados
+    public function loginWithoutBD(Request $request)
+    {
+        // Recupera as credenciais do request
+        $credentials = $request->only('email', 'password');
+
+        // Tenta realizar a autenticação: 'attempt' GERA UM NOVO TOKEN
+        try {
+            // Se as credenciais estiverem incorretas
+            if (! $token = JWTAuth::attempt($credentials)) {
+                return response()->json(['error' => 'Credenciais inválidas'], Response::HTTP_UNAUTHORIZED);   // 401
+            }
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Não foi possível criar o token. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
+        }
+
+        return response()->json(compact('token'));
     }
     
 }
