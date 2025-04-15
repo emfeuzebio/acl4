@@ -22,6 +22,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -214,55 +215,59 @@ class AuthController extends Controller
 
     public function forgotPassword(Request $request)
     {
-        $request->validate([
-            'email' => 'required|string|email|max:255',
-        ]);
+        try {
+            // Validação
+            $request->validate([
+                'email' => 'required|string|email|max:255',
+            ]);
     
-        $user = User::where('email', $request->email)->first();
+            // Verifica se o usuário existe
+            $user = User::where('email', $request->email)->first();
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Usuário não encontrado.'
+                ], Response::HTTP_NOT_FOUND); // 404
+            }
     
-        if (!$user) {
-            return response()->json(['message' => 'Usuário não encontrado'], Response::HTTP_NOT_FOUND);   // 404
-        }
+            // Gera token seguro
+            $token = Str::random(64);
     
-        // Gera o token de reset
-        $token = Str::random(64);
+            // Salva ou atualiza token na tabela
+            DB::table('password_reset_tokens')->updateOrInsert(
+                ['email' => $user->email],
+                [
+                    'token' => Hash::make($token),
+                    'created_at' => Carbon::now(),
+                ]
+            );
     
-        // Salva na tabela
-        DB::table('password_reset_tokens')->updateOrInsert(
-            ['email' => $user->email],
-            [
-                'token' => Hash::make($token),
-                'created_at' => Carbon::now()
-            ]
-        );
+            // Monta URL de redefinição
+            $resetUrl = url("/resetPassword/{$token}?email=" . urlencode($user->email));
     
-        /**
-         * Aqui vamos ter duas opções: por Email ou WhatZapp
-         * 
-         */
-            // Por WhatZapp
-            // URL de recuperação (ajuste para o front real)
-            // $resetUrl = config('app.frontend_url') . "/reset-password?token=$token&email=" . urlencode($user->email);
-        
-            // Mensagem
-            // $message = "Olá {$user->name}, para redefinir sua senha, clique no link: $resetUrl";
-        
-            // Número de telefone (ajuste para o campo correto do seu modelo)
-            // $phone = $user->phone; // exemplo: '5511999999999'
-        
-            // Envia WhatsApp via Z-API
-            // $this->sendWhatsAppMessage($phone, $message);
-
-            // return response()->json(['message' => 'Link de recuperação enviado via WhatsApp.'], Response::HTTP_OK);   // 200
-
-        // Por  Email
-        // Monta a URL de redefinição
-        $resetUrl = url("/resetPassword/{$token}?email=" . urlencode($user->email));
-
-        // Envia o e-mail
-        Mail::to($user->email)->send(new ForgotPasswordMail($user->name, $resetUrl));
-
-        return response()->json(['message' => 'Um e-mail com instruções foi enviado para redefinição de senha.'], Response::HTTP_OK);   // 200
+            // Tenta enviar o e-mail
+            Mail::to($user->email)->send(new ForgotPasswordMail($user->name, $resetUrl));
+    
+            return response()->json([
+                'message' => 'Um e-mail com instruções foi enviado para redefinição de senha.'
+            ], Response::HTTP_OK); // 200
+    
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Erro de validação.',
+                'errors' => $e->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY); // 422
+    
+        } catch (Exception $e) {
+            // Loga o erro detalhadamente
+            Log::error('Erro ao processar forgotPassword: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+    
+            return response()->json([
+                'message' => 'Erro interno ao tentar enviar e-mail de redefinição. Tente novamente mais tarde.'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); // 500
+        }    
     }    
     
     public function resetPassword(Request $request)
