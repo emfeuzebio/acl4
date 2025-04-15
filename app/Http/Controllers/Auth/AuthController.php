@@ -220,7 +220,7 @@ class AuthController extends Controller
     public function forgotPassword(Request $request)
     {
         $request->validate([
-            'email' => 'required|email|exists:users,email',
+            'email' => 'required|string|email|max:255|unique:users,email',
         ]);
     
         $user = User::where('email', $request->email)->first();
@@ -233,7 +233,7 @@ class AuthController extends Controller
         $token = Str::random(64);
     
         // Salva na tabela
-        DB::table('password_resets')->updateOrInsert(
+        DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $user->email],
             [
                 'token' => Hash::make($token),
@@ -270,6 +270,41 @@ class AuthController extends Controller
         return response()->json(['message' => 'Um e-mail com instruções foi enviado para redefinição de senha.'], Response::HTTP_OK);   // 200
     }    
     
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'token' => 'required|string',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+    
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+    
+        if (!$record) {
+            return response()->json(['message' => 'Token não encontrado.'], Response::HTTP_NOT_FOUND);   // 404
+        }
+    
+        // Valida o token
+        if (!Hash::check($request->token, $record->token)) {
+            return response()->json(['message' => 'Token inválido ou expirado.'], Response::HTTP_UNAUTHORIZED);   // 401
+        }
+    
+        // Redefine a senha
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json(['message' => 'Usuário não encontrado.'], Response::HTTP_NOT_FOUND);   // 404
+        }
+    
+        $user->password = Hash::make($request->password);
+        $user->save();
+    
+        // Remove o token após uso
+        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+    
+        return response()->json(['message' => 'Senha redefinida com sucesso.'], Response::HTTP_OK);   // 200
+    }    
 
     public function logout(Request $request)
     {

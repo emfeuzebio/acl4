@@ -36,27 +36,24 @@ class AuthServiceProvider extends ServiceProvider
          *          se o User Atual têm acesso à elas conforme seus Perfis
          */
 
-        // $user = Auth::user();                // Isso não funciona porque aqui o Auth ainda não tem o User
-        $user = User::first();                  // Então pegamos o corrente User
-        $abilities = $user->grantedActions();     // load the active authorizations for all Users
-        // dd($abilities);   
 
-        // iterates through all active abilities for all Users, i.e. through all active authorizations
-        // and create a Gate for each authorizations with the name like route only to User Logged
-        foreach ($abilities as $route) {
-            Gate::define($route, function (User $user) use ($route) {
-                return in_array($route, $user->grantedActions());     // autoriza apenas os os User Logado
-                // return true;                                     // autoriza todos
-            });
-        }
-        
-        // EUZ ver as abilities carregadas
-        $abilities = Gate::abilities();
-        // dd($abilities);
+                    // $user = Auth::user();                // Isso não funciona porque aqui o Auth ainda não tem o User
+                    $user = User::first();                  // Então pegamos o corrente User
+                    $abilities = $user->grantedActions();     // load the active authorizations for all Users
+                    // dd($abilities);   
 
-
-
-
+                    // iterates through all active abilities for all Users, i.e. through all active authorizations
+                    // and create a Gate for each authorizations with the name like route only to User Logged
+                    foreach ($abilities as $route) {
+                        Gate::define($route, function (User $user) use ($route) {
+                            return in_array($route, $user->grantedActions());     // autoriza apenas os os User Logado
+                            // return true;                                     // autoriza todos
+                        });
+                    }
+                    
+                    // EUZ ver as abilities carregadas
+                    $abilities = Gate::abilities();
+                    // dd($abilities);
 
 
 

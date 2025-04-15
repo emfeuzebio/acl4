@@ -15,36 +15,32 @@ class ACL_UsersSeeder extends Seeder
     {
         DB::table('users')->insert([
             [
-                // 'organization_id' => '1',       // default organization
                 'active' => 'Y',
                 'name' => 'Administrator',
                 'email' => 'administrator@mail.com',
-                // 'password' => '$2y$12$h6VXebJquAIqW7emOThnMuw9n8vv61acD3nyPmoHc4nq6E9S1ceiy',
+                'phone' => '55 (61) 90000-0000',
                 'password' => bcrypt('12345678'),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
-                // 'organization_id' => '1',       // default organization
                 'active' => 'Y',
                 'name' => 'Manager',
                 'email' => 'manager@mail.com',
-                // 'password' => '$2y$12$h6VXebJquAIqW7emOThnMuw9n8vv61acD3nyPmoHc4nq6E9S1ceiy',
+                'phone' => '55 (61) 90000-0001',
                 'password' => bcrypt('12345678'),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
             [
-                // 'organization_id' => '1',       // default organization
                 'active' => 'Y',
                 'name' => 'User',
                 'email' => 'user@mail.com',
-                // 'password' => '$2y$12$h6VXebJquAIqW7emOThnMuw9n8vv61acD3nyPmoHc4nq6E9S1ceiy',
+                'phone' => '55 (61) 90000-0002',
                 'password' => bcrypt('12345678'),
                 'created_at' => Carbon::now(),
                 'updated_at' => Carbon::now(),
             ],
-            // password: 12345678
         ]);
     }
 }

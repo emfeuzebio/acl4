@@ -41,6 +41,7 @@ class DatabaseSeeder extends Seeder
 
             // Truncate tables before run de seeders
             DB::table('users')->truncate();
+            DB::table('sessions')->truncate();
 
             DB::table('acl_systems')->truncate();
             DB::table('acl_authorizations')->truncate();

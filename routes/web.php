@@ -193,6 +193,24 @@ Route::get('/admin', function () {
 
 Route::get('/admin/migrateFreshSeed', function () {
     // if (auth()->check()) { // Verifique se o usuário é um administrador
+
+    /**
+     * Caso algo dê errado na operação abaixo
+     * O site não permitirá mais login
+     * ou irá mostrar um erro no AuthServiceProvider
+     * 
+     * Para superar isso há que
+     * Rodar os comando migrates e seeders dentro do containter do app
+     * 
+     *  Esteja na pasta do app
+     *  no terminal entre no container com: docker exec -it acl4-php bash
+     * 
+     *  1 - php artisan
+     *  2 - php artisan db:seed --force
+     *  
+     * 
+     */
+
     if (1 == 1) { // Verifique se o usuário é um administrador
 
         $output = '';
