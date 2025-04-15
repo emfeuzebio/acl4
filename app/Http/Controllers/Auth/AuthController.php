@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Http;
 use App\Http\Requests\UserRegisterRequest;
 use Illuminate\Support\Facades\DB;
 use App\Http\Resources\TokenResource;
@@ -10,9 +11,11 @@ use App\Models\Token;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Tymon\JWTAuth\Exceptions\JWTException;
+use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
@@ -27,69 +30,6 @@ class AuthController extends Controller
 
         // atualizar o status dos tokens expirados
         Token::where('expires_at', '<', now())->update(['status' => 'expired']);
-    }
-
-    public function loginSystem(Request $request)
-    {
-        try {
-            // verifica se recebeu o SystemId no request
-            $systemId = $request->input('systemId');
-            if (! $systemId) {
-                return response()->json(['error' => 'Informar o SystemId é obrigatório.'], Response::HTTP_UNAUTHORIZED);   // 401
-            }
-
-            // Verifica se o token foi enviado no cabeçalho Authorization
-            if (! $token = $request->bearerToken()) {
-                return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
-            }            
-
-            // Valida e obtém o usuário autenticado
-            $user = JWTAuth::parseToken()->authenticate();
-            // if (! JWTAuth::parseToken()->authenticate()) {
-            if (! $user) {
-                return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
-            }            
-
-            // Recupera o token do header Authorization
-            $token = JWTAuth::getToken();
-
-            // Decodificar o payload para obter o ID do usuário
-            $payload = JWTAuth::setToken($token)->getPayload();
-            $userId = $payload['sub']; // ID do usuário no token
-
-            // Verifica na tabela `acl_tokens` se o token ainda está ativo
-            $tokenExists = Token::where('token', $token)    // Comparação direta com o token
-                // ->where('user_id', $userId)                 // pelo User ID não dá porque um User pode ter mais de um Token
-                ->where('status', 'active')                 // Apenas tokens ativos são válidos
-                ->exists();     
-                
-            // Se o token foi revogado ou não encontrado, retorna erro 401
-            if (! $tokenExists) {
-                return response()->json(['error' => 'Token revogado ou expirado'], Response::HTTP_UNAUTHORIZED);
-            }    
-            
-            /**
-             * Ao fazer o refresh todo o token é remontado, ou seja, o payload é recriado
-             * Ou seja, Recalcula e renova a data de expiração e inclui as abilities
-             */
-            // Gera novo token com claims automáticas
-            $newToken = JWTAuth::fromUser($user);
-            return response()->json(compact('newToken'));
-
-            // retorna o payload igual ao login que contém todas informações do token JWT recebido no cabeçalho
-            // return response()->json($payload);
-
-
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Token inválido. ' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);   // 401
-        } catch (\Throwable $e) {
-            return response()->json([
-                'error' => 'Erro inesperado',
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-            ], 500);
-        }       
     }
 
     // Login COM token persistente em banco de dados
@@ -153,6 +93,69 @@ class AuthController extends Controller
         }
     }    
 
+    public function selectSystem(Request $request)
+    {
+        try {
+            // verifica se recebeu o SystemId no request
+            $systemId = $request->input('systemId');
+            if (! $systemId) {
+                return response()->json(['error' => 'Informar o SystemId é obrigatório.'], Response::HTTP_UNAUTHORIZED);   // 401
+            }
+
+            // Verifica se o token foi enviado no cabeçalho Authorization
+            if (! $token = $request->bearerToken()) {
+                return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
+            }            
+
+            // Valida e obtém o usuário autenticado
+            $user = JWTAuth::parseToken()->authenticate();
+            // if (! JWTAuth::parseToken()->authenticate()) {
+            if (! $user) {
+                return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
+            }            
+
+            // Recupera o token do header Authorization
+            $token = JWTAuth::getToken();
+
+            // Decodificar o payload para obter o ID do usuário
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $userId = $payload['sub']; // ID do usuário no token
+
+            // Verifica na tabela `acl_tokens` se o token ainda está ativo
+            $tokenExists = Token::where('token', $token)    // Comparação direta com o token
+                // ->where('user_id', $userId)                 // pelo User ID não dá porque um User pode ter mais de um Token
+                ->where('status', 'active')                 // Apenas tokens ativos são válidos
+                ->exists();     
+                
+            // Se o token foi revogado ou não encontrado, retorna erro 401
+            if (! $tokenExists) {
+                return response()->json(['error' => 'Token revogado ou expirado'], Response::HTTP_UNAUTHORIZED);
+            }    
+            
+            /**
+             * Ao fazer o refresh todo o token é remontado, ou seja, o payload é recriado
+             * Ou seja, Recalcula e renova a data de expiração e inclui as abilities
+             */
+            // Gera novo token com claims automáticas
+            $newToken = JWTAuth::fromUser($user);
+            return response()->json(compact('newToken'));
+
+            // retorna o payload igual ao login que contém todas informações do token JWT recebido no cabeçalho
+            // return response()->json($payload);
+
+
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Token inválido. ' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);   // 401
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => 'Erro inesperado',
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ], 500);
+        }       
+    }
+
     // Login sem banco de dados
     public function login(Request $request)
     {
@@ -211,6 +214,46 @@ class AuthController extends Controller
             return response()->json(['error' => 'Houve um erro ao processar a operação. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
         }
     }
+
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+    
+        $user = User::where('email', $request->email)->first();
+    
+        if (!$user) {
+            return response()->json(['message' => 'Usuário não encontrado'], Response::HTTP_NOT_FOUND);   // 404
+        }
+    
+        // Gera o token de reset
+        $token = Str::random(64);
+    
+        // Salva na tabela
+        DB::table('password_resets')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token' => Hash::make($token),
+                'created_at' => Carbon::now()
+            ]
+        );
+    
+        // URL de recuperação (ajuste para o front real)
+        $resetUrl = config('app.frontend_url') . "/reset-password?token=$token&email=" . urlencode($user->email);
+    
+        // Mensagem
+        $message = "Olá {$user->name}, para redefinir sua senha, clique no link: $resetUrl";
+    
+        // Número de telefone (ajuste para o campo correto do seu modelo)
+        $phone = $user->phone; // exemplo: '5511999999999'
+    
+        // Envia WhatsApp via Z-API
+        $this->sendWhatsAppMessage($phone, $message);
+    
+        return response()->json(['message' => 'Link de recuperação enviado via WhatsApp.'], Response::HTTP_OK);   // 200
+    }    
+    
 
     public function logout(Request $request)
     {
@@ -389,4 +432,33 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Token Revogado com sucesso.'], Response::HTTP_OK);   // 200
     }    
+    
+    private function sendWhatsAppMessage($phone, $message)
+    {
+        $apiToken = env('ZAPI_TOKEN');
+        $instanceId = env('ZAPI_INSTANCE_ID');
+    
+        try {
+            $response = Http::post("https://api.z-api.io/instances/{$instanceId}/token/{$apiToken}/send-messages", [
+                'phone' => $phone,
+                'message' => $message,
+            ]);
+    
+            if ($response->successful()) {
+                return $response->json();
+            } else {
+                Log::error('Erro ao enviar WhatsApp: ' . $response->body());
+                return false;
+            }
+        } catch (Exception $e) {
+            Log::error('Exceção ao enviar WhatsApp: ' . $e->getMessage());
+
+            return response()->json([
+                'error' => 'Exceção ao tentar enviar mensagem via WhatsApp.',
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500          
+        }
+    }
+    
+    
 }
