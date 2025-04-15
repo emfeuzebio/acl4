@@ -24,7 +24,7 @@ class ForgotPasswordMail extends Mailable
         // com Markdown
         return $this
             ->subject('Recuperação de Senha')
-            ->markdown('emails.acl.auth.forgot');
+            ->markdown('emails.forgot');
 
         // com HTML    
         // return $this->view('emails.auth.forgot')
