@@ -238,9 +238,14 @@ class AuthController extends Controller
                     'created_at' => Carbon::now(),
                 ]
             );
+
+            // Acesse o domínio configurado no .env
+            $frontendUrl = env('FRONTEND_URL');             
     
             // Monta URL de redefinição
-            $resetUrl = url("/resetPassword/{$token}?email=" . urlencode($user->email));
+            // $resetUrl = url("/resetPassword/{$token}?email=" . urlencode($user->email));
+            // Monta a URL de redefinição com o token e o email
+            $resetUrl = url("{$frontendUrl}/resetPassword?token={$token}&email=" . urlencode($user->email));
     
             // Tenta enviar o e-mail
             Mail::to($user->email)->send(new ForgotPasswordMail($user->name, $resetUrl));
