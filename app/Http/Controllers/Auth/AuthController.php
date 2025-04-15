@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ForgotPasswordMail;
 use Illuminate\Support\Str;
 use App\Models\User;
 use Carbon\Carbon;
@@ -239,19 +241,33 @@ class AuthController extends Controller
             ]
         );
     
-        // URL de recuperação (ajuste para o front real)
-        $resetUrl = config('app.frontend_url') . "/reset-password?token=$token&email=" . urlencode($user->email);
-    
-        // Mensagem
-        $message = "Olá {$user->name}, para redefinir sua senha, clique no link: $resetUrl";
-    
-        // Número de telefone (ajuste para o campo correto do seu modelo)
-        $phone = $user->phone; // exemplo: '5511999999999'
-    
-        // Envia WhatsApp via Z-API
-        $this->sendWhatsAppMessage($phone, $message);
-    
-        return response()->json(['message' => 'Link de recuperação enviado via WhatsApp.'], Response::HTTP_OK);   // 200
+        /**
+         * Aqui vamos ter duas opções: por Email ou WhatZapp
+         * 
+         */
+            // Por WhatZapp
+            // URL de recuperação (ajuste para o front real)
+            // $resetUrl = config('app.frontend_url') . "/reset-password?token=$token&email=" . urlencode($user->email);
+        
+            // Mensagem
+            // $message = "Olá {$user->name}, para redefinir sua senha, clique no link: $resetUrl";
+        
+            // Número de telefone (ajuste para o campo correto do seu modelo)
+            // $phone = $user->phone; // exemplo: '5511999999999'
+        
+            // Envia WhatsApp via Z-API
+            // $this->sendWhatsAppMessage($phone, $message);
+
+            // return response()->json(['message' => 'Link de recuperação enviado via WhatsApp.'], Response::HTTP_OK);   // 200
+
+        // Por  Email
+        // Monta a URL de redefinição
+        $resetUrl = url("/resetPassword/{$token}?email=" . urlencode($user->email));
+
+        // Envia o e-mail
+        Mail::to($user->email)->send(new ForgotPasswordMail($user->name, $resetUrl));
+
+        return response()->json(['message' => 'Um e-mail com instruções foi enviado para redefinição de senha.'], Response::HTTP_OK);   // 200
     }    
     
 
@@ -459,6 +475,5 @@ class AuthController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500          
         }
     }
-    
     
 }
