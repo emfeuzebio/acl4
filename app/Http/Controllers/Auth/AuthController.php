@@ -224,9 +224,7 @@ class AuthController extends Controller
             // Verifica se o usuário existe
             $user = User::where('email', $request->email)->first();
             if (!$user) {
-                return response()->json([
-                    'message' => 'Usuário não encontrado.'
-                ], Response::HTTP_NOT_FOUND); // 404
+                return response()->json(['message' => 'Usuário não encontrado.'], Response::HTTP_NOT_FOUND); // 404
             }
     
             // Gera token seguro
@@ -247,9 +245,7 @@ class AuthController extends Controller
             // Tenta enviar o e-mail
             Mail::to($user->email)->send(new ForgotPasswordMail($user->name, $resetUrl));
     
-            return response()->json([
-                'message' => 'Um e-mail com instruções foi enviado para redefinição de senha.'
-            ], Response::HTTP_OK); // 200
+            return response()->json(['message' => 'Um e-mail com instruções foi enviado para redefinição de senha.'], Response::HTTP_OK); // 200
     
         } catch (ValidationException $e) {
             return response()->json([
@@ -273,7 +269,7 @@ class AuthController extends Controller
     public function resetPassword(Request $request)
     {
         $request->validate([
-            'email' => 'required|string|email|max:255|unique:users,email',
+            'email' => 'required|string|email|max:255',
             'token' => 'required|string',
             'password' => 'required|string|min:6|confirmed',
         ]);
