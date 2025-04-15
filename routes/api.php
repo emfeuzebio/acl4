@@ -38,16 +38,17 @@ Route::middleware('CheckJWTToken')->group(function () {
 });
 
 // JWT Tokens
-Route::post('auth/me',          [AuthController::class, 'me']);
-Route::post('auth/login',       [AuthController::class, 'login']);
-Route::post('auth/loginSystem', [AuthController::class, 'loginSystem']);
-Route::post('auth/loginTable',  [AuthController::class, 'loginTable']);
-Route::post('auth/logout',      [AuthController::class, 'logout']);
-Route::post('auth/refresh',     [AuthController::class, 'refresh']);
-Route::post('auth/register',    [AuthController::class, 'register']);
-Route::post('auth/revoke',      [AuthController::class, 'revoke']);
-Route::post('auth/forceRefresh',[AuthController::class, 'forceRefresh']);
-Route::get( 'auth/listTokens',  [AuthController::class, 'listTokens']);
+Route::post('auth/me',            [AuthController::class, 'me']);
+Route::post('auth/login',         [AuthController::class, 'login']);
+Route::post('auth/selectSystem',  [AuthController::class, 'selectSystem']);
+Route::post('auth/forgotpassword',[AuthController::class, 'forgotpassword']);
+Route::post('auth/loginTable',    [AuthController::class, 'loginTable']);
+Route::post('auth/logout',        [AuthController::class, 'logout']);
+Route::post('auth/refresh',       [AuthController::class, 'refresh']);
+Route::post('auth/register',      [AuthController::class, 'register']);
+Route::post('auth/revoke',        [AuthController::class, 'revoke']);
+Route::post('auth/forceRefresh',  [AuthController::class, 'forceRefresh']);
+Route::get( 'auth/listTokens',    [AuthController::class, 'listTokens']);
 
 
 // JWT
