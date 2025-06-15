@@ -50,11 +50,11 @@ Route::post('auth/register',      [AuthController::class, 'register']);
 Route::post('auth/revoke',        [AuthController::class, 'revoke']);
 Route::post('auth/forceRefresh',  [AuthController::class, 'forceRefresh']);
 Route::get( 'auth/listTokens',    [AuthController::class, 'listTokens']);
+Route::get( 'auth/ping',          [AuthController::class, 'ping']);
 
 
 // JWT
 Route::GET('/test', function (Request $request) {
-
     return response()->json(['token' => 'ACL 4 - Guard API Response Ok']);
 });
 
