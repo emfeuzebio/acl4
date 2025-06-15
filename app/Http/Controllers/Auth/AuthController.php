@@ -370,6 +370,45 @@ class AuthController extends Controller
         }
     }
 
+    public function ping(Request $request)
+    {
+        try {
+            // Verifica se o token foi enviado no cabeçalho Authorization
+            if (! $token = $request->bearerToken()) {
+                return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
+            }            
+
+            // Valida e obtém o usuário autenticado
+            if (! JWTAuth::parseToken()->authenticate()) {
+                return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
+            }            
+
+            // Recupera o token do header Authorization
+            $token = JWTAuth::getToken();
+
+            // Decodificar o payload para obter o ID do usuário
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $userId = $payload['sub']; // ID do usuário no token
+
+            // Verifica na tabela `acl_tokens` se o token ainda está ativo
+            $tokenExists = Token::where('token', $token)    // Comparação direta com o token
+                ->where('user_id', $userId)                 // pelo User ID não dá porque um User pode ter mais de um Token
+                ->where('status', 'active')                 // Apenas tokens ativos são válidos
+                ->exists();     
+                
+            // Se o token foi revogado ou não encontrado, retorna erro 401
+            if (! $tokenExists) {
+                return response()->json(['error' => 'Token revogado ou expirado'], Response::HTTP_UNAUTHORIZED);
+            }                
+
+            // retorna status = ok
+            return response()->json(['status' => 'ok']);
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Token inválido. ' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);   // 401
+        }
+    }       
+
+
     public function refresh(Request $request)
     {
         // TODO terminar, perguntar a lógica ao chat GPT sobre refresh_token
