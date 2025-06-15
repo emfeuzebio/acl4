@@ -408,7 +408,6 @@ class AuthController extends Controller
         }
     }       
 
-
     public function refresh(Request $request)
     {
         // TODO terminar, perguntar a lógica ao chat GPT sobre refresh_token
