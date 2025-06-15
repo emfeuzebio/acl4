@@ -370,7 +370,7 @@ class AuthController extends Controller
         }
     }
 
-    public function ping(Request $request)
+    public function isTokenValid(Request $request)
     {
         try {
             // Verifica se o token foi enviado no cabeçalho Authorization
