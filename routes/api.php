@@ -50,7 +50,7 @@ Route::post('auth/register',      [AuthController::class, 'register']);
 Route::post('auth/revoke',        [AuthController::class, 'revoke']);
 Route::post('auth/forceRefresh',  [AuthController::class, 'forceRefresh']);
 Route::get( 'auth/listTokens',    [AuthController::class, 'listTokens']);
-Route::get( 'auth/ping',          [AuthController::class, 'ping']);
+Route::get( 'auth/isTokenValid',  [AuthController::class, 'isTokenValid']);
 
 
 // JWT
