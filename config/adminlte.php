@@ -330,66 +330,66 @@ return [
         ['header' => 'Negócio'],
         [
             // Gerente de Transporte
-            'text' => 'Transportes',
-            'icon' => 'fas fa-shuttle-van',
-            // 'active' => auth()->user()->can('veiculo.index') ? true : false,
-            // 'active' => Gate::allows('veiculo-or-viagen') ? true : false,
-            'active' => true,
-            // 'submenu_classes' => 'menu-open',
-            // 'classes' => 'menu-open',
-            // 'classes' => 'menu-is-opening menu-open',
-            // 'can'  => ['veiculo.index', 'viagen.index'],    // Exibe o menu se o usuário tiver pelo menos uma dessas permissões
-            // 'classes' => request()->routeIs('veiculos.*') ? 'menu-open' : '', // Abre o menu se a rota for de veículos            
-            'submenu' => [
-                [
-                    'text' => 'Veículos',
-                    'url' => 'veiculo.index',
-                    'icon' => 'fas fa-fw fa-car',
-                    'can'  => 'veiculo.index', // Verifica a permissão via Gate
-                ],
-                [
-                    'text' => 'Rotas',
-                    'url' => '#',
-                    'icon' => 'fas fa-fw fa-road',
-                    'can'  => 'rota.index', // Verifica a permissão via Gate
-                ],
-                [
-                    'text' => 'Viagens',
-                    'url' => '#',
-                    'icon' => 'fas fa-fw fa-plane',
-                    'can'  => 'viagen.index', // Verifica a permissão via Gate
-                ],
+            // 'text' => 'Transportes',
+            // 'icon' => 'fas fa-shuttle-van',
+            // 'active' => true,
+                // 'active' => auth()->user()->can('veiculo.index') ? true : false,
+                // 'active' => Gate::allows('veiculo-or-viagen') ? true : false,
+                // 'submenu_classes' => 'menu-open',
+                // 'classes' => 'menu-open',
+                // 'classes' => 'menu-is-opening menu-open',
+                // 'can'  => ['veiculo.index', 'viagen.index'],    // Exibe o menu se o usuário tiver pelo menos uma dessas permissões
+                // 'classes' => request()->routeIs('veiculos.*') ? 'menu-open' : '', // Abre o menu se a rota for de veículos            
+            // 'submenu' => [
+            //     [
+            //         'text' => 'Veículos',
+            //         'url' => 'veiculo.index',
+            //         'icon' => 'fas fa-fw fa-car',
+            //         'can'  => 'veiculo.index', // Verifica a permissão via Gate
+            //     ],
+            //     [
+            //         'text' => 'Rotas',
+            //         'url' => '#',
+            //         'icon' => 'fas fa-fw fa-road',
+            //         'can'  => 'rota.index', // Verifica a permissão via Gate
+            //     ],
+            //     [
+            //         'text' => 'Viagens',
+            //         'url' => '#',
+            //         'icon' => 'fas fa-fw fa-plane',
+            //         'can'  => 'viagen.index', // Verifica a permissão via Gate
+            //     ],
             ],
         ],
 
         [
             // Gerente de Doações
-            'text' => 'Doações',
-            'icon' => 'fas fa-fw fa-hands',
-            'active' => true,
-            'submenu' => [
-                [
-                    'text' => 'Famílias',
-                    'url' => '#',
-                    'icon' => 'fas fa-fw fa-people-arrows',
-                    'can'  => 'familia.index',      // Verifica a permissão via Gate
-                ],
-                [
-                    'text' => 'Pessoas',
-                    'url' => 'pessoa.index',
-                    'icon' => 'fas fa-fw fa-users',
-                    'can'  => 'pessoa.index',       // Verifica a permissão via Gate
-                    // 'active' => request()->is('pessoa.index'),
-                    'active' => false,
-                ],
-                [
-                    'text' => 'Pedidos',
-                    'url' => '#',
-                    'icon' => 'fas fa-gift',
-                    'can'  => 'pedido.index',       // Verifica a permissão via Gate
-                ],
-            ],    
-            'submenu_classes' => 'menu-open',   // Mantém o submenu aberto        
+            // 'text' => 'Doações',
+            // 'icon' => 'fas fa-fw fa-hands',
+            // 'active' => true,
+            // 'submenu' => [
+            //     [
+            //         'text' => 'Famílias',
+            //         'url' => '#',
+            //         'icon' => 'fas fa-fw fa-people-arrows',
+            //         'can'  => 'familia.index',      // Verifica a permissão via Gate
+            //     ],
+            //     [
+            //         'text' => 'Pessoas',
+            //         'url' => 'pessoa.index',
+            //         'icon' => 'fas fa-fw fa-users',
+            //         'can'  => 'pessoa.index',       // Verifica a permissão via Gate
+            //         // 'active' => request()->is('pessoa.index'),
+            //         'active' => false,
+            //     ],
+            //     [
+            //         'text' => 'Pedidos',
+            //         'url' => '#',
+            //         'icon' => 'fas fa-gift',
+            //         'can'  => 'pedido.index',       // Verifica a permissão via Gate
+            //     ],
+            // ],    
+            // 'submenu_classes' => 'menu-open',   // Mantém o submenu aberto        
         ],
 
         // Access Control
