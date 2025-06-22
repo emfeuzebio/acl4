@@ -359,9 +359,8 @@ return [
             //         'icon' => 'fas fa-fw fa-plane',
             //         'can'  => 'viagen.index', // Verifica a permissão via Gate
             //     ],
-            ],
+            // ],
         ],
-
         [
             // Gerente de Doações
             // 'text' => 'Doações',
