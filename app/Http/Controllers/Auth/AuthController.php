@@ -186,6 +186,20 @@ class AuthController extends Controller
                     'active' => 'Y',
                 ]); 
 
+                // Caso veio o $systemId, vamos associar o usuário a um sistema específico
+                // $systemId = $request->input('systemId');
+                if ($request->system_id) {
+                    // Lógica para associar o usuário ao sistema
+                    /**
+                     * operacao	"assignSystem"
+                     * user_id	"7"
+                     * system_id	"2"
+                     */
+
+                    // assign de System (attach)
+                    $user->systems()->attach($request->system_id);
+                }
+
                 // STEP 2 - Lest's generate token JWT to created User
                 $token = JWTAuth::fromUser($user);
                 $expiresAt = now()->addMinutes(config('jwt.ttl', 60));      // Expira conforme config
