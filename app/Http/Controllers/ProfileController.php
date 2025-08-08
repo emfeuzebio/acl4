@@ -299,7 +299,9 @@ class ProfileController extends Controller
             }            
 
              // get the Entity
-            $entity = Entity::find($request->entity_id);
+            $entity = Entity::with('actions')->find($request->entity_id);
+            // dd($entity->toArray());
+            // dd($entity);
 
             if (!$entity) {
                 throw new Exception('Exception: Entidade não encontrada.');
@@ -311,7 +313,8 @@ class ProfileController extends Controller
 
                 // Verifica se a Entity tem alguma Authorization Active em qualquer Perfil (Role)
                 $hasActiveAuthorization = $entity->actions()
-                    ->whereHas('authorizations', function ($query) {
+                    ->whereHas('authorizations', function ($query) use ($request) {
+                        $query->where('profile_id', $request->role_id);
                         $query->where('active', 'Y');
                 })->count();
                 // })->exists();
@@ -365,7 +368,7 @@ class ProfileController extends Controller
                         'profile_id' => $profileId,
                         'active' => $active
                     ]);
-                });                
+                });
 
                 return response()->json(['sucesso' => true, 'message' => 'Entidade concedida ao Perfil de Acesso com sucesso.'], Response::HTTP_OK);
             }

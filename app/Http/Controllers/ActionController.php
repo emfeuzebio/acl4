@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ActionRequest;
 use Illuminate\Http\Request;
 use App\Models\Action;
+use App\Models\Authorization;
 use App\Models\Entity;
 use App\Models\Profile;
 use Exception;
 use Illuminate\Http\Response;
-use App\Traits\ACLTrait; 
+use App\Traits\ACLTrait;
+use Illuminate\Support\Facades\DB;
 
 class ActionController extends Controller
 {
@@ -92,31 +94,56 @@ class ActionController extends Controller
     public function store(ActionRequest $request)
     {
         try {
-            // insert new Action
-            $action = Action::Create(
-                $request->only(['entity_id', 'action', 'route', 'description'])
-            );  
-            
-            // get the System from Action throw the Entity
-            $systemId = $action->entity->system_id;
+            DB::transaction(function () use ($request, &$action) {
 
-            // TERMINAR AQUI
-            // Abaixo está ERRADO. Nãp é para replicar a autorização para todos os perfis, 
-            // mas apenas para os perfis que têm autorização para a entidade
-            /*
+                // 1. Cria nova Ação
+                $action = Action::create(
+                    $request->only(['entity_id', 'action', 'route', 'description'])
+                );
 
-            */
-            // For each Profile, we will create an Authorization corresponding to the created Action with active = 'N'
-            $profiles = Profile::where('system_id', $systemId)->get();  // only for the same System
+                // 2. Busca perfis que já possuem alguma autorização para a mesma entidade
+                $profiles = DB::select("
+                    SELECT DISTINCT acl_authorizations.profile_id AS id
+                    FROM acl_authorizations
+                    INNER JOIN acl_actions ON acl_actions.id = acl_authorizations.action_id
+                    WHERE acl_actions.entity_id = ?
+                ", [$request->entity_id]);
 
-            foreach ($profiles as $profile) {
-                $action->profiles()->attach($profile->id, ['active' => 'N', 'created_at' => now(), 'updated_at' => now()]);
-            }
-            return response()->json(['sucesso' => $action->entity_id, 'message' => 'Nova Ação e Autorização inserida com sucesso.'], Response::HTTP_OK);
+                // 3. Cria uma autorização nova para cada perfil, com a nova ação
+                foreach ($profiles as $profile) {
+                    Authorization::create([
+                        'profile_id' => $profile->id,
+                        'action_id'  => $action->id,
+                        'active'     => 'N',
+                    ]);
+                }
+
+                // 4. Cria também a autorização no perfil Administrador pois este sempre recebe todas Actions
+                // Authorization::create([
+                //     'profile_id' => 1,              // 1 = Administrador
+                //     'action_id'  => $action->id,
+                //     'active'     => 'N',
+                // ]);
+            });
+
+            return response()->json([
+                'sucesso' => $request->entity_id,
+                'message' => 'Nova Ação e Autorização inserida com sucesso.'
+            ], Response::HTTP_OK);
+
+            // Anterior com Erro de lógica usando attach()
+                // Não replica autorizações para a nova Ação criada na Entidade nos Perfis de Acesso que já tinham a Entidade
+                // $profiles = Profile::where('system_id', $systemId)->get();  // only for the same System
+                // dd($profiles);
+
+                // foreach ($profiles as $profile) {
+                //     $action->profiles()->attach($profile->id, ['active' => 'N', 'created_at' => now(), 'updated_at' => now()]);
+                // }
+
+                // return response()->json(['sucesso' => $action->entity_id, 'message' => 'Nova Ação e Autorização inserida com sucesso.'], Response::HTTP_OK);
 
         } catch (Exception $e) {
 
-            // Get all gerenical errors
             return response()->json([
                 'sucesso' => false,
                 'message' => $e->getMessage(),
