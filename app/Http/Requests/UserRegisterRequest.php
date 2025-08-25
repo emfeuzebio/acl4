@@ -25,6 +25,9 @@ class UserRegisterRequest extends FormRequest
             'name' => 'required|string|min:5',
             'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
+            'phone' => 'string|min:10|max:15|nullable',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'active' => ['required','in:"Y","N"'],
         ];
     }
 

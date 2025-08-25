@@ -375,6 +375,14 @@ return [
             'email-tip' => 'Informe o E-Mail do Usuários',
             'email-placeholder' => 'Ex.: email@domine.com', 
 
+            'phone-name' => 'Telefone',
+            'phone-tip' => 'Informe o Telefone do Usuários',
+            'phone-placeholder' => 'Ex.: (99) 99999-9999', 
+
+            'photo-name' => 'Foto',
+            'photo-tip' => 'Informe a Foto do Usuários',
+            'photo-placeholder' => 'Selecione uma foto', 
+
             'password_confirmation-name' => 'Confirme a Senha',
             'password_confirmation-tip' => 'Confirme a Senha do Usuários com 8 caracteres',
             'password_confirmation-placeholder' => 'Ex.: @)*&SnW3[', 

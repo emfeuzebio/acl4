@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 use App\Models\Action;
 use App\Models\Authorization;
 use App\Models\Organization;
@@ -17,7 +19,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Artisan;
 use App\Traits\ACLTrait;
-use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -161,10 +162,36 @@ class UserController extends Controller
     public function update(UserRequest $request)
     {
         $user = User::findOrFail($request->id);
-        $user->update($request->only(['organization_id','name', 'email', 'password', 'active']));
+
+        // Upload da foto se enviada
+        if ($request->hasFile('photo')) {
+            $file = $request->file('photo');
+            $filename = 'users/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+
+            // Salva em storage/app/public/users/
+            $file->storeAs('public', $filename);
+
+            // Atualiza o campo photo com caminho relativo
+            $user->photo = 'storage/' . $filename;
+        }
+
+        // Atualiza os campos comuns, exceto 'photo'
+        $user->update($request->only(['name','email','phone','active']));
+
+        // Atualiza a senha apenas se foi enviada
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+            $user->save();
+        }
+
+        // Salva o campo 'photo' se foi atualizado
+        if ($request->hasFile('photo')) {
+            $user->save();
+        }
 
         return response()->json($user);
-    }     
+    }
+   
 
     public function updateProfile(Request $request)
     {

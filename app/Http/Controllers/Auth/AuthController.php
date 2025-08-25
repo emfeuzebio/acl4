@@ -90,6 +90,7 @@ class AuthController extends Controller
                  * PASSO 5 - Persiste o Token
                  *  Cria um novo token no banco de dados ou atualiza se já existir se for o mesmo (user_id, Token e active)
                  *  permitir que um usuário tenha vários tokens ativos (multi-dispositivos), mas sem repetição do mesmo token
+                 *  No User Model, getJWTCustomClaims() já monta o payload com as informações do usuário
                  */
                 Token::updateOrCreate(
                     ['user_id' => $payload['user_id'], 'token' => $token, 'status' => 'active'], // Verifica user_id + token

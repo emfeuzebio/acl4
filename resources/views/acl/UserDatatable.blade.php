@@ -33,7 +33,7 @@
                             <label class="form-label">{{ __('acl.user.columns.id-name') }}</label>
                             <input class="form-control" value="" type="text" id="id" name="id" placeholder="" readonly data-toggle="tooltip" title="{{ __('acl.user.columns.id-tip') }}">
                         </div>                         
-<!-- 
+                        <!-- 
                         <div class="form-group">
                             <label class="form-label">{{ __('acl.system.columns.organization_id-name') }}</label>
                             <select name="organization_id" id="organization_id" class="form-control selectpicker" data-style="form-control" data-live-search="true" data-toggle="tooltip" data-placement="top" title="{{ __('acl.system.columns.name-tip') }}">
@@ -44,7 +44,7 @@
                             </select>
                             <div id="error-organization_id" class="error invalid-feedback" style="display: none;"></div>
                         </div>                      
--->
+                        -->
 
                         <div class="form-group">
                             <label class="form-label">{{ __('acl.user.columns.name-name') }}</label>
@@ -59,6 +59,32 @@
                         </div>
 
                         <div class="form-group">
+                            <label class="form-label">{{ __('acl.user.columns.phone-name') }}</label>
+                            <input class="form-control" value="" type="text" id="phone" name="phone" placeholder="{{ __('acl.user.columns.phone-placeholder') }}" data-toggle="tooltip" title="{{ __('acl.user.columns.phone-tip') }}" >
+                            <div id="error-phone" class="error invalid-feedback" style="display: none;"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">{{ __('acl.user.columns.photo-name') }}</label>
+
+                            <!-- Pré-visualização da imagem: onchange="previewPhoto(event)" -->
+                            <div id="photo-preview" class="mt-0" style="display: none;">
+                                <img id="preview-image" src="" alt="Preview" class="img-thumbnail" style="max-width: 70px;" />
+                            </div>
+
+                            <input
+                                class="form-control"
+                                type="file"
+                                id="photo"
+                                name="photo"
+                                accept="image/*"
+                            />                            
+
+                            <div id="error-photo" class="error invalid-feedback" style="display: none;"></div>
+                        </div>
+                        
+                        <!-- 
+                        <div class="form-group">
                             <label class="form-label">{{ __('acl.user.columns.password-name') }}</label>
                             <input class="form-control" value="" type="password" id="password" name="password" placeholder="{{ __('acl.user.columns.password-placeholder') }}" data-toggle="tooltip" title="{{ __('acl.user.columns.password-tip') }}" >
                             <div id="error-password" class="error invalid-feedback" style="display: none;"></div>
@@ -69,6 +95,7 @@
                             <input class="form-control" value="" type="password" id="password_confirmation" name="password_confirmation" placeholder="{{ __('acl.user.columns.password-placeholder') }}" data-toggle="tooltip" title="{{ __('acl.user.columns.password-tip') }}" >
                             <div id="error-password_confirmation" class="error invalid-feedback" style="display: none;"></div>
                         </div>
+                         -->
 
                         <div class="form-group input-group-sm">
                             <label class="form-label" data-toggle="tooltip" title="{{ __('acl.user.columns.active-tip') }}">{{ __('acl.user.columns.active-name') }}</label>
@@ -460,6 +487,42 @@
             // $('#filterDiv3').show();                                            // show div filter 1 
             // $('#filterDiv4').show();                                            // show div filter 1 
             // active page filter 2 ....
+
+
+
+            /**
+             * NÃO FUNCONA - Preview da imagem selecionada no input file
+             */
+            // function previewPhoto(event) {
+            //     const input = event.target
+            //     const file = input.files && input.files[0]
+            //     const previewContainer = document.getElementById('photo-preview')
+            //     const previewImage = document.getElementById('preview-image')
+
+            //     if (!file || !file.type.startsWith('image/')) {
+            //     console.warn('Nenhuma imagem válida selecionada.')
+            //     previewContainer.style.display = 'none'
+            //     previewImage.src = ''
+            //     return
+            //     }
+
+            //     const reader = new FileReader()
+
+            //     reader.onload = function (e) {
+            //     previewImage.src = e.target.result
+            //     previewContainer.style.display = 'block'
+            //     }
+
+            //     reader.onerror = function (err) {
+            //     console.error('Erro ao carregar imagem:', err)
+            //     previewImage.src = ''
+            //     previewContainer.style.display = 'none'
+            //     }
+
+            //     reader.readAsDataURL(file)
+            // }
+
+
 
             /*
             * List the record data table
@@ -1042,7 +1105,6 @@
              *  '_ajax' - dispara um Ajax
              *  '_modal' - abre um modal inrerido nesta view
              */
-
 
         });
 

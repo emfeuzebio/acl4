@@ -24,8 +24,11 @@ class UserRequest extends FormRequest
         return [
             // 'organization_id' => 'required|exists:acl_organizations,id',    // Mandatory and existing foreign key in the acl organizations table
             'name' => 'required|string|min:6',
-            'email' => 'required|string|email|max:255|unique:users,email' . $this->id,
-            'password' => 'required|string|min:6|confirmed',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $this->id,
+            'password' => 'nullable|string|min:6|confirmed',
+            'phone' => 'string|min:10|max:15|nullable',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'active' => ['required','in:"Y","N"'],
         ];
     }
 

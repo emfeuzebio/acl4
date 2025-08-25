@@ -386,13 +386,27 @@
                             // $('#formEntity #descricao').val(response.descricao);
                             // $('#formEntity #active').prop('checked', (response.ativo == "SIM" ? true : false));
 
+                        console.log('response:', response);
+
                         // carregas os dados dos campos no Form
                         $.each(response, function( key, value ) {
+
+                            // console.log('key:', key);
+
                             if (key == 'active') {
+                                // console.log('active:', response.active);
                                 $('#editModal #formEntity #active').prop('checked', (response.active == "Y" ? true : false));
+                            } else if (key == 'photo') {
+                                console.log('photo:', response.photo);
+
+                                // Caminho da imagem padrão
+                                let photoPath = response.photo ? '/' + response.photo : '/storage/users/avatar.jpg';
+
+                                $('#editModal #formEntity #preview-image').attr('src', photoPath); 
+                                $('#editModal #formEntity #photo-preview').show();
                             } else {
                                 $('#editModal #formEntity #' + key).val(value);
-                            }
+                            }                           
                         });                        
 
                         // controla o botão Salvar conforme o ACL Gate
