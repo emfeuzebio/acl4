@@ -70,15 +70,15 @@
                             <!-- Pré-visualização da imagem: onchange="previewPhoto(event)" -->
                             <div id="photo-preview" class="mt-0" style="display: none;">
                                 <img id="preview-image" src="" alt="Preview" class="img-thumbnail" style="max-width: 70px;" />
+                                <button type="button" id="btnExcluirFoto" class="btn btn-danger btn-sm mt-2">Remover foto</button>
                             </div>
 
                             <input
-                                class="form-control"
-                                type="file"
-                                id="photo"
-                                name="photo"
-                                accept="image/*"
+                                class="form-control" type="file"
+                                id="photo" name="photo" accept="image/*"
                             />                            
+
+                            <input type="hidden" id="photo-removed" name="photo_removed" value="0" />
 
                             <div id="error-photo" class="error invalid-feedback" style="display: none;"></div>
                         </div>
@@ -453,6 +453,20 @@
     <script type="text/javascript"> 
 
         $(document).ready(function () {
+
+            $('#btnExcluirFoto').on('click', function() {
+                // Limpa o input file
+                $('#photo').val('');
+
+                // Atualiza preview para avatar padrão
+                $('#preview-image').attr('src', '/storage/users/avatar.jpg');
+                
+                // Marcar um flag hidden ou limpar o campo photo para informar backend
+                $('#photo-removed').val('1'); // vamos criar esse input hidden
+
+                // Opcional: esconder o botão "Remover foto" pois já está removido
+                // $(this).hide();
+            });            
 
             var id = '';
             // var action = '{{ url()->current() }}';

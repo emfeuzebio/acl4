@@ -380,14 +380,6 @@
                         $("#editModal #btnInsert").hide();                      // esconde o btn Inserir  
                         $('#editModal').modal('show');                          // mostra o modal de edição de dados
 
-                            // $('#formEntity #id').val(response.id);
-                            // $('#formEntity #sigla').val(response.sigla);
-                            // $('#formEntity #nome').val(response.nome);
-                            // $('#formEntity #descricao').val(response.descricao);
-                            // $('#formEntity #active').prop('checked', (response.ativo == "SIM" ? true : false));
-
-                        console.log('response:', response);
-
                         // carregas os dados dos campos no Form
                         $.each(response, function( key, value ) {
 
@@ -397,13 +389,14 @@
                                 // console.log('active:', response.active);
                                 $('#editModal #formEntity #active').prop('checked', (response.active == "Y" ? true : false));
                             } else if (key == 'photo') {
-                                console.log('photo:', response.photo);
+                                // console.log('photo:', response.photo);
 
                                 // Caminho da imagem padrão
                                 let photoPath = response.photo ? '/' + response.photo : '/storage/users/avatar.jpg';
 
                                 $('#editModal #formEntity #preview-image').attr('src', photoPath); 
                                 $('#editModal #formEntity #photo-preview').show();
+                                $('#editModal #formEntity #photo-removed').val('0');    // flag que a foto não foi removida
                             } else {
                                 $('#editModal #formEntity #' + key).val(value);
                             }                           

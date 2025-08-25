@@ -165,15 +165,26 @@ class UserController extends Controller
 
         // Upload da foto se enviada
         if ($request->hasFile('photo')) {
+
+            // Delete old photo se não for avatar padrão
+            if ($user->photo && !str_contains($user->photo, 'avatar.jpg')) {
+                Storage::delete('public/' . str_replace('storage/', '', $user->photo));
+            }
+
             $file = $request->file('photo');
             $filename = 'users/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-
-            // Salva em storage/app/public/users/
-            $file->storeAs('public', $filename);
-
-            // Atualiza o campo photo com caminho relativo
-            $user->photo = 'storage/' . $filename;
+            $file->storeAs('public', $filename);                    // Salva em storage/app/public/users/
+            $user->photo = 'storage/' . $filename;                  // Atualiza o campo photo com caminho relativo
         }
+
+        // Remove a foto se solicitado
+        if ($request->input('photo_removed') == '1') {
+            if ($user->photo && !str_contains($user->photo, 'avatar.jpg')) {
+                $filePath = str_replace('storage/', '', $user->photo);
+                Storage::disk('public')->delete($filePath);
+            }
+            $user->photo = null;
+        }        
 
         // Atualiza os campos comuns, exceto 'photo'
         $user->update($request->only(['name','email','phone','active']));
@@ -190,8 +201,7 @@ class UserController extends Controller
         }
 
         return response()->json($user);
-    }
-   
+    }   
 
     public function updateProfile(Request $request)
     {
@@ -220,6 +230,11 @@ class UserController extends Controller
     {        
         try {
             $user = User::findOrFail($request->id);
+
+            if ($user->photo && !str_contains($user->photo, 'avatar.jpg')) {
+                Storage::delete('public/' . str_replace('storage/', '', $user->photo));
+            }
+
             $user->delete();
             
         } catch (Exception $e) {
