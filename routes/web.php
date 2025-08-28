@@ -102,10 +102,12 @@ Route::middleware(['auth', 'AccessControlList'])->group(function () {
         Route::post('user/listOrganiz',      'listOrganiz')->name('user.listOrganiz');
         Route::get( 'user/listActiveAuth','listActiveAuth')->name('user.listActiveAuth');
         
-        Route::get( 'user',                 'index')->name('user.index');
-        Route::get( 'user/show/{id?}',       'show')->name('user.show')->where('id','[0-9]+');
-        Route::post('user/store',           'store')->name('user.store');        
-        Route::post('user/update',         'update')->name('user.update');      
+        Route::get( 'user',                  'index')->name('user.index');
+        Route::get( 'user/show/{id?}',        'show')->name('user.show')->where('id','[0-9]+');
+        Route::post('user/store',            'store')->name('user.store');        
+        Route::post('user/update',          'update')->name('user.update'); 
+        Route::post('user/updatephoto', 'updatePhoto')->name('user.updatephoto'); 
+        
         Route::post('user/destroy',       'destroy')->name('user.destroy');
 
         Route::post('user/updateProfile/{id?}', 'updateProfile')->name('user.updateProfile')->where('id','[0-9]+');

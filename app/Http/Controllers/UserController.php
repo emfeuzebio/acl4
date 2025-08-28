@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
+use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\Action;
 use App\Models\Authorization;
 use App\Models\Organization;
@@ -202,6 +203,64 @@ class UserController extends Controller
 
         return response()->json($user);
     }   
+
+    public function updatePhoto(Request $request)
+    {        
+        // Verifica se o token foi enviado no cabeçalho Authorization
+        if (!$token = $request->bearerToken()) {
+            return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
+        }            
+
+        // Valida e obtém o usuário autenticado
+        $user = JWTAuth::parseToken()->authenticate();
+        if (!$user) {
+            return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        dd($user);
+
+        // Recupera o token do header Authorization
+        $token = JWTAuth::getToken();
+
+        // Decodificar o payload para obter o ID do usuário
+        $payload = JWTAuth::setToken($token)->getPayload();
+        $userId = $payload['sub']; // ID do usuário no token
+
+
+
+            // $request->validate([
+            //     'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            // ]);        
+
+            // // Apagar a imagem anterior, se houver
+            // if ($user->photo) {
+            //     Storage::disk('public')->delete($user->photo);
+            // }
+
+            // // Armazenar nova imagem
+            // $path = $request->file('photo')->store('profile_photos', 'public');
+
+            // // Atualizar no banco
+            // $user->photo = $path;
+            // $user->save();
+
+
+        // if ($request->hasFile('photo')) {
+        //     // Delete old photo if it exists and is not the default avatar
+        //     if ($user->photo && !str_contains($user->photo, 'avatar.jpg')) {
+        //         Storage::delete('public/' . str_replace('storage/', '', $user->photo));
+        //     }
+
+        //     $file = $request->file('photo');
+        //     $filename = 'users/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+        //     $file->storeAs('public', $filename);
+        //     $user->photo = 'storage/' . $filename;
+        // }
+
+        $user->save();
+
+        return response()->json($user);
+    }
 
     public function updateProfile(Request $request)
     {
