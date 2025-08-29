@@ -250,6 +250,7 @@ class User extends Authenticatable implements JWTSubject
             'aud' => $aud,                                                  // Público-alvo (Audience) do token
             'user_id' => $this->id,                                         // ID do usuário
             'user_name' => $this->name,                                     // Nome do usuário
+            'user_phone' => $this->phone,                                   // Telefone do usuário
             'user_photo' => $this->photo,                                   // caminho da Foto do usuário (não é  BLOB)
             'user_systems' => $user_systems,                                // systemas aos quais o usuário tem acesso
             'user_roles' => $systemId ? $this->grantedRoles() : [],         // Roles do usuário
