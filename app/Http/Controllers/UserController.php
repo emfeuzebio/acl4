@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Http\Requests\UserRequest;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use App\Models\Action;
 use App\Models\Authorization;
 use App\Models\Organization;

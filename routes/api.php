@@ -31,6 +31,7 @@ Route::get( 'auth/listTokens',    [AuthController::class, 'listTokens']);
 Route::get( 'auth/isTokenValid',  [AuthController::class, 'isTokenValid']);
 
 // Nova rota para atualizar a foto do usuário, ainda não segura
+Route::post('user/update', [AuthController::class, 'update'])->name('user.update');
 Route::post('user/updatephoto', [AuthController::class, 'updatePhoto'])->name('user.updatePhoto');
 
 

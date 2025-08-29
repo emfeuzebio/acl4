@@ -624,4 +624,35 @@ class AuthController extends Controller
         }
     }
     
+    public function update(Request $request)
+    {
+        try {        
+            // Verifica se o token foi enviado no cabeçalho Authorization
+            if (!$token = $request->bearerToken()) {
+                return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
+            }            
+
+            // Valida e obtém o usuário autenticado
+            $user = JWTAuth::parseToken()->authenticate();
+            if (!$user) {
+                return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
+            }
+
+            // Validação dos campos
+            $validated = $request->validate([
+                'name' => 'required|string|min:6',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+                'phone' => 'string|min:10|max:15|nullable',
+            ]);
+
+            // Aplica os campos validados no modelo
+            $user->fill($validated);
+            $user->save();
+
+            return response()->json($user);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Houve um erro ao Salvar os dados do usuário. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
+        }
+    }
+    
 }
