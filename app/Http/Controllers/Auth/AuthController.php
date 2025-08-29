@@ -602,20 +602,20 @@ class AuthController extends Controller
             // Validação do arquivo de imagem
             $request->validate([
                 'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            ]);        
+            ]);
 
-            // Vamos apagar a imagem anterior, se houver
             if ($user->photo) {
-                Storage::disk('public')->delete(str_replace('storage/', '', $user->photo));
+                Storage::disk('public')->delete($user->photo); // Agora funciona porque $user->photo é relativo ao disk
             }
 
-            // Vamos armazenar nova imagem
             $file = $request->file('photo');
             $filename = 'users/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public', $filename);    // Salva em storage/app/public/users/
-            $user->photo = 'storage/' . $filename;  // Atualiza o campo photo com caminho relativo
 
-            // Vamos atualizar no banco
+            // Salva o arquivo corretamente no disco "public"
+            $file->storeAs('public', $filename);
+
+            // Salva apenas o caminho relativo no banco
+            $user->photo = $filename;
             $user->save();
 
             return response()->json($user);
