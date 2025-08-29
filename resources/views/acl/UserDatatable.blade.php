@@ -487,57 +487,6 @@
                 statusCode: { 401: function() { window.location.href = "/login";} },        // 401-UNAUTHORIZED redirects to login
             });
 
-            /** 
-             * option active page filters  
-             *      filter need customise filter field name GET in datatables above and after in ontroller->index() 
-             *  data: function(param) {                         
-             *            param.entity_id
-             */
-            // active page filter 1
-            // $('#filterDiv1 #filterLabel1').html('Filtrar pela Entidade');       // customise filter label
-            // $('#filter_area').show();                                           // show div filter area
-            // $('#filterDiv1').show();                                            // show div filter 1 
-            // $('#filterDiv2').show();                                            // show div filter 1 
-            // $('#filterDiv3').show();                                            // show div filter 1 
-            // $('#filterDiv4').show();                                            // show div filter 1 
-            // active page filter 2 ....
-
-
-
-            /**
-             * NÃO FUNCONA - Preview da imagem selecionada no input file
-             */
-            // function previewPhoto(event) {
-            //     const input = event.target
-            //     const file = input.files && input.files[0]
-            //     const previewContainer = document.getElementById('photo-preview')
-            //     const previewImage = document.getElementById('preview-image')
-
-            //     if (!file || !file.type.startsWith('image/')) {
-            //     console.warn('Nenhuma imagem válida selecionada.')
-            //     previewContainer.style.display = 'none'
-            //     previewImage.src = ''
-            //     return
-            //     }
-
-            //     const reader = new FileReader()
-
-            //     reader.onload = function (e) {
-            //     previewImage.src = e.target.result
-            //     previewContainer.style.display = 'block'
-            //     }
-
-            //     reader.onerror = function (err) {
-            //     console.error('Erro ao carregar imagem:', err)
-            //     previewImage.src = ''
-            //     previewContainer.style.display = 'none'
-            //     }
-
-            //     reader.readAsDataURL(file)
-            // }
-
-
-
             /*
             * List the record data table
             */
