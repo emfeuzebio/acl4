@@ -8,7 +8,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Authorization;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
 use Tymon\JWTAuth\Contracts\JWTSubject;
