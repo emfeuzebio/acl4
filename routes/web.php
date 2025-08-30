@@ -106,7 +106,7 @@ Route::middleware(['auth', 'AccessControlList'])->group(function () {
         Route::get( 'user/show/{id?}',        'show')->name('user.show')->where('id','[0-9]+');
         Route::post('user/store',            'store')->name('user.store');        
         Route::post('user/update',          'update')->name('user.update'); 
-        // Route::post('user/updatephoto', 'updatePhoto')->name('user.updatephoto'); 
+        // Foi para API > Route::post('user/updatephoto', 'updatePhoto')->name('user.updatephoto'); 
         
         Route::post('user/destroy',       'destroy')->name('user.destroy');
 

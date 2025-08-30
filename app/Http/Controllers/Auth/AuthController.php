@@ -585,6 +585,37 @@ class AuthController extends Controller
         return response()->json(compact('token'));
     }
 
+    public function update(Request $request)
+    {
+        try {        
+            // Verifica se o token foi enviado no cabeçalho Authorization
+            if (!$token = $request->bearerToken()) {
+                return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
+            }            
+
+            // Valida e obtém o usuário autenticado
+            $user = JWTAuth::parseToken()->authenticate();
+            if (!$user) {
+                return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
+            }
+
+            // Validação dos campos
+            $validated = $request->validate([
+                'name' => 'required|string|min:6',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+                'phone' => 'string|min:10|max:15|nullable',
+            ]);
+
+            // Aplica os campos validados no modelo
+            $user->fill($validated);
+            $user->save();
+
+            return response()->json($user);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Houve um erro ao Salvar os dados do usuário. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
+        }
+    }
+
     public function updatePhoto(Request $request)
     {
          try {        
@@ -624,9 +655,9 @@ class AuthController extends Controller
         }
     }
     
-    public function update(Request $request)
+    public function changePassword(Request $request)
     {
-        try {        
+         try {        
             // Verifica se o token foi enviado no cabeçalho Authorization
             if (!$token = $request->bearerToken()) {
                 return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
@@ -638,21 +669,28 @@ class AuthController extends Controller
                 return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
             }
 
-            // Validação dos campos
+            // Validando os campos
+            // $validated = $request->validate([
             $validated = $request->validate([
-                'name' => 'required|string|min:6',
-                'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-                'phone' => 'string|min:10|max:15|nullable',
+                'senhaAtual' => 'required|string',
+                'novaSenha' => 'required|string|min:6|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/',
             ]);
 
-            // Aplica os campos validados no modelo
-            $user->fill($validated);
-            $user->save();
+            // Verificar se a senha atual fornecida é a mesma que a senha armazenada
+            if (!Hash::check($validated['senhaAtual'], $user->password)) {
+                return response()->json(['error' => 'A Senha Atual não está correta.'], Response::HTTP_UNAUTHORIZED);
+            }     
+            
+            // Criptografando e alterando a nova senha
+            $user->password = Hash::make($validated['novaSenha']);
+            $user->save();            
 
-            return response()->json($user);
+            return response()->json(['message' => 'Senha alterada com sucesso.'], Response::HTTP_OK);
         } catch (Exception $e) {
-            return response()->json(['error' => 'Houve um erro ao Salvar os dados do usuário. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
+            return response()->json(['error' => 'Houve um erro ao processar a operação. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
         }
     }
+    
+
     
 }
