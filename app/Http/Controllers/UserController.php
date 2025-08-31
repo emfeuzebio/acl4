@@ -295,6 +295,11 @@ class UserController extends Controller
                     $subject = config('app.name') . " - Desativação de Usuário.";
                     $text = "Sua conta de Usuário expirou ou foi Desativada.\n" .
                             "Caso necessite Ativar novamente, procure o Administrador.";
+
+                    // Vamos revogar todos Tokens ativos do User que esta sendo Desativado
+                    Token::where('user_id', $user->id)          // tokens do user atual
+                        ->where('status', 'active')            // tokens ativos
+                        ->update(['status' => 'revoked']);     // Alterar o status do token para "Revoked"
                 }
 
                 // Notifica o usuário por email
