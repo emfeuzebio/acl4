@@ -284,7 +284,7 @@ class AuthController extends Controller
             // Tenta enviar o e-mail
             Mail::to($user->email)->send(new ForgotPasswordMail($user->name, $resetUrl));
     
-            return response()->json(['message' => 'Um e-mail com instruções foi enviado para redefinição de senha.'], Response::HTTP_OK); // 200
+            return response()->json(['message' => 'Um e-mail foi enviado para você com instruções para a redefinição da senha.'], Response::HTTP_OK); // 200
     
         } catch (ValidationException $e) {
             return response()->json([
@@ -392,12 +392,13 @@ class AuthController extends Controller
 
             return response()->json(['message' => 'Senha redefinida com sucesso.'], Response::HTTP_OK);
 
-        } catch (\Throwable $e) {
+        } catch (Exception $e) {
             // Logue o erro se necessário
-            \Log::error('Erro ao redefinir senha', ['error' => $e->getMessage()]);
+            // Log::error('Erro ao redefinir senha', ['error' => $e->getMessage()]);
 
             return response()->json([
-                'message' => 'Erro ao redefinir a senha. Tente novamente mais tarde.'
+                'message' => 'Erro ao redefinir a senha. Tente novamente mais tarde.',
+                'error' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }    
