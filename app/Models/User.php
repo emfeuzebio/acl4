@@ -252,7 +252,7 @@ class User extends Authenticatable implements JWTSubject
         // Carrega informações no payload do token
         return [
             'iss' => env('APP_URL', 'http://localhost'),                    // Emissor do token
-            'exp' => now()->addMinutes(config('jwt.ttl', 60)),              // Tempo de expiração do token
+            'exp' => now()->addMinutes(config('jwt.ttl', 5)),              // Tempo de expiração do token
             'aud' => $aud,                                                  // Público-alvo (Audience) do token
             'user_id' => $this->id,                                         // ID do usuário
             'system_id' => $systemId ?? null,                               // ID do System em que o usuário logou
