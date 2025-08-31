@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Mail\NotifyUserMail;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Http;
 use App\Http\Requests\UserRegisterRequest;
@@ -683,7 +684,14 @@ class AuthController extends Controller
             
             // Criptografando e alterando a nova senha
             $user->password = Hash::make($validated['novaSenha']);
-            $user->save();            
+            $user->save();
+
+            // Notifica o Usuário da operação
+            Mail::to($user->email)->send(new NotifyUserMail(
+                "FEB Eventos - Alteração de Senha.", 
+                $user->name, 
+                "Sua senha de acesso ao Sistema " . config('app.name') . " foi alterada com sucesso.",
+            ));
 
             return response()->json(['message' => 'Senha alterada com sucesso.'], Response::HTTP_OK);
         } catch (Exception $e) {
