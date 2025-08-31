@@ -279,7 +279,7 @@ class AuthController extends Controller
             // Monta URL de redefinição
             // $resetUrl = url("/resetPassword/{$token}?email=" . urlencode($user->email));
             // Monta a URL de redefinição com o token e o email
-            $resetUrl = url("{$frontendUrl}/resetPassword?token={$token}&email=" . urlencode($user->email));
+            $resetUrl = url("{$frontendUrl}/#/pages/resetpassword/?token={$token}&email=" . urlencode($user->email));
     
             // Tenta enviar o e-mail
             Mail::to($user->email)->send(new ForgotPasswordMail($user->name, $resetUrl));
