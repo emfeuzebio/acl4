@@ -217,7 +217,8 @@ class UserController extends Controller
                         "Caso necessite Ativar novamente, procure o Administrador.";
 
                 // Vamos revogar o Token do User que esta sendo Desativado        
-                $token = Token::find($user->id);    // Encontrar o token pelo userId
+                // $token = Token::find($user->id);    // Encontrar o token pelo userId
+                $token = Token::where('user_id', $user->id)->first();   // Encontrar o token pelo userId
                 $token->status = 'revoked';         // Alterar o status do token para "expired"
                 $token->save();                     // Salva o Token
             }
