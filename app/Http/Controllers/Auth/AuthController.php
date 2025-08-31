@@ -191,7 +191,7 @@ class AuthController extends Controller
                     'name' => trim($request->name),
                     'email' => trim(strtolower($request->email)),
                     'password' => Hash::make(trim($request->password)),     // Hash seguro
-                    'active' => 'Y',
+                    'active' => 'N',
                 ]); 
 
                 // Caso veio o $systemId, vamos associar o usuário a um sistema específico
