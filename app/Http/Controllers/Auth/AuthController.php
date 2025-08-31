@@ -709,15 +709,9 @@ class AuthController extends Controller
             $payload = JWTAuth::getPayload($token);
             $systemId = $payload->get('system_id');            
 
-
-            // $payload = JWTAuth::setToken($token)->getPayload();
-            // $systemId = $payload['system_id'];
-            dd($payload);
-
             // vamos obter o nome do System
             $system = System::findOrFail($systemId);
             $systemName = $system->name;
-            // $systemName = "FEB Eventos";
 
             // Notifica o Usuário da operação
             Mail::to($user->email)->send(new NotifyUserMail(
