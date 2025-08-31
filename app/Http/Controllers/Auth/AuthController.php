@@ -305,12 +305,12 @@ class AuthController extends Controller
         }    
     }    
     
-    public function resetPassword(Request $request)
+    public function APAAGARresetPassword(Request $request)
     {
         $request->validate([
             'email' => 'required|string|email|max:255',
             'token' => 'required|string',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:6|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/',
         ]);
     
         $record = DB::table('password_reset_tokens')
@@ -337,10 +337,70 @@ class AuthController extends Controller
     
         // Remove o token após uso
         DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+        // Notifica o Usuário da operação
+        Mail::to($user->email)->send(new NotifyUserMail(
+            config('app.name') . " - Alteração de Senha.", 
+            $user->name, 
+            "Sua senha foi alterado com sucesso.",
+        ));
     
         return response()->json(['message' => 'Senha redefinida com sucesso.'], Response::HTTP_OK);   // 200
     }    
 
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|string|email|max:255',
+            'token' => 'required|string',
+            'password' => 'required|string|min:6|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/',
+        ]);
+
+        $record = DB::table('password_reset_tokens')
+            ->where('email', $request->email)
+            ->first();
+
+        if (!$record) {
+            return response()->json(['message' => 'Token não encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!Hash::check($request->token, $record->token)) {
+            return response()->json(['message' => 'Token inválido ou expirado.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json(['message' => 'Usuário não encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            DB::transaction(function () use ($user, $request) {
+                // Atualiza a senha
+                $user->password = Hash::make($request->password);
+                $user->save();
+
+                // Remove o token de reset
+                DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+                // Notifica por e-mail
+                Mail::to($user->email)->send(new NotifyUserMail(
+                    config('app.name') . " - Alteração de Senha.", 
+                    $user->name, 
+                    "Sua senha foi alterada com sucesso.",
+                ));
+            });
+
+            return response()->json(['message' => 'Senha redefinida com sucesso.'], Response::HTTP_OK);
+
+        } catch (\Throwable $e) {
+            // Logue o erro se necessário
+            \Log::error('Erro ao redefinir senha', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'message' => 'Erro ao redefinir a senha. Tente novamente mais tarde.'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }    
     public function logout(Request $request)
     {
         try {
