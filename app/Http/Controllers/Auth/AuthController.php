@@ -226,7 +226,7 @@ class AuthController extends Controller
                     config('app.name') . " - Registro de Usuário.", 
                     $user->name, 
                     "Seu pedido de Registro no {$systemName} foi executado com sucesso.\n" . 
-                    "Aguarde do Administrador analisar e lhe conceder o Perfil de Acesso necessário.\n" .
+                    "Aguarde o Administrador analisar e lhe conceder o Perfil de Acesso necessário.\n" .
                     "Então, um novo E-mail lhe será enviado.",
                 ));                
 
@@ -706,6 +706,8 @@ class AuthController extends Controller
             // Decodificar o payload para extrair o ID do System
             $payload = JWTAuth::setToken($token)->getPayload();
             $systemId = $payload['system_id'];
+
+            dd($payload);
 
             // vamos obter o nome do System
             $system = System::findOrFail($systemId);
