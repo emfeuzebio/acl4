@@ -163,82 +163,6 @@ class UserController extends Controller
         return response()->json($user);        
     }     
 
-    public function APAGARupdateSEMROLBAC(UserRequest $request)
-    {
-        $user = User::findOrFail($request->id);
-
-        // Antes de atualizar o User vamos pegar o seu active para controlar a notificação por Email
-        $currentActive = $user->active;
-
-        // Upload da foto se enviada
-        if ($request->hasFile('photo')) {
-
-            // Delete old photo se não for avatar padrão
-            if ($user->photo && !str_contains($user->photo, 'avatar.jpg')) {
-                Storage::delete('public/' . str_replace('storage/', '', $user->photo));
-            }
-
-            $file = $request->file('photo');
-            $filename = 'users/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public', $filename);                    // Salva em storage/app/public/users/
-            $user->photo = 'storage/' . $filename;                  // Atualiza o campo photo com caminho relativo
-        }
-
-        // Remove a foto se solicitado
-        if ($request->input('photo_removed') == '1') {
-            if ($user->photo && !str_contains($user->photo, 'avatar.jpg')) {
-                $filePath = str_replace('storage/', '', $user->photo);
-                Storage::disk('public')->delete($filePath);
-            }
-            $user->photo = null;
-        }        
-
-        // Atualiza os campos comuns, exceto 'photo'
-        $user->update($request->only(['name','email','phone','active']));
-
-        // Atualiza a senha apenas se foi enviada
-        if ($request->filled('password')) {
-            $user->password = Hash::make($request->password);
-            $user->save();
-        }
-
-        // Salva o campo 'photo' se foi atualizado
-        if ($request->hasFile('photo')) {
-            $user->save();
-        }
-
-        // se o active foi alterado, envia notificação ao Usuário por Email
-        if ($currentActive != $request->active) {
-            if ($request->active == 'Y') {
-                $subject = config('app.name') . " - Ativação de Usuário.";
-                $text = "Sua conta de Usuário foi Ativada com sucesso.";
-            } else {
-                $subject = config('app.name') . " - Desativação de Usuário.";
-                $text = "Sua conta de Usuário expirou ou foi Desativada.\n" .
-                        "Caso necessite Ativar novamente, procure o Administrador.";
-
-                // Vamos revogar todos Tokens ativos do User que esta sendo Desativado
-                dd(Token::where('user_id', $user->id)->get());
-
-                // $tokens = Token::where('user_id', $user->id)->where('status', 'active')->get();    // Encontrar os tokens ativos pelo userId
-                Token::where('user_id', $user->id)          // tokens do user atual
-                     ->where('status', 'active')            // tokens ativos
-                     ->update(['status' => 'revoked']);     // Alterar o status do token para "Revoked"
-
-                Log::debug();
-            }
-
-            // Notifica o Usuário da operação
-            Mail::to($user->email)->send(new NotifyUserMail(
-                $subject, 
-                $user->name, 
-                $text,
-            ));
-        }
-
-        return response()->json($user);
-    }   
-
     public function update(UserRequest $request)
     {
         DB::beginTransaction();
@@ -537,25 +461,31 @@ class UserController extends Controller
             }            
     
             if ($user->active == 'N') {
-                throw new Exception('Usuário Não Ativo.');
+                throw new Exception('Impossível Conceder/Revogar Perfis a um Usuário Não Ativo.');
             }            
+
+            $role = Profile::findOrFail($request->role_id);
+            $roleName = $role->name;
     
             if ($request->operation == 'assignRole') {
-                // assign de Role (attach)
-                $user->profiles()->attach($request->role_id);
+                $user->profiles()->attach($request->role_id);   // assign de Role (attach)
+
+                $subject = config('app.name') . " - Concessão de Perfil de Acesso à Usuário.";
+                $text = "O Perfil de Acesso {$roleName} lhe foi Concedido com sucesso.";
             } elseif ($request->operation == 'revokeRole') {
+                $user->profiles()->detach($request->role_id);   // Revoke the a Role (detach)
 
-                $profileCount = $user->profiles()->count();
-
-                // If the user has only one profile, do not allow removal
-                // if ($profileCount <= 1) {
-                //     throw new Exception("<b>Impossível revogar!</b><br/> O usuário deve ter pelo menos um Perfil de Acesso (Role).");
-                // }
-
-                // Revoke the a Role (detach)
-                $user->profiles()->detach($request->role_id);
+                $subject = config('app.name') . " - Revogação de Perfil de Acesso à Usuário.";
+                $text = "O Perfil de Acesso {$roleName} lhe foi Revogado com sucesso.";
             } 
-            
+
+            // Notifica o usuário por email
+            Mail::to($user->email)->send(new NotifyUserMail(
+                $subject,
+                $user->name,
+                $text
+            ));        
+                
             return response()->json(['sucesso' => true, 'message' => 'Salvo com sucesso.'], Response::HTTP_OK);
 
         } catch (Exception $e) {
