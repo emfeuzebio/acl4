@@ -13,6 +13,7 @@ use App\Models\Authorization;
 use App\Models\Organization;
 use App\Models\Profile;
 use App\Models\System;
+use App\Models\Token;
 use App\Models\User;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
@@ -214,6 +215,11 @@ class UserController extends Controller
                 $subject = config('app.name') . " - Desativação de Usuário.";
                 $text = "Sua conta de Usuário expirou ou foi Desativada.\n" .
                         "Caso necessite Ativar novamente, procure o Administrador.";
+
+                // Vamos revogar o Token do User que esta sendo Desativado        
+                $token = Token::find($user->id);    // Encontrar o token pelo userId
+                $token->status = 'revoked';         // Alterar o status do token para "expired"
+                $token->save();                     // Salva o Token
             }
 
             // Notifica o Usuário da operação
@@ -306,7 +312,7 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'Erro ao atualizar o usuário.',
                 'error' => $e->getMessage()
-            ], 500);
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
