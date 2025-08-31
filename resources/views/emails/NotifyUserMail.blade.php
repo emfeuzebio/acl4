@@ -12,7 +12,10 @@ Olá, {{ $name ?? 'usuário' }}!
 
 Se você não solicitou isso, nenhuma ação é necessária.
 
+<br/>
+<br/>
+<br/>
 Atenciosamente,  
-Equipe da ORGANIZACAO {{ config('app.name') }}
+Equipe de Administração do Sistema {{ config('app.name') }}
 @endcomponent
 

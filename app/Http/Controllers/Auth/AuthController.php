@@ -687,10 +687,19 @@ class AuthController extends Controller
             $user->save();
 
             // Notifica o Usuário da operação
+            /**
+             * Um User pode ter acesso a vários Sistema com a mesma senha (Login Centralizado)
+             * TODO incluir como parâmetro o systemId para poder personalizar a mensagem abaixo
+             */
+            $systemName = "FEB Eventos";
+
             Mail::to($user->email)->send(new NotifyUserMail(
-                "FEB Eventos - Alteração de Senha.", 
+                config('app.name') . " - Alteração de Senha.", 
                 $user->name, 
-                "Sua senha de acesso ao Sistema " . config('app.name') . " foi alterada com sucesso.",
+                // "{$systemName} - Sua senha de acesso ao foi alterada com sucesso.",
+                // "Sua solicitação para alterar a senha de acesso foi executada com sucesso.",
+                "A operação que você solicitou a partir do {$systemName} para alterar sua senha de acesso foi executada com sucesso.",
+                // "Sua senha de acesso ao Sistema " . config('app.name') . " foi alterada com sucesso.",
             ));
 
             return response()->json(['message' => 'Senha alterada com sucesso.'], Response::HTTP_OK);
