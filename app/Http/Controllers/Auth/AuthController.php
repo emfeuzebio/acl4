@@ -704,9 +704,14 @@ class AuthController extends Controller
              * Porém ele pede changePassword() a partir de um Sistema, então pegamos o nome deste 
              */
             // Decodificar o payload para extrair o ID do System
-            $payload = JWTAuth::setToken($token)->getPayload();
-            $systemId = $payload['system_id'];
+            // Recupera o token do header Authorization
+            $token = JWTAuth::getToken();
+            $payload = JWTAuth::getPayload($token);
+            $systemId = $payload->get('system_id');            
 
+
+            // $payload = JWTAuth::setToken($token)->getPayload();
+            // $systemId = $payload['system_id'];
             dd($payload);
 
             // vamos obter o nome do System
