@@ -536,6 +536,10 @@ class UserController extends Controller
                 throw new Exception('Usuário não encontrado.');
             }            
     
+            if ($user->ative == 'N') {
+                throw new Exception('Usuário Não Ativo.');
+            }            
+    
             if ($request->operation == 'assignRole') {
                 // assign de Role (attach)
                 $user->profiles()->attach($request->role_id);
