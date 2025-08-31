@@ -67,6 +67,10 @@ class AuthController extends Controller
                     return response()->json(['error' => 'Credenciais inválidas'], Response::HTTP_UNAUTHORIZED);   // 401
                 }
 
+                if ($user->active != 'Y') {
+                    return response()->json(['error' => 'Usuário Não Ativo.'], Response::HTTP_UNAUTHORIZED);
+                }
+
                 // PASSO 2 - Verifica se já existe um token ativo para o usuário
                 $existingToken = Token::where('user_id', $user->id)
                     ->where('status', 'active')                     // Verifica se está ativo
