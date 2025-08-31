@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Artisan;
 use App\Traits\ACLTrait;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -221,6 +222,8 @@ class UserController extends Controller
                 Token::where('user_id', $user->id)          // tokens do user atual
                      ->where('status', 'active')            // tokens ativos
                      ->update(['status' => 'revoked']);     // Alterar o status do token para "Revoked"
+
+                Log::debug();
             }
 
             // Notifica o Usuário da operação
