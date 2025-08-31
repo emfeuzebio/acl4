@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
+use App\Mail\NotifyUserMail;
 use App\Http\Requests\UserRequest;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
@@ -199,6 +201,25 @@ class UserController extends Controller
         if ($request->hasFile('photo')) {
             $user->save();
         }
+
+        // Caso o active foi alterado, vamos notificar o Usuário
+        if ($user->active != $request->active) {
+            if ($request->active == 'Y') {
+                $subject = config('app.name') . " - Ativação de Usuário.";
+                $text = "Sua conta de Usuário foi Ativada com sucesso.";
+            } else {
+                $subject = config('app.name') . " - Desativação de Usuário.";
+                $text = "Sua conta de Usuário expirou ou foi Desativada.\n" .
+                        "Caso necessite Ativar novamente, procure o Administrador.";
+            }
+        }
+
+        // Notifica o Usuário da operação
+        Mail::to($user->email)->send(new NotifyUserMail(
+            $subject, 
+            $user->name, 
+            $text,
+        ));
 
         return response()->json($user);
     }   
