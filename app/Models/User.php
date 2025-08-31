@@ -195,18 +195,18 @@ class User extends Authenticatable implements JWTSubject
 
     public function grantedActions(): array
     {
-        return $this->authorizations()->pluck('action.route')->unique()->toArray();
-    }    
-
-    public function grantedRoles(): array
-    {
-        // return $this->profiles->pluck('name')->toArray();
+        // return $this->authorizations()->pluck('action.route')->unique()->toArray();
         return $this->authorizations()
             ->pluck('action.route')
             ->map(fn($ability) => strtolower(trim($ability)))
             ->unique()
             ->values()
             ->toArray();
+    }    
+
+    public function grantedRoles(): array
+    {
+        return $this->profiles->pluck('name')->toArray();
     }    
 
     public function grantedSystems($systemId = false): array
