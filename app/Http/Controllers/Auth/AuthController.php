@@ -378,7 +378,7 @@ class AuthController extends Controller
             // Recupera o token do header Authorization
             $token = JWTAuth::getToken();
 
-            // Decodificar o payload para obter o ID do usuário
+            // Decodificar o payload para extrair o ID do usuário
             $payload = JWTAuth::setToken($token)->getPayload();
             $userId = $payload['sub']; // ID do usuário no token
 
@@ -699,13 +699,20 @@ class AuthController extends Controller
             $user->password = Hash::make($validated['novaSenha']);
             $user->save();
 
-            // Notifica o Usuário da operação
             /**
              * Um User pode ter acesso a vários Sistema com a mesma senha (Login Centralizado)
-             * TODO incluir como parâmetro o systemId para poder personalizar a mensagem abaixo
+             * Porém ele pede changePassword() a partir de um Sistema, então pegamos o nome deste 
              */
-            $systemName = "FEB Eventos";
+            // Decodificar o payload para extrair o ID do System
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $systemId = $payload['system_id'];
 
+            // vamos obter o nome do System
+            $system = System::findOrFail($systemId);
+            $systemName = $system->name;
+            // $systemName = "FEB Eventos";
+
+            // Notifica o Usuário da operação
             Mail::to($user->email)->send(new NotifyUserMail(
                 config('app.name') . " - Alteração de Senha.", 
                 $user->name, 
