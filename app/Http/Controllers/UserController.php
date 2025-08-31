@@ -216,11 +216,12 @@ class UserController extends Controller
                 $text = "Sua conta de Usuário expirou ou foi Desativada.\n" .
                         "Caso necessite Ativar novamente, procure o Administrador.";
 
-                // Vamos revogar o Token do User que esta sendo Desativado        
-                // $token = Token::find($user->id);    // Encontrar o token pelo userId
-                $token = Token::where('user_id', $user->id)->first();   // Encontrar o token pelo userId
-                $token->status = 'revoked';         // Alterar o status do token para "expired"
-                $token->save();                     // Salva o Token
+                // Vamos revogar todos Tokens do User que esta sendo Desativado        
+                $tokens = Token::where('user_id', $user->id)->get();    // Encontrar os tokens pelo userId
+                foreach ($tokens as $token) {
+                    $token->status = 'revoked';         // Alterar o status do token para "Revoked"
+                    $token->save();                     // Salva o Token
+                }                
             }
 
             // Notifica o Usuário da operação
