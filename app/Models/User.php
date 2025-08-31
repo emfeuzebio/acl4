@@ -249,6 +249,7 @@ class User extends Authenticatable implements JWTSubject
             'exp' => now()->addMinutes(config('jwt.ttl', 60)),              // Tempo de expiração do token
             'aud' => $aud,                                                  // Público-alvo (Audience) do token
             'user_id' => $this->id,                                         // ID do usuário
+            'system_id' => $systemId ?? null,                               // ID do System em que o usuário logou
             'user_name' => $this->name,                                     // Nome do usuário
             'user_phone' => $this->phone,                                   // Telefone do usuário
             'user_photo' => $this->photo,                                   // caminho da Foto do usuário (não é  BLOB)

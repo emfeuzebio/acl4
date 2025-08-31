@@ -219,15 +219,15 @@ class AuthController extends Controller
                 ]);
 
                 // Notifica o Usuário da operação
-                // $systemName = "FEB Eventos";
                 $system = System::findOrFail($request->system_id);
                 $systemName = $system->name;
 
                 Mail::to($user->email)->send(new NotifyUserMail(
                     config('app.name') . " - Registro de Usuário.", 
                     $user->name, 
-                    "Seu pedido de Registro no {$systemName} foi executada com sucesso.\n" . 
-                    "Aguarde do Administrador analisar e lhe conceder o Perfil de Acesso necessário.\n",
+                    "Seu pedido de Registro no {$systemName} foi executado com sucesso.\n" . 
+                    "Aguarde do Administrador analisar e lhe conceder o Perfil de Acesso necessário.\n" .
+                    "Então, um novo E-mail lhe será enviado.",
                 ));                
 
                 return response()->json([
