@@ -536,7 +536,7 @@ class UserController extends Controller
                 throw new Exception('Usuário não encontrado.');
             }            
     
-            if ($user->ative == 'N') {
+            if ($user->active == 'N') {
                 throw new Exception('Usuário Não Ativo.');
             }            
     
