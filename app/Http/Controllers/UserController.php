@@ -161,7 +161,7 @@ class UserController extends Controller
         return response()->json($user);        
     }     
 
-    public function update(UserRequest $request)
+    public function APAGARupdateSEMROLBAC(UserRequest $request)
     {
         $user = User::findOrFail($request->id);
 
@@ -226,6 +226,89 @@ class UserController extends Controller
 
         return response()->json($user);
     }   
+
+    public function update(UserRequest $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $user = User::findOrFail($request->id);
+            $currentActive = $user->active;
+
+            // Verifica se uma nova foto foi enviada
+            $novaFoto = null;
+            $caminhoFotoAntiga = $user->photo;
+
+            if ($request->hasFile('photo')) {
+                $file = $request->file('photo');
+                $filename = 'users/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('public', $filename); // Armazena no disco
+                $novaFoto = 'storage/' . $filename;
+                $user->photo = $novaFoto;
+            }
+
+            // Remove a foto se solicitado
+            if ($request->input('photo_removed') == '1') {
+                $user->photo = null;
+            }
+
+            // Atualiza os campos comuns (menos senha)
+            $user->update($request->only(['name','email','phone','active']));
+
+            // Atualiza a senha se foi enviada
+            if ($request->filled('password')) {
+                $user->password = Hash::make($request->password);
+                $user->save();
+            }
+
+            DB::commit();
+
+            // :: ATENÇÃO: Só aqui, após commit, manipulamos arquivos e enviamos email ::
+
+            // Deleta a foto antiga se necessário
+            if ($novaFoto && $caminhoFotoAntiga && !str_contains($caminhoFotoAntiga, 'avatar.jpg')) {
+                Storage::delete('public/' . str_replace('storage/', '', $caminhoFotoAntiga));
+            }
+
+            if ($request->input('photo_removed') == '1' && $caminhoFotoAntiga && !str_contains($caminhoFotoAntiga, 'avatar.jpg')) {
+                Storage::delete('public/' . str_replace('storage/', '', $caminhoFotoAntiga));
+            }
+
+            // Notificação por e-mail se o campo 'active' mudou
+            if ($currentActive != $request->active) {
+                if ($request->active == 'Y') {
+                    $subject = config('app.name') . " - Ativação de Usuário.";
+                    $text = "Sua conta de Usuário foi Ativada com sucesso.";
+                } else {
+                    $subject = config('app.name') . " - Desativação de Usuário.";
+                    $text = "Sua conta de Usuário expirou ou foi Desativada.\n" .
+                            "Caso necessite Ativar novamente, procure o Administrador.";
+                }
+
+                // Notifica o usuário por email
+                Mail::to($user->email)->send(new NotifyUserMail(
+                    $subject,
+                    $user->name,
+                    $text
+                ));
+            }
+
+            return response()->json($user);
+        
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            // Se nova foto foi salva, remove para evitar lixo
+            if (isset($novaFoto)) {
+                Storage::delete('public/' . str_replace('storage/', '', $novaFoto));
+            }
+
+            return response()->json([
+                'message' => 'Erro ao atualizar o usuário.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function updateProfile(Request $request)
     {
