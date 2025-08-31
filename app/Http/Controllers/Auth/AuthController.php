@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ForgotPasswordMail;
+use App\Models\System;
 use Illuminate\Support\Str;
 use App\Models\User;
 use Carbon\Carbon;
@@ -216,6 +217,18 @@ class AuthController extends Controller
                     'ip' => $request->ip(),
                     'browser' => $request->header('User-Agent'),
                 ]);
+
+                // Notifica o Usuário da operação
+                // $systemName = "FEB Eventos";
+                $system = System::findOrFail($request->system_id);
+                $systemName = $system->name;
+
+                Mail::to($user->email)->send(new NotifyUserMail(
+                    config('app.name') . " - Registro de Usuário.", 
+                    $user->name, 
+                    "Seu pedido de Registro no {$systemName} foi executada com sucesso.\n" . 
+                    "Aguarde do Administrador analisar e lhe conceder o Perfil de Acesso necessário.\n",
+                ));                
 
                 return response()->json([
                     'message' => 'Usuário registrado com sucesso!',
