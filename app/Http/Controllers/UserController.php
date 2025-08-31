@@ -165,6 +165,9 @@ class UserController extends Controller
     {
         $user = User::findOrFail($request->id);
 
+        // Antes de atualizar o User vamos pegar o seu active para controlar a notificação por Email
+        $currentActive = $user->active;
+
         // Upload da foto se enviada
         if ($request->hasFile('photo')) {
 
@@ -202,8 +205,8 @@ class UserController extends Controller
             $user->save();
         }
 
-        // Caso o active foi alterado, vamos notificar o Usuário
-        if ($user->active != $request->active) {
+        // se o active foi alterado, envia notificação ao Usuário por Email
+        if ($currentActive != $request->active) {
             if ($request->active == 'Y') {
                 $subject = config('app.name') . " - Ativação de Usuário.";
                 $text = "Sua conta de Usuário foi Ativada com sucesso.";
@@ -212,14 +215,14 @@ class UserController extends Controller
                 $text = "Sua conta de Usuário expirou ou foi Desativada.\n" .
                         "Caso necessite Ativar novamente, procure o Administrador.";
             }
-        }
 
-        // Notifica o Usuário da operação
-        Mail::to($user->email)->send(new NotifyUserMail(
-            $subject, 
-            $user->name, 
-            $text,
-        ));
+            // Notifica o Usuário da operação
+            Mail::to($user->email)->send(new NotifyUserMail(
+                $subject, 
+                $user->name, 
+                $text,
+            ));
+        }
 
         return response()->json($user);
     }   
