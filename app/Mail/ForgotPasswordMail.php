@@ -23,7 +23,7 @@ class ForgotPasswordMail extends Mailable
     {
         // com Markdown FUNCIONANDO
         return $this
-            ->subject('Recuperação de Senha')
+            ->subject(config('app.name') . ' - Recuperação de Senha')
             ->markdown('emails.forgot');
 
         // com HTML    

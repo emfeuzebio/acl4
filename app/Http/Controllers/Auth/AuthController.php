@@ -274,7 +274,7 @@ class AuthController extends Controller
             );
 
             // Acesse o domínio configurado no .env
-            $frontendUrl = env('FRONTEND_URL');             
+            $frontendUrl = env('FRONTEND_URL');
     
             // Monta URL de redefinição
             // $resetUrl = url("/resetPassword/{$token}?email=" . urlencode($user->email));
