@@ -753,7 +753,7 @@ class AuthController extends Controller
             ]);
 
             if ($user->photo) {
-                Storage::disk('public')->delete('users/' . $user->photo); // Agora funciona porque $user->photo é relativo ao disk
+                Storage::disk('public')->delete('storage/users/' . $user->photo); // Agora funciona porque $user->photo é relativo ao disk
             }
 
             $file = $request->file('photo');
