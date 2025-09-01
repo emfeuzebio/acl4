@@ -241,3 +241,26 @@ Route::get('/admin/migrateFreshSeed', function () {
     }
 });
 
+Route::get('/admin/fixStorageLink', function () {
+
+    // Verifica se está em produção e bloqueia se for o caso
+    if (app()->environment('production')) {
+        abort(403, 'Esta ação não é permitida em ambiente de produção.');
+    }
+    
+    // Verifica se o usuário está autenticado e é administrador
+    if (!auth()->check() || !auth()->user()->is_admin) {
+        abort(403, 'Acesso não autorizado.');
+    }    
+
+    try {
+        $exitCode = Artisan::call('storage:link-custom', ['--force' => true]);
+        
+        return "<pre>" . Artisan::output() . "</pre>";
+        
+    } catch (Exception $e) {
+        return "Erro: " . $e->getMessage();
+    }    
+
+});
+
