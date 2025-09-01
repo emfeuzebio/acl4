@@ -759,40 +759,13 @@ class AuthController extends Controller
                 // Isso procura em: storage/app/public/users/7e72036e-e738-4de7-8b2a-42eccd1d7d7b.jpg
             }
 
-
             // 2. Salva a nova foto na pasta 'users' dentro do disco 'public'
             $path = $request->file('photo')->store('users', 'public');
             // $path será: "users/7e72036e-e738-4de7-8b2a-42eccd1d7d7b.jpg"
-            
 
             // Armazena no banco o caminho relativo ao disco public
             $user->photo = $path;
             $user->save();            
-
-
-
-            // if ($user->photo) {
-            //     // Storage::disk('public')->delete('storage/users/' . $user->photo); // Agora funciona porque $user->photo é relativo ao disk
-
-            //     $pathToDelete = $user->photo;
-            //         Log::info('Tentando deletar foto:', [
-            //             'path' => $pathToDelete,
-            //             'full_path' => storage_path('users/' . $pathToDelete),
-            //             'exists' => Storage::disk('public')->exists($pathToDelete)
-            //         ]);
-                    
-            //         Storage::disk('public')->delete($pathToDelete);                
-            // }
-
-            // $file = $request->file('photo');
-            // $filename = 'users/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-
-            // // Salva o arquivo corretamente no disco "public"
-            // $file->storeAs('public', $filename);
-
-            // Salva apenas o caminho relativo no banco
-            // $user->photo = 'storage/' . $filename;
-            // $user->save();
 
             return response()->json($user);
         } catch (Exception $e) {
