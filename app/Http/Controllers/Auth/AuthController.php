@@ -402,31 +402,7 @@ class AuthController extends Controller
                 'error' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-    }    
-    public function logoutOLD(Request $request)
-    {
-        try {
-            // Recupera o token do header Authorization
-            $token = JWTAuth::getToken();
-
-            // Decodificar o payload para obter o ID do usuário
-            $payload = JWTAuth::setToken($token)->getPayload();
-            $userId = $payload->get('sub'); // 'sub' geralmente é o ID do usuário
-
-            // Invalida o token
-            JWTAuth::invalidate($token);
-            Auth::logout();
-
-            // Atualizar o status do token na tabela para 'invalidated'
-            Token::where('user_id', $userId)
-                 ->where('token', $token)
-                ->update(['status' => 'invalidated']);
-
-            return response()->json(['message' => 'Logout realizado com sucesso'], Response::HTTP_OK);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Não foi possível realizar o logout. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
-        }
-    }  
+    } 
 
     public function logout(Request $request)
     {
@@ -702,7 +678,7 @@ class AuthController extends Controller
         return response()->json(compact('token'));
     }
 
-    public function update(Request $request)
+    public function updateOLD(Request $request)
     {
         try {        
             // Verifica se o token foi enviado no cabeçalho Authorization
@@ -732,6 +708,50 @@ class AuthController extends Controller
             return response()->json(['error' => 'Houve um erro ao Salvar os dados do usuário. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
         }
     }
+
+    public function update(Request $request)
+    {
+        try {        
+            // Verifica se o token foi enviado
+            if (!$token = $request->bearerToken()) {
+                return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
+            }            
+
+            // Valida e obtém o usuário autenticado
+            $user = JWTAuth::parseToken()->authenticate();
+            if (!$user) {
+                return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
+            }
+
+            // Validação dos campos
+            $validated = $request->validate([
+                'name' => 'required|string|min:6',
+                'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+                'phone' => 'string|min:10|max:15|nullable',
+            ]);
+
+            // Aplica os campos validados no modelo
+            $user->fill($validated);
+            $user->save();
+
+            return response()->json($user);
+            
+        } catch (ValidationException $e) {
+            // Captura específica para erros de validação
+            return response()->json([
+                'message' => 'Dados de entrada inválidos',
+                'errors' => $e->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Token inválido'], Response::HTTP_UNAUTHORIZED);
+            
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Houve um erro ao salvar os dados do usuário. ' . $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }    
 
     public function updatePhoto(Request $request)
     {
