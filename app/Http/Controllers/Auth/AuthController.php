@@ -26,6 +26,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 class AuthController extends Controller
 {
@@ -402,7 +403,7 @@ class AuthController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }    
-    public function logout(Request $request)
+    public function logoutOLD(Request $request)
     {
         try {
             // Recupera o token do header Authorization
@@ -426,6 +427,43 @@ class AuthController extends Controller
             return response()->json(['error' => 'Não foi possível realizar o logout. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
         }
     }  
+
+    public function logout(Request $request)
+    {
+        try {
+            $token = JWTAuth::getToken();
+            
+            // Tenta decodificar mesmo que o token esteja expirado
+            JWTAuth::setToken($token)->checkOrFail();
+            
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $userId = $payload->get('sub');
+
+            JWTAuth::invalidate($token);
+            Auth::logout();
+
+            Token::where('user_id', $userId)
+                ->where('token', $token)
+                ->update(['status' => 'invalidated']);
+
+            return response()->json(['message' => 'Logout realizado com sucesso'], Response::HTTP_OK);
+            
+        } catch (TokenExpiredException $e) {
+            // Token expirado, mas ainda assim podemos invalidá-lo na base de dados
+            $token = JWTAuth::getToken();
+            $payload = JWTAuth::manager()->getJWTProvider()->decode($token);
+            $userId = $payload['sub'];
+            
+            Token::where('user_id', $userId)
+                ->where('token', $token)
+                ->update(['status' => 'invalidated']);
+
+            return response()->json(['message' => 'Sessão expirada'], Response::HTTP_BAD_REQUEST);
+            
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Token inválido'], Response::HTTP_OK);
+        }
+    }    
     
     public function me(Request $request)
     {
