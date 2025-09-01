@@ -466,6 +466,7 @@
 
                 // Opcional: esconder o botão "Remover foto" pois já está removido
                 // $(this).hide();
+                $(this).prop('disabled', true);
             });            
 
             var id = '';
