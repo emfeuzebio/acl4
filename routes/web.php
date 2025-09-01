@@ -244,7 +244,7 @@ Route::get('/admin/migrateFreshSeed', function () {
 Route::get('/admin/fixStorageLink', function () {
 
     // Verifica se está em produção e bloqueia se for o caso
-    if (app()->environment('production')) {
+    if (!app()->environment('production')) {
         abort(403, 'Esta ação não é permitida em ambiente de produção.');
     }
     
