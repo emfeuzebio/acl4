@@ -252,15 +252,56 @@ Route::get('/admin/fixStorageLink', function () {
     // if (!auth()->check() || !auth()->user()->is_admin) {
     //     abort(403, 'Acesso não autorizado.');
     // }    
-
-    try {
-        $exitCode = Artisan::call('storage:link-custom', ['--force' => true]);
         
-        return "<pre>exitCode: {$exitCode}" . Artisan::output() . "</pre>";
+    $results = [];
+    
+    try {
+        // 1. Recria o link simbólico
+        Artisan::call('storage:link');
+        $results['storage_link'] = Artisan::output();
+        
+        // 2. Limpa caches antigos
+        Artisan::call('optimize:clear');
+        $results['optimize_clear'] = Artisan::output();
+        
+        // 3. Otimiza a aplicação
+        Artisan::call('optimize');
+        $results['optimize'] = Artisan::output();
+        
+        // 4. Cache de configuração
+        Artisan::call('config:cache');
+        $results['config_cache'] = Artisan::output();
+        
+        // 5. Cache de rotas
+        Artisan::call('route:cache');
+        $results['route_cache'] = Artisan::output();
+        
+        // 6. Cache de views
+        Artisan::call('view:cache');
+        $results['view_cache'] = Artisan::output();
+        
+        // 7. Ajustar permissões (executa comandos shell)
+        $storagePerms = shell_exec('chmod -R 755 storage/ 2>&1');
+        $publicPerms = shell_exec('chmod -R 755 public/ 2>&1');
+        
+        $results['permissions'] = [
+            'storage' => $storagePerms,
+            'public' => $publicPerms
+        ];
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Scripts de deploy executados com sucesso!',
+            'results' => $results
+        ]);
         
     } catch (Exception $e) {
-        return "Erro: " . $e->getMessage();
-    }    
+        return response()->json([
+            'success' => false,
+            'message' => 'Erro: ' . $e->getMessage(),
+            'results' => $results
+        ], 500);
+    }         
 
 });
 
