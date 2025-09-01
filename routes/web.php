@@ -4,13 +4,15 @@ use App\Http\Controllers\ActionController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\EntityController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -302,6 +304,57 @@ Route::get('/admin/fixStorageLink', function () {
             'results' => $results
         ], 500);
     }         
+
+});
+
+Route::get('/admin/fixStorageLink2', function () {
+
+    // Verifica se está em produção e bloqueia se for o caso
+    // if (app()->environment('production')) {
+    //     abort(403, 'Esta ação não é permitida em ambiente de produção.');
+    // }
+    
+    // Verifica se o usuário está autenticado e é administrador
+    // if (!auth()->check() || !auth()->user()->is_admin) {
+    //     abort(403, 'Acesso não autorizado.');
+    // }    
+        
+        $publicStorage = public_path('storage');
+        $storageApp = storage_path('app/public');
+
+        // Verifica se o diretório de origem existe
+        if (!File::exists($storageApp)) {
+            File::makeDirectory($storageApp, 0755, true);
+            $this->info("Diretório $storageApp criado.");
+        }
+
+        // Remove link existente se houver
+        if (File::exists($publicStorage)) {
+            if (is_link($publicStorage)) {
+                unlink($publicStorage);
+                $this->info("Link simbólico antigo removido.");
+            } else {
+                $this->error("$publicStorage já existe e não é um link simbólico!");
+                return 1;
+            }
+        }
+
+        // Cria o link simbólico usando symlink() nativo do PHP
+        try {
+            if (symlink($storageApp, $publicStorage)) {
+                $this->info("Link simbólico [{$publicStorage}] criado com sucesso para [{$storageApp}]");
+                Log::info("Link simbólico storage criado com sucesso.");
+                return 0;
+            } else {
+                $this->error("Falha ao criar link simbólico.");
+                Log::error("Falha ao criar link simbólico para storage.");
+                return 1;
+            }
+        } catch (Exception $e) {
+            $this->error("Erro: " . $e->getMessage());
+            Log::error("Erro ao criar link simbólico: " . $e->getMessage());
+            return 1;
+        }
 
 });
 
