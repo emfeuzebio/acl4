@@ -757,13 +757,13 @@ class AuthController extends Controller
             }
 
             $file = $request->file('photo');
-            $filename = 'storage/users/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $filename = 'users/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
 
             // Salva o arquivo corretamente no disco "public"
             $file->storeAs('public', $filename);
 
             // Salva apenas o caminho relativo no banco
-            $user->photo = $filename;
+            $user->photo = 'storage/' . $filename;
             $user->save();
 
             return response()->json($user);
