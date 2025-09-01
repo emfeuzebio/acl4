@@ -753,14 +753,14 @@ class AuthController extends Controller
             ]);
 
             if ($user->photo) {
-                Storage::disk('public')->delete($user->photo); // Agora funciona porque $user->photo é relativo ao disk
+                Storage::disk('public/users/')->delete($user->photo); // Agora funciona porque $user->photo é relativo ao disk
             }
 
             $file = $request->file('photo');
-            $filename = 'users/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
+            $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
 
             // Salva o arquivo corretamente no disco "public"
-            $file->storeAs('public', $filename);
+            $file->storeAs('public/users/', $filename);
 
             // Salva apenas o caminho relativo no banco
             $user->photo = 'storage/' . $filename;
