@@ -458,7 +458,7 @@ class AuthController extends Controller
                 ->where('token', $token)
                 ->update(['status' => 'invalidated']);
 
-            return response()->json(['message' => 'Sessão expirada'], Response::HTTP_BAD_REQUEST);
+            return response()->json(['message' => 'Sessão expirada'], Response::HTTP_ACCEPTED);
             
         } catch (JWTException $e) {
             return response()->json(['error' => 'Token inválido'], Response::HTTP_OK);
