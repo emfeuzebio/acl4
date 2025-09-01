@@ -261,33 +261,33 @@ Route::get('/admin/fixStorageLink', function () {
         $results['storage_link'] = Artisan::output();
         
         // 2. Limpa caches antigos
-        Artisan::call('optimize:clear');
-        $results['optimize_clear'] = Artisan::output();
+        // Artisan::call('optimize:clear');
+        // $results['optimize_clear'] = Artisan::output();
         
-        // 3. Otimiza a aplicação
-        Artisan::call('optimize');
-        $results['optimize'] = Artisan::output();
+        // // 3. Otimiza a aplicação
+        // Artisan::call('optimize');
+        // $results['optimize'] = Artisan::output();
         
-        // 4. Cache de configuração
-        Artisan::call('config:cache');
-        $results['config_cache'] = Artisan::output();
+        // // 4. Cache de configuração
+        // Artisan::call('config:cache');
+        // $results['config_cache'] = Artisan::output();
         
-        // 5. Cache de rotas
-        Artisan::call('route:cache');
-        $results['route_cache'] = Artisan::output();
+        // // 5. Cache de rotas
+        // Artisan::call('route:cache');
+        // $results['route_cache'] = Artisan::output();
         
-        // 6. Cache de views
-        Artisan::call('view:cache');
-        $results['view_cache'] = Artisan::output();
+        // // 6. Cache de views
+        // Artisan::call('view:cache');
+        // $results['view_cache'] = Artisan::output();
         
-        // 7. Ajustar permissões (executa comandos shell)
-        $storagePerms = shell_exec('chmod -R 755 storage/ 2>&1');
-        $publicPerms = shell_exec('chmod -R 755 public/ 2>&1');
+        // // 7. Ajustar permissões (executa comandos shell)
+        // $storagePerms = shell_exec('chmod -R 755 storage/ 2>&1');
+        // $publicPerms = shell_exec('chmod -R 755 public/ 2>&1');
         
-        $results['permissions'] = [
-            'storage' => $storagePerms,
-            'public' => $publicPerms
-        ];
+        // $results['permissions'] = [
+        //     'storage' => $storagePerms,
+        //     'public' => $publicPerms
+        // ];
         
         return response()->json([
             'success' => true,
