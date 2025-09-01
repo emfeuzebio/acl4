@@ -257,8 +257,8 @@ Route::get('/admin/fixStorageLink', function () {
     
     try {
         // 1. Recria o link simbólico
-        // Artisan::call('storage:link');
-        // $results['storage_link'] = Artisan::output();
+        Artisan::call('storage:link');
+        $results['storage_link'] = Artisan::output();
         
         // 2. Limpa caches antigos
         Artisan::call('optimize:clear');
