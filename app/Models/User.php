@@ -198,7 +198,8 @@ class User extends Authenticatable implements JWTSubject
         // return $this->authorizations()->pluck('action.route')->unique()->toArray();
         return $this->authorizations()
             ->pluck('action.route')
-            ->map(fn($ability) => strtolower(trim($ability)))
+            ->map(fn($ability) => trim($ability))
+            // ->map(fn($ability) => strtolower(trim($ability)))
             ->unique()
             ->values()
             ->toArray();
