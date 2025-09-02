@@ -769,11 +769,12 @@ class AuthController extends Controller
 
             // Validação do arquivo de imagem
             $request->validate([
-                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+                'photo' => 'nullable|sometimes|image|mimes:jpeg,png,jpg|max:2048',
             ]);
 
-            // Se photo é null, remove a foto existente
-            if ($request->photo === null) {
+            // Verifica se foi enviado um valor null no FormData
+            $photoInput = $request->input('photo');
+            if ($photoInput === 'null' || $photoInput === null) {
                 // 1. Apagar a foto atual do disk 'public'
                 Storage::disk('public')->delete($user->photo);
                 
