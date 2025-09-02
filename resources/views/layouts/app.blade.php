@@ -382,11 +382,9 @@
 
                         // carregas os dados dos campos no Form
                         $.each(response, function( key, value ) {
-
                             // console.log('key:', key);
 
                             if (key == 'active') {
-                                // console.log('active:', response.active);
                                 $('#editModal #formEntity #active').prop('checked', (response.active == "Y" ? true : false));
                             } else if (key == 'photo') {
                                 // console.log('photo:', response.photo);

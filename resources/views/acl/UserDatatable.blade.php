@@ -466,7 +466,7 @@
 
                 // Opcional: esconder o botão "Remover foto" pois já está removido
                 // $(this).hide();
-                $(this).prop('disabled', true);
+                // $(this).prop('disabled', true);
             });            
 
             var id = '';
@@ -519,6 +519,10 @@
 
                         // Modal edition save button control
                         if (response.authorizations.includes(action + '.update')) { $("#btnSave").show(); } else { $("#btnSave").hide(); }
+
+                        // Modal buttom Remove Photo toggle over data.photo
+                        // if (response.data) { $("#btnSave").show(); } else { $("#btnSave").hide(); }
+                        $('#btnExcluirFoto').prop('disabled', !response.data);
 
                         return response.data;                           // Returns list of data to DataTables
                     },
