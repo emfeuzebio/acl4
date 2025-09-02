@@ -725,7 +725,7 @@ class AuthController extends Controller
 
             // Validação dos campos
             $validated = $request->validate([
-                'name' => 'required|string|min:6',
+                'name' => 'required|string|min:6|max:50',
                 'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
                 'phone' => 'string|min:10|max:15|nullable',
             ]);
@@ -769,27 +769,59 @@ class AuthController extends Controller
 
             // Validação do arquivo de imagem
             $request->validate([
-                'photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+                'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             ]);
 
-            // 1. Apagar a foto atual do disk 'public'
-            if ($user->photo) {
-                // Deleta usando o disco 'public'
+            // Se photo é null, remove a foto existente
+            if ($request->photo === null) {
+                // 1. Apagar a foto atual do disk 'public'
                 Storage::disk('public')->delete($user->photo);
-                // Isso procura em: storage/app/public/users/7e72036e-e738-4de7-8b2a-42eccd1d7d7b.jpg
+                
+                // 2. Atualiza no banco para null
+                $user->photo = null;
+                $user->save();
+                
+                return response()->json($user);
+            }            
+
+            // Se há uma nova foto, processa o upload
+            if ($request->hasFile('photo')) {
+                // 1. Apagar a foto atual do disk 'public'
+                if ($user->photo) {
+                    Storage::disk('public')->delete($user->photo);  // Deleta usando o disco 'public'
+                    // Isso procura em: storage/app/public/users/7e72036e-e738-4de7-8b2a-42eccd1d7d7b.jpg
+                }
+
+                // 2. Salva a nova foto na pasta 'users' dentro do disco 'public'
+                $path = $request->file('photo')->store('users', 'public');
+                // $path será: "users/7e72036e-e738-4de7-8b2a-42eccd1d7d7b.jpg"
+
+                // Armazena no banco o caminho relativo ao disco public
+                $user->photo = $path;
+                $user->save();       
+                
+                return response()->json(['message' => 'Foto atualizada com sucesso','user' => $user], Response::HTTP_OK);
             }
 
-            // 2. Salva a nova foto na pasta 'users' dentro do disco 'public'
-            $path = $request->file('photo')->store('users', 'public');
-            // $path será: "users/7e72036e-e738-4de7-8b2a-42eccd1d7d7b.jpg"
+            // Se chegou aqui, não foi enviado nem null nem arquivo
+            return response()->json([
+                'error' => 'Nenhuma operação de foto foi solicitada'
+            ], Response::HTTP_BAD_REQUEST);            
 
-            // Armazena no banco o caminho relativo ao disco public
-            $user->photo = $path;
-            $user->save();            
-
-            return response()->json($user);
+        } catch (ValidationException $e) {
+        // Captura específica para erros de validação
+        return response()->json([
+            'message' => 'Dados de entrada inválidos',
+            'errors' => $e->errors()
+        ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Token inválido'], Response::HTTP_UNAUTHORIZED);
+            
         } catch (Exception $e) {
-            return response()->json(['error' => 'Houve um erro ao processar a operação. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
+            return response()->json([
+                'error' => 'Houve um erro ao processar a operação. ' . $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
     
