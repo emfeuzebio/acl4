@@ -522,7 +522,8 @@
 
                         // Modal buttom Remove Photo toggle over data.photo
                         // if (response.data) { $("#btnSave").show(); } else { $("#btnSave").hide(); }
-                        $('#btnExcluirFoto').prop('disabled', !response.data);
+                        // $('#btnExcluirFoto').prop('disabled', !response.data);
+                        $('#btnExcluirFoto').prop('disabled', ( response.data.photo ? false : true ));
 
                         return response.data;                           // Returns list of data to DataTables
                     },
