@@ -775,9 +775,13 @@ class AuthController extends Controller
             // Verifica se foi enviado um valor null no FormData
             $photoInput = $request->input('photo');
             if ($photoInput === 'null' || $photoInput === null) {
-                // 1. Apagar a foto atual do disk 'public'
-                Storage::disk('public')->delete($user->photo);
-                
+
+                // VERIFICA SE $user->photo NÃO É NULL ANTES DE TENTAR DELETAR
+                if ($user->photo && !empty($user->photo)) {
+                    // 1. Apagar a foto atual do disk 'public'
+                    Storage::disk('public')->delete($user->photo);
+                }
+
                 // 2. Atualiza no banco para null
                 $user->photo = null;
                 $user->save();
