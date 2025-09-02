@@ -520,11 +520,6 @@
                         // Modal edition save button control
                         if (response.authorizations.includes(action + '.update')) { $("#btnSave").show(); } else { $("#btnSave").hide(); }
 
-                        // Modal buttom Remove Photo toggle over data.photo
-                        // if (response.data) { $("#btnSave").show(); } else { $("#btnSave").hide(); }
-                        // $('#btnExcluirFoto').prop('disabled', !response.data);
-                        $('#btnExcluirFoto').prop('disabled', ( response.data.photo ? false : true ));
-
                         return response.data;                           // Returns list of data to DataTables
                     },
                     error: function(xhr, status, error) {

@@ -378,6 +378,12 @@
                         $('#editModal #modalLabel').html("{{ __('acl.crud.editRegLabel')}} " + entityName);
                         $('#editModal #form-group-id').show();                  // sendo uma edição mostra o ID do registro
                         $("#editModal #btnInsert").hide();                      // esconde o btn Inserir  
+
+                        // Modal buttom Remove Photo toggle over data.photo
+                        $('#formEntity #btnExcluirFoto').prop('disabled', ( response.active == 'Y' ? ( response.photo ? false : true ) : true ));
+                        $('#formEntity #photo').prop('disabled', ( response.active == 'Y' ? false : true ));
+                        // console.log(response.photo);
+
                         $('#editModal').modal('show');                          // mostra o modal de edição de dados
 
                         // carregas os dados dos campos no Form
