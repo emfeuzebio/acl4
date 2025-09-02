@@ -392,7 +392,7 @@
                                 // console.log('photo:', response.photo);
 
                                 // Caminho da imagem padrão
-                                let photoPath = response.photo ? response.photo : '/storage/users/avatar.jpg';
+                                let photoPath = response.photo ? '/storage/' + response.photo : '/storage/users/avatar.jpg';
 
                                 $('#editModal #formEntity #preview-image').attr('src', photoPath); 
                                 $('#editModal #formEntity #photo-preview').show();
