@@ -753,7 +753,7 @@ class AuthController extends Controller
         }
     }    
 
-    public function updatePhoto(Request $request)
+    public function updatePhotoOLD(Request $request)
     {
          try {        
             // Verifica se o token foi enviado no cabeçalho Authorization
@@ -829,6 +829,94 @@ class AuthController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    public function updatePhoto(Request $request)
+    {
+        try {        
+            // Verifica se o token foi enviado no cabeçalho Authorization
+            if (!$token = $request->bearerToken()) {
+                return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
+            }            
+
+            // Valida e obtém o usuário autenticado
+            $user = JWTAuth::parseToken()->authenticate();
+            if (!$user) {
+                return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
+            }
+
+            // Validação do arquivo de imagem - CORRIGIDO
+            $request->validate([
+                'photo' => 'nullable|sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
+            ]);
+
+            // Verifica se foi enviado um valor explicitamente null
+            // Para FormData, precisamos verificar de forma diferente
+            $shouldRemovePhoto = false;
+            
+            // Verifica se o campo 'photo' foi enviado como string 'null' ou null
+            if ($request->has('photo') && 
+            
+            ($request->input('photo') === 'null' || $request->input('photo') === null)) {
+                $shouldRemovePhoto = true;
+            }
+            
+            // Se foi solicitada a remoção da foto
+            if ($shouldRemovePhoto) {
+                if ($user->photo && !empty($user->photo)) {
+                    Storage::disk('public')->delete($user->photo);
+                }
+
+                $user->photo = null;
+                $user->save();
+                
+                return response()->json([
+                    'message' => 'Foto removida com sucesso',
+                    'user' => $user
+                ]);
+            }
+
+            // Se há uma nova foto (arquivo real), processa o upload
+            if ($request->hasFile('photo')) {
+                // 1. Apagar a foto atual se existir
+                if ($user->photo && !empty($user->photo)) {
+                    Storage::disk('public')->delete($user->photo);
+                }
+
+                // 2. Salva a nova foto
+                $file = $request->file('photo');
+                $filename = uniqid() . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('users', $filename, 'public');
+
+                // 3. Atualiza no banco
+                $user->photo = $path;
+                $user->save();       
+                
+                return response()->json([
+                    'message' => 'Foto atualizada com sucesso',
+                    'user' => $user
+                ], Response::HTTP_OK);
+            }
+
+            // Se chegou aqui, não foi enviado nem null nem arquivo
+            return response()->json([
+                'error' => 'Nenhuma operação de foto foi solicitada'
+            ], Response::HTTP_BAD_REQUEST);            
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Dados de entrada inválidos',
+                'errors' => $e->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Token inválido'], Response::HTTP_UNAUTHORIZED);
+            
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Houve um erro ao processar a operação. ' . $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }    
     
     public function changePassword(Request $request)
     {
