@@ -854,10 +854,9 @@ class AuthController extends Controller
             $shouldRemovePhoto = false;
             
             // Verifica se o campo 'photo' foi enviado como string 'null' ou null
-            if ($request->has('photo') && 
-            
-            ($request->input('photo') === 'null' || $request->input('photo') === null)) {
-                $shouldRemovePhoto = true;
+            if ($request->has('photo') &&            
+                ($request->input('photo') === 'null' || $request->input('photo') === null)) {
+                    $shouldRemovePhoto = true;
             }
             
             // Se foi solicitada a remoção da foto
