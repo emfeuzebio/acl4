@@ -1,5 +1,45 @@
-<<<<<<< HEAD
+# Laravel
+/vendor
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/storage/app/public
+/storage/framework/cache/data
+/storage/framework/sessions
+/storage/framework/testing
+/storage/framework/views
+/storage/logs
 .env
-=======
-.env
->>>>>>> 4749df5 (first commit)
+.env.backup
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+/.idea
+/.vscode
+/.phpunit.result.cache
+.phpunit.cache
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# Laravel Sail
+docker-compose.override.yml
+
+# Laravel Valet
+/.valet
+
+# Cache e arquivos temporários
+*.log
+*.cache
+*.tmp
+*.swp
+
+# MacOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
