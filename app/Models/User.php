@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Authorization;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -222,6 +223,66 @@ class User extends Authenticatable implements JWTSubject
             ->toArray();
     }
 
+    public function grantedMenus($systemId = false): array
+    {
+        $menus = Menu::orderBy('position')->get();
+        
+        $formattedMenus = $menus->map(function ($menu) {
+            $formattedMenu = [
+                'id' => $menu->id,
+                'menu_id' => $menu->menu_id,
+                'name' => $menu->name,
+                'icon' => $menu->icon,
+                'route' => $menu->route,
+                'position' => $menu->position,
+                'active' => $menu->active
+            ];
+            
+            // Adiciona badge apenas para o item específico (id 1 - Dashboard)
+            if ($menu->id === 1) {
+                $formattedMenu['badge'] = [
+                    'color' => 'primary',
+                    'text' => 'NEW'
+                ];
+            }
+            
+            return $formattedMenu;
+        });
+
+        return $formattedMenus->toArray();
+    }
+
+    public function grantedMenus10($systemId = false): JsonResponse
+    {
+        $menus = Menu::orderBy('position')->get();
+        
+        $formattedMenus = $menus->map(function ($menu) {
+            $formattedMenu = [
+                'id' => $menu->id,
+                'menu_id' => $menu->menu_id,
+                'name' => $menu->name,
+                'icon' => $menu->icon,
+                'route' => $menu->route,
+                'position' => $menu->position,
+                'active' => $menu->active
+            ];
+            
+            // Adiciona badge apenas para o item específico (id 1 - Dashboard)
+            if ($menu->id === 1) {
+                $formattedMenu['badge'] = [
+                    'color' => 'primary',
+                    'text' => 'NEW'
+                ];
+            }
+            
+            return $formattedMenu;
+        });
+
+        return response()->json([
+            'menus' => $formattedMenus
+        ]);
+    }    
+
 
     /**
      * Return the identificator to JWT.
@@ -245,7 +306,9 @@ class User extends Authenticatable implements JWTSubject
         // echo "systemId: $systemId \n";
 
         $user_systems = $this->grantedSystems($systemId); 
-        // print_r($user_systems);
+        $userMenus = $this->grantedMenus($systemId); 
+        // dd($userMenus);
+        // print_r($userMenus);
         // die('getJWTCustomClaims');
 
         $aud = $systemId && $user_systems ? $user_systems[0]['url'] ?? '' : '';   // tendo systemId e um System, retorna a url do primeiro sistema
@@ -263,6 +326,8 @@ class User extends Authenticatable implements JWTSubject
             'user_systems' => $user_systems,                                // systemas aos quais o usuário tem acesso
             'user_roles' => $systemId ? $this->grantedRoles() : [],         // Roles do usuário
             'user_abilities' => $systemId ? $this->grantedActions() : [],   // "abilities" (Authorizaions) do usuário 
+            // 'user_menus' => $systemId ? $this->grantedMenus() : [],         // Menus do usuário via Perfis de Acesso
+            'user_menus' => $userMenus,         // Menus do usuário via Perfis de Acesso
         ];
     }    
 }

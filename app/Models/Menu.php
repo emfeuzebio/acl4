@@ -15,7 +15,8 @@ class Menu extends Model
             'id', 
             'menu_id',
             'name',
-            'link', 
+            'icon',
+            'route', 
             'position', 
             'active',
         ];
