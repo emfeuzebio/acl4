@@ -886,7 +886,7 @@ class AuthController extends Controller
                 }
 
                 return response()->json([
-                    'message' => 'Foto excluída com sucesso',
+                    'message' => 'Foto do Usuário excluída com sucesso',
                     'user' => $user
                 ], Response::HTTP_OK);
             }
