@@ -178,7 +178,7 @@ class UserController extends Controller
             if ($request->hasFile('photo')) {
                 $file = $request->file('photo');
                 $filename = 'users/' . Str::uuid() . '.' . $file->getClientOriginalExtension();
-                $file->storeAs('public', $filename); // Armazena no disco
+                $file->storeAs('public', $filename);    // Armazena no disco
                 $novaFoto = $filename;
                 $user->photo = $novaFoto;
             }

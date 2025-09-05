@@ -80,7 +80,6 @@ class AuthController extends Controller
 
                 // PASSO 3 - Caso exista, reutiliza o mesmo, SENÃO cria um novo
                 if ($existingToken) {
-
                     $token = $existingToken->token;     // Se já existir um token válido, reutiliza o mesmo
                 } else {
                     // senão, cria um novo se as credenciais estiverem corretas
@@ -91,6 +90,7 @@ class AuthController extends Controller
 
                 // PASSO 4 - Cria a instância do token e pega o payload no formato de array
                 $payload = JWTAuth::setToken($token)->getPayload();
+                // dd($payload);
 
                 // Recalcula e renova a data de expiração - o Model esta fazendo isso
 
@@ -844,51 +844,31 @@ class AuthController extends Controller
                 return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
             }
 
-            // Validação do arquivo de imagem - CORRIGIDO
+            // Valida o arquivo de imagem
             $request->validate([
                 'photo' => 'nullable|sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'removerFoto' => 'sometimes|boolean',       // se presente deve ser um bool
             ]);
 
-            // Verifica se foi enviado um valor explicitamente null
-            // Para FormData, precisamos verificar de forma diferente
-            $shouldRemovePhoto = false;
-            
-            // Verifica se o campo 'photo' foi enviado como string 'null' ou null
-            if ($request->has('photo') &&            
-                ($request->input('photo') === 'null' || $request->input('photo') === null)) {
-                    $shouldRemovePhoto = true;
-            }
-            
-            // Se foi solicitada a remoção da foto
-            if ($shouldRemovePhoto) {
-                if ($user->photo && !empty($user->photo)) {
-                    Storage::disk('public')->delete($user->photo);
-                }
-
-                $user->photo = null;
-                $user->save();
-                
-                return response()->json([
-                    'message' => 'Foto removida com sucesso',
-                    'user' => $user
-                ]);
-            }
-
-            // Se há uma nova foto (arquivo real), processa o upload
+            // Verifica se recebeu uma nova em um (arquivo real), processa o upload
             if ($request->hasFile('photo')) {
-                // 1. Apagar a foto atual se existir
-                if ($user->photo && !empty($user->photo)) {
-                    Storage::disk('public')->delete($user->photo);
-                }
 
-                // 2. Salva a nova foto
-                $file = $request->file('photo');
-                $filename = uniqid() . '.' . $file->getClientOriginalExtension();
-                $path = $file->storeAs('users', $filename, 'public');
+                // 1. armazena o caminho e nome da foto antiga
+                $caminhoFotoAntiga = $user->photo;
 
-                // 3. Atualiza no banco
-                $user->photo = $path;
-                $user->save();       
+                // 2. Armazena o novo arquivo temporariamente
+                $caminhoFotoNova = $request->file('photo')->store('users', 'public');
+
+                DB::transaction(function () use ($user, $caminhoFotoAntiga, $caminhoFotoNova) {
+                    // Atualiza o caminho da nova foto no banco
+                    $user->photo = $caminhoFotoNova;
+                    $user->save();
+
+                    // Deleta a foto antiga (apenas se tudo acima foi bem-sucedido)
+                    if ($caminhoFotoAntiga && Storage::disk('public')->exists($caminhoFotoAntiga)) {
+                        Storage::disk('public')->delete($caminhoFotoAntiga);
+                    }
+                });
                 
                 return response()->json([
                     'message' => 'Foto atualizada com sucesso',
@@ -896,10 +876,20 @@ class AuthController extends Controller
                 ], Response::HTTP_OK);
             }
 
-            // Se chegou aqui, não foi enviado nem null nem arquivo
-            return response()->json([
-                'error' => 'Nenhuma operação de foto foi solicitada'
-            ], Response::HTTP_BAD_REQUEST);            
+            // verifica se é para excluir a foto. está removerFoto deve estar true
+            if ($request->boolean('removerFoto')) {
+
+                if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+                    Storage::disk('public')->delete($user->photo);
+                    $user->photo = null;
+                    $user->save();
+                }
+
+                return response()->json([
+                    'message' => 'Foto excluída com sucesso',
+                    'user' => $user
+                ], Response::HTTP_OK);
+            }
 
         } catch (ValidationException $e) {
             return response()->json([
