@@ -315,9 +315,9 @@ class User extends Authenticatable implements JWTSubject
         // echo "systemId: $systemId \n";
 
         $user_systems = $this->grantedSystems($systemId); 
+        
         // $userMenus = $this->grantedMenus($systemId); 
-
-        // $user_systems = $this->getMenusByProfile($systemId); 
+        $userMenus = $this->getMenusByProfile($systemId); 
 
 
         // dd($userMenus);
