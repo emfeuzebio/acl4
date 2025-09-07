@@ -22,6 +22,7 @@ return [
     'system_menu_label' => 'Systems',
     'entity_menu_label' => 'Entities',
     'profile_menu_label' => 'Access Profiles',
+    'menu_menu_label' => 'Menus',
     'role_menu_label' => 'Roles',
     'action_menu_label' => 'Actions',    
     'user_menu_label' => 'Users',

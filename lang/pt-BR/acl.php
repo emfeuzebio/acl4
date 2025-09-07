@@ -116,6 +116,7 @@ return [
         'organizations' => 'Organizações',
         'systems' => 'Sistemas',
         'users' => 'Usuários',
+        'menus' => 'Menus',
         'roles' => 'Perfis de Acesso',
         'entities' => 'Entidades',
 
@@ -166,7 +167,6 @@ return [
     //     'btnPrint' => 'Imprimir',
     //     'butto21' => 'Bb',
     // ],
-
 
     // Entidade Organização
     'organization' => [
@@ -438,6 +438,55 @@ return [
             'entityAuthrizations-name' => 'Entidades e Autorizações',
             'entityAuthrizations-tip' => 'Entidades e Autorizações concedidas ao Perfis de Acesso',
             'entityAuthrizations-placeholder' => 'Ex.: Livros - Listar, Inserir, Editar, Excluir', 
+
+            'active-name' => 'Ativo',
+            'active-tip' => 'Marque SIM se o Perfis de Acesso está Ativo',
+            'active-placeholder' => '', 
+
+            // actions bottons 
+            'actions-name' => 'Ações',
+        ],        
+    ],
+
+    // Entidade Menus do Sistema
+    'menu' => [
+        'title' => 'Menus',
+        'page_title' => '',
+        'page_subtitle' => '',
+        'breadcrumb1' => 'Início',
+        'breadcrumb2' => 'Administração',
+        'breadcrumb3' => 'Menus',
+        'table_title' => 'Cadastro de Menus',
+        'entityName' => 'Menus',
+        'filterLabel1' => 'Filtrar pelo Sistema',
+        'filterLabel2' => 'Filtrar pelo Perfil de Acesso',
+
+        'columns' => [
+
+            'id-name' => 'ID',
+            'id-tip' => 'Código Identificador do Menu',
+            'id-placeholder' => '', 
+
+            'menu_id-name' => 'Menu Superior',
+            'menu_id-tip' => 'Informe o Menu Superior a que pertence o Item de Menu',
+            'menu_id-placeholder' => 'Menu Superior', 
+            'menu_id-select' => 'Selecione o Menu Superior', 
+
+            'name-name' => 'Nome',
+            'name-tip' => 'Informe o Nome do Item de Menu',
+            'name-placeholder' => 'Ex.: Sistemas', 
+
+            'icon-name' => 'Ícone', 
+            'icon-tip' => 'Informe o Ícone do Item de Menu',
+            'icon-placeholder' => 'Ex.: cil-envelope-open', 
+
+            'route-name' => 'Rota',
+            'route-tip' => 'Informe a  Rota do Item de Menus tudo em minúsculo',
+            'route-placeholder' => 'Ex.: /cadastros/organizacoes', 
+
+            'position-name' => 'Posição',
+            'position-tip' => 'Posição/Ordem do do Item de Menu',
+            'position-placeholder' => 'Ex.: 10', 
 
             'active-name' => 'Ativo',
             'active-tip' => 'Marque SIM se o Perfis de Acesso está Ativo',

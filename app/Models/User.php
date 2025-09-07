@@ -252,6 +252,24 @@ class User extends Authenticatable implements JWTSubject
         return $formattedMenus->toArray();
     }
 
+    /**
+     * Obter os menus baseados nos perfis do usuário
+     */
+    public function getMenusByProfile()
+    {
+        return Menu::whereHas('profiles', function($query) {
+                $query->whereIn('profile_id', $this->profiles->pluck('id'));
+            })
+            ->with(['children' => function($query) {
+                $query->whereHas('profiles', function($q) {
+                    $q->whereIn('menu_id', $this->profiles->pluck('id'));
+                })->orderBy('position');
+            }])
+            ->whereNull('menu_id')
+            ->orderBy('position')
+            ->get();
+    }
+
     public function grantedMenus10($systemId = false): JsonResponse
     {
         $menus = Menu::orderBy('position')->get();
@@ -283,15 +301,6 @@ class User extends Authenticatable implements JWTSubject
         ]);
     }    
 
-
-    /**
-     * Return the identificator to JWT.
-     */
-    public function getJWTIdentifier()
-    {
-        return $this->getKey();
-    }
-
     /**
      * Retorna um array de claims personalizadas para JWT.
      */
@@ -307,6 +316,9 @@ class User extends Authenticatable implements JWTSubject
 
         $user_systems = $this->grantedSystems($systemId); 
         $userMenus = $this->grantedMenus($systemId); 
+        // $userMenus = $this->getMenusByProfile($systemId); 
+
+
         // dd($userMenus);
         // print_r($userMenus);
         // die('getJWTCustomClaims');
@@ -329,5 +341,14 @@ class User extends Authenticatable implements JWTSubject
             // 'user_menus' => $systemId ? $this->grantedMenus() : [],         // Menus do usuário via Perfis de Acesso
             'user_menus' => $userMenus,         // Menus do usuário via Perfis de Acesso
         ];
-    }    
+    } 
+    
+    /**
+     * Return the identificator to JWT.
+     */
+    public function getJWTIdentifier()
+    {
+        return $this->getKey();
+    }
+    
 }

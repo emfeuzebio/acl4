@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\EntityController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SystemController;
 use App\Http\Controllers\UserController;
@@ -82,8 +83,19 @@ Route::middleware(['auth', 'AccessControlList'])->group(function () {
         Route::post('profile/toggleEntity',  'toggleEntity')->name('profile.toggleEntity');
     });              
     
+    Route::controller(MenuController::class)->group(function () {
+        Route::get( 'menu',                      'index')->name('menu.index');
+        Route::get( 'menu/show/{id?}',            'show')->name('menu.show');
+        Route::post('menu/store',                'store')->name('menu.store');        
+        Route::post('menu/destroy/{id?}',      'destroy')->name('menu.destroy');
+        Route::put('menu/update/{id?}',         'update')->name('menu.update');
+       
+        Route::get('menu/listRoleMenus/{id?}','listRoleMenus')->name('menu.listRoleMenus');
+        Route::post('menu/saveRoleMenus/{id?}','saveRoleMenus')->name('menu.listRoleMenus');
+        Route::delete('menu/removeMenuFromRole/{id?}','removeMenuFromRole')->name('menu.removeMenuFromRole');
+    });              
+    
     Route::controller(ActionController::class)->group(function () {
-        // first especific routes
         Route::post('profile/grantEntity',    'grantEntity')->name('profile.grantEntity');
     
         // after common routes

@@ -4,6 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Menu extends Model
 {
@@ -22,10 +25,16 @@ class Menu extends Model
         ];
 
     // Many-to-Many relationship - lowercase plural - "Many Menus belongs to a Many Menus"
-    public function profiles()
+    /**
+     * Relação: Um menu pode pertencer a vários perfis (roles)
+     */
+    public function profiles(): BelongsToMany
     {
-        return $this->belongsToMany(Profile::class,'acl_menu_profile');
-    }    
+        return $this->belongsToMany(Profile::class, 'menu_role')
+                    ->withPivot('position')
+                    ->withTimestamps();
+    }
+
 
     // Many-to-One relationship - lowercase plural - "One Menus has a Parent"
     public function parent()
@@ -34,8 +43,18 @@ class Menu extends Model
     }    
 
     // One-to-Many relationship - lowercase plural - "Many Menus belongs to a Parent"
-    public function children()
+    /**
+     * Relação: Um menu pode ter vários submenus (filhos)
+     */    
+    public function children(): HasMany
     {
-        return $this->hasMany(Menu::class, 'menu_id');
-    }    
+        return $this->hasMany(Menu::class, 'menu_id')->orderBy('position');
+    }  
+    
+    // checks whether the entity can be deleted.
+    public function canDelete(): bool
+    {
+        return true;
+    }
+    
 }

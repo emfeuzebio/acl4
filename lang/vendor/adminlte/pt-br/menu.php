@@ -22,6 +22,7 @@ return [
     'system_menu_label' => 'Sistemas',
     'entity_menu_label' => 'Entidades',
     'profile_menu_label' => 'Perfis de Acesso',
+    'menu_menu_label' => 'Menus',
     'role_menu_label' => 'Papéis',
     'action_menu_label' => 'Ações',
     'user_menu_label' => 'Usuários',

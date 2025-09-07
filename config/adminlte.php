@@ -408,6 +408,12 @@ return [
             'can'  => 'profile.index', 
         ],
         [
+            'text' => 'menu_menu_label',
+            'url' => 'menu',
+            'icon' => 'fas fa-fw fa-shield-alt',
+            'can'  => 'menu.index', 
+        ],
+        [
             'text' => 'entity_menu_label',
             'url' => 'entity',
             'icon' => 'fas fa-fw fa-cube',
