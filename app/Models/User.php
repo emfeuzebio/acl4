@@ -255,7 +255,7 @@ class User extends Authenticatable implements JWTSubject
     /**
      * Obter os menus baseados nos perfis do usuário
      */
-    public function getMenusByProfile()
+    public function getMenusByProfile($systemId = null)
     {
         return Menu::whereHas('profiles', function($query) {
                 $query->whereIn('profile_id', $this->profiles->pluck('id'));
@@ -315,8 +315,9 @@ class User extends Authenticatable implements JWTSubject
         // echo "systemId: $systemId \n";
 
         $user_systems = $this->grantedSystems($systemId); 
-        $userMenus = $this->grantedMenus($systemId); 
-        // $userMenus = $this->getMenusByProfile($systemId); 
+        // $userMenus = $this->grantedMenus($systemId); 
+        
+        $userMenus = $this->getMenusByProfile($systemId); 
 
 
         // dd($userMenus);
