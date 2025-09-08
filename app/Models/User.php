@@ -360,12 +360,13 @@ class User extends Authenticatable implements JWTSubject
                 name,
                 icon,
                 route,
+                position,
+                active,
                 level,
-                path,
-                position
+                path
             FROM ranked_menus
             WHERE rn = 1
-            ORDER BY level, position;
+            ORDER BY level, position
         ", [$this->id, $this->id]);
 
         return $menusDoUserFromProfiles;    
