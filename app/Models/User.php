@@ -356,6 +356,7 @@ class User extends Authenticatable implements JWTSubject
 
             SELECT
                 id,
+                menu_id,
                 name,
                 icon,
                 route,
