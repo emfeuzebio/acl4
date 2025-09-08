@@ -420,10 +420,6 @@ class User extends Authenticatable implements JWTSubject
         $userMenus = $this->getMenusByProfile(); 
         // dd($userMenus);
 
-        // dd($userMenus);
-        // print_r($userMenus);
-        // die('getJWTCustomClaims');
-
         $aud = $systemId && $user_systems ? $user_systems[0]['url'] ?? '' : '';   // tendo systemId e um System, retorna a url do primeiro sistema
         
         // Carrega informações no payload do token
@@ -439,8 +435,7 @@ class User extends Authenticatable implements JWTSubject
             'user_systems' => $user_systems,                                // systemas aos quais o usuário tem acesso
             'user_roles' => $systemId ? $this->grantedRoles() : [],         // Roles do usuário
             'user_abilities' => $systemId ? $this->grantedActions() : [],   // "abilities" (Authorizaions) do usuário 
-            // 'user_menus' => $systemId ? $this->grantedMenus() : [],         // Menus do usuário via Perfis de Acesso
-            'user_menus' => $userMenus,         // Menus do usuário via Perfis de Acesso
+            'user_menus' => $userMenus,                                     // Menus do usuário segundo seus Perfis de Acesso
         ];
     } 
     
