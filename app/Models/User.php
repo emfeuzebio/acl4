@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use App\Models\Authorization;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 // class User extends Authenticatable
@@ -257,17 +257,117 @@ class User extends Authenticatable implements JWTSubject
      */
     public function getMenusByProfile($systemId = null)
     {
-        return Menu::whereHas('profiles', function($query) {
-                $query->whereIn('profile_id', $this->profiles->pluck('id'));
-            })
-            ->with(['children' => function($query) {
-                $query->whereHas('profiles', function($q) {
-                    $q->whereIn('menu_id', $this->profiles->pluck('id'));
-                })->orderBy('position');
-            }])
-            ->whereNull('menu_id')
-            ->orderBy('position')
-            ->get();
+        // return Menu::whereHas('profiles', function($query) {
+        //         $query->whereIn('profile_id', $this->profiles->pluck('id'));
+        //     })
+        //     ->with(['children' => function($query) {
+        //         $query->whereHas('profiles', function($q) {
+        //             $q->whereIn('menu_id', $this->profiles->pluck('id'));
+        //         })->orderBy('position');
+        //     }])
+        //     ->whereNull('menu_id')
+        //     ->orderBy('position')
+        //     ->get();
+
+
+            // Os Menus do User são montados de acordo com seus Perfis de Acesso
+            // $userProfiles = '7';        // Moroni 7-Ger Transp
+            // $userProfiles = '1,2,3';    // 1-Admin, 2-Ger Geral Evt, 3-Ger Doaç
+
+            // // TODO consulta não terminada
+            // // problema. Ao ter mais de um Perfil repete itens do Menu quando o mesmo Menu está em mais de um Perfil e 
+            // // não ordena dentro da hierarquia
+            // $menusDadosParaEstudos = DB::select("
+            //     SELECT 
+            //         acl_menu_profile.id 
+            //         , acl_menu_profile.menu_id
+            //         , acl_menu_profile.profile_id
+            //         , acl_menu_profile.icon
+            //         , acl_menu_profile.active
+            //         , acl_menu_profile.position
+            //         , acl_profiles.name AS perfil
+            //             , acl_menus.id
+            //             , acl_menus.menu_id
+            //             , acl_menus.name
+            //             , acl_menus.icon
+            //             , acl_menus.route
+            //             , acl_menus.active
+
+            //     FROM acl_menu_profile 
+            //         INNER JOIN acl_profiles ON acl_profiles.id = acl_menu_profile.profile_id
+            //         INNER JOIN acl_menus    ON acl_menus.id = acl_menu_profile.menu_id
+            //     WHERE profile_id IN ( ? )
+            //     AND acl_menu_profile.active = 'Y'
+            //     AND acl_profiles.active = 'Y'
+            //     ORDER BY acl_menu_profile.position
+            // ", [$userProfiles]);            
+
+        // Os Menus do User são montados de acordo com seus Perfis de Acesso
+        $menusDoUserFromProfiles = DB::select("
+            WITH RECURSIVE menu_hierarchy AS (
+                -- Menus principais (nível 1)
+                SELECT
+                    m.id,
+                    m.menu_id,
+                    m.name,
+                    m.icon,
+                    m.route,
+                    mp.position,
+                    m.active,
+                    1 AS level,
+                    CAST(m.name AS CHAR(1000)) AS path
+                FROM acl_menus m
+                    INNER JOIN acl_menu_profile mp ON mp.menu_id = m.id
+                WHERE m.menu_id IS NULL
+                    AND mp.active = 'Y'
+                    AND m.active = 'Y'
+                    AND mp.profile_id IN (
+                        SELECT profile_id FROM acl_profile_user WHERE user_id = ?
+                    )
+
+                UNION ALL
+
+                -- Menus filhos (níveis subsequentes)
+                SELECT
+                    m.id,
+                    m.menu_id,
+                    m.name,
+                    m.icon,
+                    m.route,
+                    mp.position,
+                    m.active,
+                    mh.level + 1 AS level,
+                    CONCAT(mh.path, ' > ', m.name) AS path
+                FROM acl_menus m
+                    INNER JOIN acl_menu_profile mp ON mp.menu_id = m.id
+                    INNER JOIN menu_hierarchy mh ON m.menu_id = mh.id
+                WHERE mp.active = 'Y'
+                    AND m.active = 'Y'
+                    AND mp.profile_id IN (
+                        SELECT profile_id FROM acl_profile_user WHERE user_id = ?
+                    )
+            ),
+            -- Elimina menus duplicados mantendo apenas uma ocorrência por ID
+            ranked_menus AS (
+                SELECT *,
+                    ROW_NUMBER() OVER (PARTITION BY id ORDER BY level) as rn
+                FROM menu_hierarchy
+            )
+
+            SELECT
+                id,
+                name,
+                icon,
+                route,
+                level,
+                path,
+                position
+            FROM ranked_menus
+            WHERE rn = 1
+            ORDER BY level, position;
+        ", [$this->id, $this->id]);
+
+        return $menusDoUserFromProfiles;    
     }
 
     public function grantedMenus10($systemId = false): JsonResponse
@@ -316,9 +416,9 @@ class User extends Authenticatable implements JWTSubject
 
         $user_systems = $this->grantedSystems($systemId); 
 
-        $userMenus = $this->grantedMenus($systemId); 
-        // $userMenus = $this->getMenusByProfile($systemId); 
-
+        // $userMenus = $this->grantedMenus($systemId); 
+        $userMenus = $this->getMenusByProfile(); 
+        dd($userMenus);
 
         // dd($userMenus);
         // print_r($userMenus);
