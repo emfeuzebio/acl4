@@ -414,6 +414,13 @@ return [
             'can'  => 'menu.index', 
         ],
         [
+            'text' => 'Menus Admin',
+            'url' => 'menuadmin',
+            'icon' => 'fas fa-fw fa-shield-alt',
+            'label' => 4,
+            'label_color' => 'success',
+        ],
+        [
             'text' => 'entity_menu_label',
             'url' => 'entity',
             'icon' => 'fas fa-fw fa-cube',

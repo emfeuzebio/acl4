@@ -85,6 +85,8 @@ Route::middleware(['auth', 'AccessControlList'])->group(function () {
     
     Route::controller(MenuController::class)->group(function () {
         Route::get( 'menu',                      'index')->name('menu.index');
+        Route::get( 'menuadmin',                 'admin')->name('menu.admin');
+        Route::get( 'menu/listDados',        'listDados')->name('menu.listDados');
         Route::get( 'menu/show/{id?}',            'show')->name('menu.show');
         Route::post('menu/store',                'store')->name('menu.store');        
         Route::post('menu/destroy/{id?}',      'destroy')->name('menu.destroy');

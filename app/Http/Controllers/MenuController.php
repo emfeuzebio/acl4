@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileRequest;
 use App\Models\Authorization;
-use App\Models\Entity;
 use App\Models\Menu;
 use Illuminate\Http\Request;
 use App\Models\Profile;
 use App\Models\System;
-use Exception;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use App\Traits\ACLTrait;
+use Exception;
+
 
 class MenuController extends Controller
 {
@@ -23,6 +22,30 @@ class MenuController extends Controller
     {
         $this->middleware('auth');
     }
+
+    public function admin(Request $request) 
+    {
+        return view('acl/MenuAdmin2');
+    }
+
+    public function listDados(Request $request) 
+    {
+        $menus = Menu::with('children')->whereNull('menu_id')->orderBy('position')->get();
+
+        $systems = [];
+        // $profiles = Profile::all();
+        $profiles = Profile::where('active','Y')->OrderBy('id')->get();
+        // $profiles = [];
+
+        return response()->json([
+            'systems' => $systems,
+            'profiles' => $profiles,
+            'menus' => $menus,
+        ]);
+    }
+
+
+
 
     public function index(Request $request) 
     {
@@ -81,12 +104,16 @@ class MenuController extends Controller
         return view('acl/MenuAdmin',['filterOptions1' => $systems, 'menus' => $menus, 'roles' => $roles, 'systems' => $systems]);
     }
 
-    public function listRoleMenus($roleId)
+    public function listRoleMenus($roleId, $html = false )
     {
         $role = Profile::with('menus')->findOrFail($roleId);
-        $html = view('acl/MenuAdminProfiles', ['menus' => $role->menus])->render();
-        
-        return response()->json(['html' => $html]);
+
+        if ($html) {
+            $html = view('acl/MenuAdminProfiles', ['menus' => $role->menus])->render();
+            return response()->json(['html' => $html]);
+        } else {
+            return response()->json($role->menus);
+        }
     }    
 
     public function saveRoleMenus(Request $request, $roleId)
