@@ -253,55 +253,13 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Obter os menus baseados nos perfis do usuário
+     * Obter os menus baseados nos perfis do usuário, ignora os Sistemas do User
+     * Ordenados hierarquicamente
+     * Ordenados pelo position 
+     * Sem duplicação por mais o mesmo item de Menu estja em mais de um Perfil de Acesso
      */
-    public function getMenusByProfile($systemId = null)
+    public function getMenusByProfile()
     {
-        // return Menu::whereHas('profiles', function($query) {
-        //         $query->whereIn('profile_id', $this->profiles->pluck('id'));
-        //     })
-        //     ->with(['children' => function($query) {
-        //         $query->whereHas('profiles', function($q) {
-        //             $q->whereIn('menu_id', $this->profiles->pluck('id'));
-        //         })->orderBy('position');
-        //     }])
-        //     ->whereNull('menu_id')
-        //     ->orderBy('position')
-        //     ->get();
-
-
-            // Os Menus do User são montados de acordo com seus Perfis de Acesso
-            // $userProfiles = '7';        // Moroni 7-Ger Transp
-            // $userProfiles = '1,2,3';    // 1-Admin, 2-Ger Geral Evt, 3-Ger Doaç
-
-            // // TODO consulta não terminada
-            // // problema. Ao ter mais de um Perfil repete itens do Menu quando o mesmo Menu está em mais de um Perfil e 
-            // // não ordena dentro da hierarquia
-            // $menusDadosParaEstudos = DB::select("
-            //     SELECT 
-            //         acl_menu_profile.id 
-            //         , acl_menu_profile.menu_id
-            //         , acl_menu_profile.profile_id
-            //         , acl_menu_profile.icon
-            //         , acl_menu_profile.active
-            //         , acl_menu_profile.position
-            //         , acl_profiles.name AS perfil
-            //             , acl_menus.id
-            //             , acl_menus.menu_id
-            //             , acl_menus.name
-            //             , acl_menus.icon
-            //             , acl_menus.route
-            //             , acl_menus.active
-
-            //     FROM acl_menu_profile 
-            //         INNER JOIN acl_profiles ON acl_profiles.id = acl_menu_profile.profile_id
-            //         INNER JOIN acl_menus    ON acl_menus.id = acl_menu_profile.menu_id
-            //     WHERE profile_id IN ( ? )
-            //     AND acl_menu_profile.active = 'Y'
-            //     AND acl_profiles.active = 'Y'
-            //     ORDER BY acl_menu_profile.position
-            // ", [$userProfiles]);            
-
         // Os Menus do User são montados de acordo com seus Perfis de Acesso
         $menusDoUserFromProfiles = DB::select("
             WITH RECURSIVE menu_hierarchy AS (
