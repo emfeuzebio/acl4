@@ -418,7 +418,7 @@ class User extends Authenticatable implements JWTSubject
 
         // $userMenus = $this->grantedMenus($systemId); 
         $userMenus = $this->getMenusByProfile(); 
-        dd($userMenus);
+        // dd($userMenus);
 
         // dd($userMenus);
         // print_r($userMenus);
