@@ -38,14 +38,17 @@ class ActionRequest extends FormRequest
     // transformations that need to be done before validation
     protected function prepareForValidation()
     {
-        $route = strtolower(preg_replace('/[^a-zA-Z.]/', '', Str::ascii($this->route)));
-        $route = Str::singular($route);
+        $route = preg_replace('/[^a-zA-Z.]/', '', Str::ascii($this->route));
+        // $route = strtolower(preg_replace('/[^a-zA-Z.]/', '', Str::ascii($this->route)));
+        // $route = Str::singular($route);
 
         $this->merge([
-            'action' => ucwords(trim(strtolower($this->action))),
+            'action' => ucwords(trim($this->action)),
+            // 'action' => ucwords(trim(strtolower($this->action))),
             // 'route' => trim(strtolower($this->route)),
-            'route' => $route,
-            'description' => ucwords(trim(strtolower($this->description))),
+            'route' => trim($route),
+            'description' => $this->description,
+            // 'description' => ucwords(trim(strtolower($this->description))),
         ]);
     }    
 }

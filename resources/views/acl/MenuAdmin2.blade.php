@@ -86,7 +86,7 @@
 
 @section('content')
 
-    <!-- Data of DataTables -->
+    <!-- General Container -->
     <div class="container">
         <div class="row">
             <div class="col-12">
@@ -163,7 +163,7 @@
                     </div>                
 
                     <div class="card-body">
-                        <div class="row" style="">
+                        <div class="row">
 
                             <!-- Todos os Menus Disponíveis -->
                             <div class="col-md-6" style="background-color: grey;">
@@ -171,8 +171,8 @@
                                 <div class="card">
                                     <div class="card-header">
                                         <h5 class="mb-0">
-                                            <button type="button" class="btn btn-sm btn-info" onclick="createNewMenu()">
-                                                <i class="fas fa-save me-2"></i> Criar Novo Menu
+                                            <button id="openNewMenuModal" type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#createMenuModal">
+                                                <i class="fas fa-plus-circle me-2"></i> Criar Novo Menu
                                             </button>
                                         </h5>
                                     </div>
@@ -241,12 +241,12 @@
     </div>
 
     <!-- Modal para Editar Menu -->
-    <div class="modal fade" id="editMenuModal" tabindex="-1">
+    <div class="modal fade" id="editMenuModal" tabindex="-1" aria-hidden="true" data-backdrop="static">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Editar Menu</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title"><b>Editar Menu</b></h5>
+                    <button type="button" class="close btnCancelar" data-bs-dismiss="modal" data-toggle="tooltip" title="Cancelar a operação (Esc ou Alt+C)" onClick="$('#msgOperacaoExcluir').text('');$('#editMenuModal').modal('hide');">&times;</button>
                 </div>
                 <div class="modal-body">
                     <form id="editMenuForm">
@@ -254,14 +254,15 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <label class="form-label">Menu Pai (opcional):</label>
-                                <select class="form-select" id="editMenuParent" name="parent_id">
-                                    <option value="">-- Menu Principal (sem pai) --</option>
-                                    
+                                <select class="form-control selectpicker" id="editMenuParent" name="menu_id">
+                                    <option value="">-- Menu Principal (sem pai) --</option>                                    
                                 </select>
+                                <div id="error-menu_id" class="error invalid-feedback" style="display: none;"></div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Nome do Menu *</label>
                                 <input type="text" class="form-control" id="editMenuName" name="name" required>
+                                <div id="error-name" class="error invalid-feedback" style="display: none;"></div>
                             </div>
                         </div>
                         
@@ -269,24 +270,28 @@
                             <div class="col-md-6">
                                 <label class="form-label">Ícone (opcional)</label>
                                 <input type="text" class="form-control" id="editMenuIcon" name="icon" placeholder="Ex: cil-speedometer">
+                                <div id="error-icon" class="error invalid-feedback" style="display: none;"></div>                                
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">Rota (opcional)</label>
                                 <input type="text" class="form-control" id="editMenuRoute" name="route" placeholder="Ex: /dashboard">
+                                <div id="error-route" class="error invalid-feedback" style="display: none;"></div>
                             </div>
                         </div>
                         
                         <div class="row mt-3">
                             <div class="col-md-4">
                                 <label class="form-label">Posição</label>
-                                <input type="number" class="form-control" id="editMenuPosition" name="position" min="0">
+                                <input type="number" class="form-control" id="editMenuPosition" name="position" min="0" value="0">
+                                <div id="error-position" class="error invalid-feedback" style="display: none;"></div>
                             </div>
                             <div class="col-md-4">
                                 <label class="form-label">Status</label>
-                                <select class="form-select" id="editMenuActive" name="active">
-                                    <option value="Y">Ativo</option>
+                                <select class="form-control" id="active" name="active">
+                                    <option value="Y" selected>Ativo</option>
                                     <option value="N">Inativo</option>
                                 </select>
+                                <div id="error-active" class="error invalid-feedback" style="display: none;"></div>
                             </div>
                         </div>
                     </form>
@@ -295,8 +300,8 @@
                     <button type="button" class="btn btn-danger" onclick="deleteMenu()" id="deleteMenuBtn">
                         <i class="fas fa-trash me-2"></i>Excluir
                     </button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="updateMenu()">Salvar</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="$('#editMenuModal').modal('hide');">Cancelar</button>
+                    <button type="button" id="updateMenuModal" class="btn btn-primary">Salvar</button>
                 </div>
             </div>
         </div>
@@ -349,7 +354,7 @@
 
                     // document.getElementById('roleMenus').innerHTML = response.html;
                     // updateAssignedCount();
-                    // updateMenuHierarchy();
+                    // updateMenuModalHierarchy();
                 },
                 error: function() {
                     alert('Erro ao carregar menus do perfil.');
@@ -444,6 +449,54 @@
                 // Abrir modal
                 new bootstrap.Modal(document.getElementById('editMenuModal')).show();
             }    
+            
+            $('#openNewMenuModal').on("click", function (e) {
+                e.stopImmediatePropagation();
+
+                $('#editMenuForm').trigger("reset");
+                $('#editMenuModal').modal('show');
+            });
+
+            // $('#updateMenuModal').on("click", function (e) {
+            $('#updateMenuModal').on('click', function(e) {
+                e.stopImmediatePropagation();
+
+                const formData = new FormData(document.getElementById('editMenuForm'));
+
+                $.ajax({
+                    url: '/menu/store',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            // showAlert('Menu criado com sucesso!', 'success');
+                            // resetMenuForm();
+                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}");
+                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
+
+                            $('#editMenuModal').modal('hide');
+                            $('#btnRefresh').trigger("click");
+                        } else {
+                            alert('Erro: ' + response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 422) {
+                            const errors = xhr.responseJSON.errors;
+
+                            $("#editMenuForm .invalid-feedback").text('').hide();
+                            $.each( xhr.responseJSON.errors, function( key, value ) {
+                                $("#editMenuForm #error-" + key ).text(value).show(); 
+                            });                            
+                        } else {
+                            alert('Erro ao criar menu. Status: ' + xhr.status);
+                        }
+                    }
+                });                
+            });
+
 
             /*
             * Refresh button action
@@ -478,7 +531,19 @@
                             });
                         }
 
-                        $('#roleSelect').html(profileOptions);                        
+                        $('#roleSelect').html(profileOptions);
+
+                        // 3. Monta os Menus Pai no <select>
+                        let menusPaiOptions = '<option value="">Selecione</option>';
+
+                        if (response.menusPai && response.menusPai.length > 0) {
+                            response.menusPai.forEach(menusPai => {
+                                menusPaiOptions += `<option value="${menusPai.id}">${menusPai.name}</option>`;
+                            });
+                        }
+
+                        $('#editMenuParent').html(menusPaiOptions);
+
                     },
                     error: function (error) {
                         console.error('Erro ao carregar os menus:', error);

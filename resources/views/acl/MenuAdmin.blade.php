@@ -99,7 +99,7 @@
                                 <div class="input-group">
                                     <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createMenuModal">
                                         <i class="fas fa-plus-circle me-2"></i>Criar Novo Menu
-                                    </button>                
+                                    </button>
                                 </div>
                             </div>
                         </div>

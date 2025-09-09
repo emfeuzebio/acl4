@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use App\Traits\ACLTrait;
 use Exception;
-
+use Illuminate\Validation\ValidationException;
 
 class MenuController extends Controller
 {
@@ -28,18 +28,31 @@ class MenuController extends Controller
         return view('acl/MenuAdmin2');
     }
 
+
+
     public function listDados(Request $request) 
     {
+        // verifica se recebeu o SystemId no request
+        $systemId = $request->input('systemId');
+        // if (! $systemId) {
+        //     return response()->json(['error' => 'Informar o SystemId é obrigatório.'], Response::HTTP_UNAUTHORIZED);   // 401
+        // }
+
+        // TODO filtrar por apenas os Systems que o User tem acesso
+        $systems = System::where('active','Y')->orderBy('name')->get();
+
+        // TODO filtrar pelo System filtro
         $menus = Menu::with('children')->whereNull('menu_id')->orderBy('position')->get();
 
-        $systems = [];
-        // $profiles = Profile::all();
-        $profiles = Profile::where('active','Y')->OrderBy('id')->get();
-        // $profiles = [];
+        $menusPai = Menu::whereNull('menu_id')->orderBy('position')->get();
+
+        // TODO filtrar pelo System filtro
+        $profiles = Profile::where('active','Y')->OrderBy('name')->get();
 
         return response()->json([
             'systems' => $systems,
             'profiles' => $profiles,
+            'menusPai' => $menusPai,
             'menus' => $menus,
         ]);
     }
@@ -175,27 +188,37 @@ class MenuController extends Controller
     {
         try {
             $request->validate([
+                'menu_id' => 'nullable|exists:acl_menus,id',
                 'name' => 'required|string|max:255',
                 'icon' => 'nullable|string|max:50',
                 'route' => 'required|string|max:255',
-                'menu_id' => 'nullable|exists:acl_menus,id',
-                'position' => 'integer|min:0',
+                'position' => 'integer',
                 'active' => 'in:Y,N'
             ]);
 
-            $menu = Menu::Create(
+            Menu::Create(
                 $request->only(['menu_id', 'name', 'icon', 'route', 'position', 'active'])
             );  
 
             return response()->json([
-                'success' => false,
+                'success' => true,
                 'message' => 'Menu criado com sucesso!',
             ]);
-        } catch (Exception $e) {
+            
+        } catch (ValidationException $e) {
+
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao criar menu: ' . $e->getMessage()
-            ], 500);
+                'message' => 'Dados de entrada inválidos',
+                'errors' => $e->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        }catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Houve um erro ao salvar os dados do usuário. ' . $e->getMessage(),
+                'error' => 'Houve um erro ao salvar os dados do usuário. ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }     
 
