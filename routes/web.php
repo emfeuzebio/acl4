@@ -90,7 +90,7 @@ Route::middleware(['auth', 'AccessControlList'])->group(function () {
         Route::get( 'menu/show/{id?}',            'show')->name('menu.show');
         Route::post('menu/store',                'store')->name('menu.store');        
         Route::post('menu/destroy/{id?}',      'destroy')->name('menu.destroy');
-        Route::put('menu/update/{id?}',         'update')->name('menu.update');
+        Route::post('menu/update/{id?}',         'update')->name('menu.update');
        
         Route::get('menu/listRoleMenus/{id?}','listRoleMenus')->name('menu.listRoleMenus');
         Route::post('menu/saveRoleMenus/{id?}','saveRoleMenus')->name('menu.listRoleMenus');

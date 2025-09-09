@@ -253,14 +253,14 @@
                         <input type="hidden" id="editMenuId" name="id">
                         <div class="row">
                             <div class="col-md-6">
-                                <label class="form-label">Menu Pai (opcional):</label>
+                                <label class="form-label">Menu Pai</label>
                                 <select class="form-control selectpicker" id="editMenuParent" name="menu_id">
                                     <option value="">-- Menu Principal (sem pai) --</option>                                    
                                 </select>
                                 <div id="error-menu_id" class="error invalid-feedback" style="display: none;"></div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Nome do Menu *</label>
+                                <label class="form-label">Nome do Menu</label>
                                 <input type="text" class="form-control" id="editMenuName" name="name" required>
                                 <div id="error-name" class="error invalid-feedback" style="display: none;"></div>
                             </div>
@@ -273,7 +273,7 @@
                                 <div id="error-icon" class="error invalid-feedback" style="display: none;"></div>                                
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Rota (opcional)</label>
+                                <label class="form-label">Rota</label>
                                 <input type="text" class="form-control" id="editMenuRoute" name="route" placeholder="Ex: /dashboard">
                                 <div id="error-route" class="error invalid-feedback" style="display: none;"></div>
                             </div>
@@ -297,10 +297,11 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" onclick="deleteMenu()" id="deleteMenuBtn">
+                    <button type="button" id="btnDeleteMenu" class="btn btn-danger" onclick="deleteMenu()">
                         <i class="fas fa-trash me-2"></i>Excluir
                     </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="$('#editMenuModal').modal('hide');">Cancelar</button>
+                    <button type="button" id="insertMenuModal" class="btn btn-success">Inserir</button>
                     <button type="button" id="updateMenuModal" class="btn btn-primary">Salvar</button>
                 </div>
             </div>
@@ -330,7 +331,7 @@
             // alert('Fechou Modal');
         });  
 
-        // Carregar menus do perfil selecionado
+        // Carrega os menus do perfil selecionado
         function loadRoleMenus(roleId) {
             
             if (!roleId) {
@@ -362,6 +363,7 @@
             });
         }
 
+        // Monta a lista de Menus do Perfil
         function renderRoleMenus(menus) {
 
             if (!Array.isArray(menus)) {
@@ -423,7 +425,39 @@
             return html;
         }
 
+        // Abrir modal para editar menu
+        function editMenu(menuId, menuName, menuIcon, menuRoute, menuPosition, menuActive) {
 
+            $("#editMenuForm #editMenuId").val(menuId);
+            $("#editMenuForm #editMenuParent").val(menuId);
+            $("#editMenuForm #editMenuName").val(menuName);
+            $("#editMenuForm #editMenuIcon").val(menuIcon);
+            $("#editMenuForm #editMenuRoute").val(menuRoute);
+            $("#editMenuForm #editMenuPosition").val(menuPosition);
+            $("#editMenuForm #editMenuActive").val(menuActive);
+            // alert('menuActive: ' + menuActive);
+            
+            // Abrir modal
+            $('#insertMenuModal').hide();
+            $('#btnDeleteMenu').show();
+            $('#updateMenuModal').show();
+            $('#editMenuModal').modal('show');
+        }    
+
+        // Filtrar menus na busca
+        function filterMenus() {
+            const searchText = document.getElementById('searchMenu').value.toLowerCase();
+            const menuItems = document.querySelectorAll('#availableMenus .menu-item');
+            
+            menuItems.forEach(item => {
+                const menuText = item.textContent.toLowerCase();
+                if (menuText.includes(searchText)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
 
 
         // DataTables operações padrão
@@ -437,28 +471,57 @@
             // Dispara o clique automaticamente ao carregar a página
             $('#btnRefresh').trigger("click");
 
-            // Abrir modal para editar menu
-            function editMenu(menuId, menuName, menuIcon, menuRoute, menuPosition, menuActive) {
-                document.getElementById('editMenuId').value = menuId;
-                document.getElementById('editMenuName').value = menuName;
-                document.getElementById('editMenuIcon').value = menuIcon || '';
-                document.getElementById('editMenuRoute').value = menuRoute || '';
-                document.getElementById('editMenuPosition').value = menuPosition || '';
-                document.getElementById('editMenuActive').value = menuActive || '';
-                
-                // Abrir modal
-                new bootstrap.Modal(document.getElementById('editMenuModal')).show();
-            }    
-            
             $('#openNewMenuModal').on("click", function (e) {
                 e.stopImmediatePropagation();
 
                 $('#editMenuForm').trigger("reset");
+                $('#btnDeleteMenu').hide();
+                $('#insertMenuModal').show();
+                $('#updateMenuModal').hide();
                 $('#editMenuModal').modal('show');
             });
 
-            // $('#updateMenuModal').on("click", function (e) {
+            // Salva o Menu editado
             $('#updateMenuModal').on('click', function(e) {
+                e.stopImmediatePropagation();
+
+                const formData = new FormData(document.getElementById('editMenuForm'));
+
+                $.ajax({
+                    url: '/menu/update',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            // showAlert('Menu criado com sucesso!', 'success');
+                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}");
+                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
+
+                            $('#editMenuModal').modal('hide');
+                            $('#btnRefresh').trigger("click");
+                        } else {
+                            alert('Erro: ' + response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        if (xhr.status === 422) {
+                            const errors = xhr.responseJSON.errors;
+
+                            $("#editMenuForm .invalid-feedback").text('').hide();
+                            $.each( xhr.responseJSON.errors, function( key, value ) {
+                                $("#editMenuForm #error-" + key ).text(value).show(); 
+                            });                            
+                        } else {
+                            alert('Erro ao criar menu. Status: ' + xhr.status);
+                        }
+                    }
+                });                
+            });
+
+            // Insere o Novo Menu
+            $('#insertMenuModal').on('click', function(e) {
                 e.stopImmediatePropagation();
 
                 const formData = new FormData(document.getElementById('editMenuForm'));
@@ -472,7 +535,6 @@
                     success: function(response) {
                         if (response.success) {
                             // showAlert('Menu criado com sucesso!', 'success');
-                            // resetMenuForm();
                             $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}");
                             $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
 
@@ -504,6 +566,8 @@
             $('#btnRefresh').on("click", function (e) {
                 e.stopImmediatePropagation();
 
+                document.getElementById('roleMenus').innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
+
                 $.ajax({
                     type: "GET",
                     url: "{{ route('menu.listDados') }}",
@@ -534,7 +598,7 @@
                         $('#roleSelect').html(profileOptions);
 
                         // 3. Monta os Menus Pai no <select>
-                        let menusPaiOptions = '<option value="">Selecione</option>';
+                        let menusPaiOptions = '<option value=""> Menu Principal (sem pai) </option>';
 
                         if (response.menusPai && response.menusPai.length > 0) {
                             response.menusPai.forEach(menusPai => {
@@ -564,9 +628,14 @@
                                 ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
                                 ${menu.name}
                                 ${menu.route ? `<small class="text-muted">(${menu.route})</small>` : ''}
+                                ${menu.id}
+                                ${menu.menu_id}
+                                ${menu.position}
+                                ${menu.active}
                             </div>
                             <div class="actions">
-                                <button class="btn btn-sm btn-outline-primary" onclick="editMenu(${menu.id}, '${escapeJS(menu.name)}', '${escapeJS(menu.icon ?? '')}', '${escapeJS(menu.route ?? '')}')">
+                                <button data-menuid="${menu.id}" class="btn btn-sm btn-outline-primary btnEditMenu" 
+                                    onclick="editMenu(${menu.id}, '${escapeJS(menu.name)}', '${escapeJS(menu.icon ?? '')}', '${escapeJS(menu.route ?? '')}', ${menu.position}, '${menu.active}')">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             </div>

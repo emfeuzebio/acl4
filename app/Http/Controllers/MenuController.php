@@ -200,11 +200,8 @@ class MenuController extends Controller
                 $request->only(['menu_id', 'name', 'icon', 'route', 'position', 'active'])
             );  
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Menu criado com sucesso!',
-            ]);
-            
+            return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.'], Response::HTTP_OK);
+                        
         } catch (ValidationException $e) {
 
             return response()->json([
@@ -224,10 +221,37 @@ class MenuController extends Controller
 
     public function update(Request $request)
     {
-        $menu = Menu::findOrFail($request->id);
-        $menu->update($request->only(['menu_id','name', 'icon', 'route', 'active','position']));
+        // dd($request);
+        try {
+            $request->validate([
+                'menu_id' => 'nullable|exists:acl_menus,id',
+                'name' => 'required|string|max:255',
+                'icon' => 'nullable|string|max:50',
+                'route' => 'required|string|max:255',
+                'position' => 'integer',
+                'active' => 'in:Y,N'
+            ]);
 
-        return response()->json($menu);
+            $menu = Menu::findOrFail($request->id);
+            $menu->update($request->only(['menu_id','name', 'icon', 'route', 'active','position']));
+
+            return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.'], Response::HTTP_OK);
+            
+        } catch (ValidationException $e) {
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Dados de entrada inválidos',
+                'errors' => $e->errors()
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        }catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Houve um erro ao salvar os dados. ' . $e->getMessage(),
+                'error' => 'Houve um erro ao salvar os dados. ' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }        
     }     
 
     public function destroy(Request $request)
