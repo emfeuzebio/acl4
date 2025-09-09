@@ -1,4 +1,3 @@
-<!-- @extends('layouts.appbase') -->
 @extends('adminlte::page')
 
 @section('title', __(config('app.name')) . ' ' . 'Menus')
@@ -217,16 +216,16 @@
                                             Selecione um perfil à esquerda para gerenciar seus menus.
                                         </div>
                                         <div id="roleMenusContainer" class="d-none">
-                                            <p class="text-muted">Arraste os menus da esquerda para aqui ou organize a hierarquia por arrastar e soltar:</p>
+                                            <p class="text-muted">Arraste os menus da esquerda para cá e organize a hierarquia arrastando e soltando</p>
                                             <div class="menu-container" id="roleMenus">
                                                 <!-- Menus serão carregados via AJAX -->
                                             </div>
                                             <div class="mt-3">
-                                                <button class="btn btn-primary" onclick="saveMenuOrder()">
-                                                    <i class="fas fa-save me-2"></i>Salvar Alterações
+                                                <button class="btn btn-sm btn-primary btnSaveMenuOrder">
+                                                    <i class="fas fa-save me-2"></i> Salvar Alterações
                                                 </button>
-                                                <!-- <button class="btn btn-outline-secondary" onclick="resetMenuOrder()">
-                                                    <i class="fas fa-undo me-2"></i>Reverter
+                                                <!-- <button class="btn btn-sm btn-outline-secondary" onclick="resetMenuOrder()">
+                                                    <i class="fas fa-undo me-2"></i> Reverter
                                                 </button> -->
                                             </div>
                                         </div>
@@ -297,7 +296,7 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" id="btnDeleteMenu" class="btn btn-danger" onclick="deleteMenu()">
+                    <button type="button" id="btnDeleteMenu" data-menu-id="" class="btn btn-danger">
                         <i class="fas fa-trash me-2"></i>Excluir
                     </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="$('#editMenuModal').modal('hide');">Cancelar</button>
@@ -317,6 +316,7 @@
     <!-- DataTables JS -->
     <script src="{{ asset('vendor/datatables/js/jquery.dataTables.js') }}"></script>
     <script src="{{ asset('vendor/datatables/js/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 
     <script>
 
@@ -352,7 +352,6 @@
                 success: function(response) {
                     let html = renderRoleMenus(response);
                     $('#roleMenus').html(html);
-
                     // document.getElementById('roleMenus').innerHTML = response.html;
                     // updateAssignedCount();
                     // updateMenuModalHierarchy();
@@ -378,6 +377,7 @@
             menus.sort((a, b) => a.pivot.position - b.pivot.position);
 
             let html = '';
+            // onclick="removeMenuFromRole(${menu.id})"
 
             menus.forEach(menu => {
                 html += `
@@ -389,7 +389,7 @@
                             ${menu.route ? `<small class="text-muted">(${menu.route})</small>` : ''}
                         </div>
                         <div class="actions">
-                            <button class="btn btn-sm btn-outline-danger" onclick="removeMenuFromRole(${menu.id})">
+                            <button class="btn btn-sm btn-outline-danger btnRemoveMenuFromRole" data-menu-id="${menu.id}">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -411,13 +411,14 @@
                                     ${child.route ? `<small class="text-muted">(${child.route})</small>` : ''}
                                 </div>
                                 <div class="actions">
-                                    <button class="btn btn-sm btn-outline-danger" onclick="removeMenuFromRole(${child.id})">
+                                    <button class="btn btn-sm btn-outline-danger" >
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
                             </div>
                         `;
                     });
+                    // onclick="removeMenuFromRole(${child.id})"
                     html += '</div>';
                 }
             });
@@ -459,17 +460,71 @@
             });
         }
 
-
         // DataTables operações padrão
         $(document).ready(function() {
+
+            // Dispara o clique automaticamente ao carregar a página
+            $('#btnRefresh').trigger("click");
+
+                // Inicializar Sortable para o container de menus disponíveis
+                new Sortable($('#availableMenus')[0], {
+                    group: {
+                        name: 'menus',
+                        pull: 'clone',
+                        put: false
+                    },
+                    animation: 150,
+                    sort: false,
+                    onEnd: function(evt) {
+                        if (evt.to.id === 'roleMenus') {
+                            updateAssignedCount();
+                            updateMenuHierarchy();
+                        }
+                    }
+                });
+                
+                // Inicializar Sortable para o container de menus atribuídos
+                new Sortable($('#roleMenus')[0], {
+                    group: 'menus',
+                    animation: 150,
+                    onEnd: function(evt) {
+                        updateMenuHierarchy();
+                    }
+                });
+
+                // Função para atualizar contagem
+                function updateAssignedCount() {
+                    const count = $('#roleMenus .menu-item').length;
+                    $('#assignedCount').text(count);
+                }
+
+                // Função para atualizar hierarquia (exemplo)
+                function updateMenuHierarchy() {
+                    const menuOrder = [];
+                    $('#roleMenus .menu-item').each(function(index) {
+                        menuOrder.push({
+                            id: $(this).data('id'),
+                            order: index + 1,
+                            menu_id: $(this).data('menu-id')
+                        });
+                    });
+                    
+                    // Aqui você pode enviar para o servidor
+                    console.log('Ordem atualizada:', menuOrder);
+                }
+
+                // Eventos de clique para botões (se necessário)
+                $(document).on('click', '.btn-remove', function() {
+                    $(this).closest('.menu-item').remove();
+                    updateAssignedCount();
+                    updateMenuHierarchy();
+                });
+            
 
             $.ajaxSetup({
                 headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
                 statusCode: { 401: function() { window.location.href = "/login"; } }
             });
-
-            // Dispara o clique automaticamente ao carregar a página
-            $('#btnRefresh').trigger("click");
 
             $('#openNewMenuModal').on("click", function (e) {
                 e.stopImmediatePropagation();
@@ -495,8 +550,7 @@
                     contentType: false,
                     success: function(response) {
                         if (response.success) {
-                            // showAlert('Menu criado com sucesso!', 'success');
-                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}");
+                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}" + response.dados.name);
                             $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
 
                             $('#editMenuModal').modal('hide');
@@ -535,7 +589,7 @@
                     success: function(response) {
                         if (response.success) {
                             // showAlert('Menu criado com sucesso!', 'success');
-                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}");
+                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageInsert') }}" + response.dados.name);
                             $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
 
                             $('#editMenuModal').modal('hide');
@@ -559,19 +613,133 @@
                 });                
             });
 
+            // Delete Menu
+            $('#btnDeleteMenu').on('click', function(e) {
+                e.stopImmediatePropagation();
 
-            /*
-            * Refresh button action
-            */
+                const menuId = $("#editMenuForm #editMenuId").val();
+                // alert(menuId);
+
+                $.ajax({
+                    url: '/menu/destroy',
+                    method: 'POST',
+                    data: { "id": menuId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageDestroy') }}" + response.dados.name);
+                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
+
+                            $('#editMenuModal').modal('hide');
+                            $('#btnRefresh').trigger("click");
+                        } else {
+                            alert('Erro: ' + response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        const errors = xhr.responseJSON.message;
+                        alert('Erro ao excluir o menu. Status: ' + xhr.message);
+                    }
+                });                
+            });
+
+            // Delete Menu From Role
+            // com a sintaxe abaixo captura evento mesmo de elemento criado em tempo de execução
+            $(document).on('click', '.btnRemoveMenuFromRole', function(e) {
+                e.stopImmediatePropagation();
+
+                const menuId = $(this).data('menu-id');
+                const currentRoleId = $('#roleSelect').val();
+                // alert('btnRemoveMenuFromRole ' + menuId);
+                // alert('currentRoleId ' + currentRoleId);
+
+                if (!currentRoleId) {
+                    alert('Necessário selecionar um Perfil de Acesso.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/menu/removeMenuFromRole/' + currentRoleId,
+                    method: 'DELETE',
+                    data: { "menuId": menuId },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageDestroy') }}" + menuId);
+                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
+                            loadRoleMenus(currentRoleId);
+                            // $('#btnRefresh').trigger("click");
+                        }
+                    },
+                    error: function(xhr) {
+                        const errors = xhr.responseJSON.message;
+                        alert('Erro ao excluir o Menu do Perfil de Acesso. Status: ' + xhr.message);
+                    }
+                });                
+            });
+
+            // Salva os Menus no Perfil de Acesso depois de Ordenados
+            $(document).on('click', '.btnSaveMenuOrder', function(e) {
+                e.stopImmediatePropagation();
+
+                const currentRoleId = $('#roleSelect').val();
+
+                if (!currentRoleId) {
+                    alert('Necessário selecionar um Perfil de Acesso.');
+                    return;
+                }
+
+                const menuOrder = [];
+                // document.querySelectorAll('#roleMenus .menu-item').forEach(item => {
+                //     menuOrder.push(item.dataset.menuId);
+                // });
+                // console.log(menuOrder);
+                $('#roleMenus .menu-item').each(function(index) {
+                    // menuOrder.push($(this).data('menu-id'));
+
+                    menuOrder.push({
+                        id: $(this).data('menu-id'),
+                        position: index + 1  // A posição é baseada na ordem atual (index + 1)
+                    });                    
+                });  
+
+                if (menuOrder.length === 0) {
+                    alert('Primeiro inclua os Menus.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/menu/saveRoleMenus/' + currentRoleId,
+                    method: 'POST',
+                    data: { menus: menuOrder },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}");
+                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
+                            loadRoleMenus(currentRoleId);
+                        }
+                    },
+                    error: function(xhr) {
+                        const errors = xhr.responseJSON.message;
+                        alert('Erro ao excluir o Menu do Perfil de Acesso. Status: ' + xhr.message);
+                    }
+                });                
+            });
+
+            // Refresh button action
             $('#btnRefresh').on("click", function (e) {
                 e.stopImmediatePropagation();
 
-                document.getElementById('roleMenus').innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
+                // document.getElementById('roleMenus').innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
 
                 $.ajax({
                     type: "GET",
                     url: "{{ route('menu.listDados') }}",
                     dataType: 'json',
+                    beforeSend: function() {
+                        $('#roleMenus').html('<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>');
+                    },
                     success: function (response) {
 
                         // 1. Monta a lista de Menus Disponíveis
@@ -612,6 +780,9 @@
                     error: function (error) {
                         console.error('Erro ao carregar os menus:', error);
                         $('#menu-list').html('<p>Erro ao carregar os menus.</p>');
+                    },
+                    complete: function() {
+                        $('#roleMenus').empty();
                     }
                 });                
             });
@@ -658,269 +829,6 @@
                 return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
             }   
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            /**
-             * Edit User Profile
-             */
-            $('#btnEditUserProfile').on("click", function (e) {
-                e.stopImmediatePropagation();
-
-                $.ajax({
-                    type: "GET",
-                    url: "{{ url("user/show") }}",
-                    data: { "id": "{{ auth()->id() }}" },
-                    dataType: 'json',
-                    success: function (response) {
-
-                        // loda User data on form fields
-                        $.each(response, function( key, value ) {
-                            if (key == 'active') {
-                                $('#editUserProfileModal #formUserProfile #active').prop('checked', (response.active == "Y" ? true : false));
-                            } else {
-                                $('#editUserProfileModal #formUserProfile #' + key).val(value);
-                            }
-                        });                        
-
-                        $('#editUserProfileModal').modal('show');
-                    },
-                    error: function (error) {
-                        if (ERROR_HTTP_STATUS.has(error.status)) { window.location.href = "{{ url('/login') }}"; return; } 
-                        $('#alertModal .modal-body').html(error.responseJSON.message)
-                    }    
-                });                 
-            });  
-            
-            /*
-            * Save User Profile
-            */
-            $('#btnSaveUserProfile').on("click", function (e) {
-                e.stopImmediatePropagation();
-
-                // lets join form fields and use index form .get(0)
-                const formData = new FormData($('#editUserProfileModal #formUserProfile').get(0));
-
-                $.ajax({
-                    type: "POST",
-                    url: "{{ url("user/updateProfile") }}",
-                    data: formData,
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function (response) {
-
-                        $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}<b> " + response.id + '</b>');
-                        $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
-                        $('#editUserProfileModal').modal('hide');
-                        location.reload();  // page refresh
-                    },
-                    error: function (error) {
-
-                        // show errors fields messages from the validator
-                        $("#editUserProfileModal .invalid-feedback").text('').hide();
-                        $.each( error.responseJSON.errors, function( key, value ) {
-                            $("#editUserProfileModal #error-" + key ).text(value).show(); 
-                        });
-
-                        // show error messages
-                        $('#editUserProfileModal #msgOperacao').html(error.responseJSON.message).show();
-                    }
-                });                
-            });            
-         
-
-            /*
-            * Filter select change action
-            */
-            $('#filterSelect1, #filterSelect2, #filterSelect3, #filterSelect4').on("change", function (e) {
-                e.stopImmediatePropagation();
-
-                $('#datatables').DataTable().ajax.reload(null, false);
-            });            
-
-            /*
-            * New Record button action
-            */
-            $('#btnInsertNew').on("click", function (e) {
-                e.stopImmediatePropagation();
-
-                $('#editModal #form-group-id').hide();                                  // hide register ID
-                // $('#formEntity').trigger("reset");                                   // limpa mensagens de erro
-                // $(".invalid-feedback").text('').hide();                              // hide all error displayed
-                $('#editModal #modalLabel').html("{{ __('acl.crud.insertRegLabel')}} " + entityName);    // modal title
-                $("#editModal #btnSave").hide();                                        // hide btnSave
-                $("#editModal #btnInsert").show();                                     // show btnInsert
-                $('#editModal #formEntity #active').prop('checked', true);              // default Y-True
-                $('#editModal').modal('show');                                          // show modal 
-            });     
-            
-            /*
-            * Edit button action
-            */
-            $("#datatables tbody").delegate('tr td .btnEdit', 'click', function (e) {
-                e.stopImmediatePropagation();            
-
-                const id = $(this).parents('tr').attr("id");
-
-                $.ajax({
-                    type: "GET",
-                    url: "{{ url()->current() }}/show",
-                    data: { "id": id },
-                    dataType: 'json',
-                    success: function (response) {
-
-                        $('#editModal #modalLabel').html("{{ __('acl.crud.editRegLabel')}} " + entityName);
-                        $('#editModal #form-group-id').show();                  // sendo uma edição mostra o ID do registro
-                        $("#editModal #btnInsert").hide();                      // esconde o btn Inserir  
-
-                        // Modal buttom Remove Photo toggle over data.photo
-                        $('#formEntity #btnExcluirFoto').prop('disabled', ( response.active == 'Y' ? ( response.photo ? false : true ) : true ));
-                        $('#formEntity #photo').prop('disabled', ( response.active == 'Y' ? false : true ));
-                        // console.log(response.photo);
-
-                        $('#editModal').modal('show');                          // mostra o modal de edição de dados
-
-                        // carregas os dados dos campos no Form
-                        $.each(response, function( key, value ) {
-                            // console.log('key:', key);
-
-                            if (key == 'active') {
-                                $('#editModal #formEntity #active').prop('checked', (response.active == "Y" ? true : false));
-                            } else if (key == 'photo') {
-                                // console.log('photo:', response.photo);
-
-                                // Caminho da imagem padrão
-                                let photoPath = response.photo ? '/storage/' + response.photo : '/storage/users/avatar.jpg';
-
-                                $('#editModal #formEntity #preview-image').attr('src', photoPath); 
-                                $('#editModal #formEntity #photo-preview').show();
-                                $('#editModal #formEntity #photo-removed').val('0');    // flag que a foto não foi removida
-                            } else {
-                                $('#editModal #formEntity #' + key).val(value);
-                            }                           
-                        });                        
-
-                        // controla o botão Salvar conforme o ACL Gate
-                        if (response.ACLupdate) { $("#btnSave").show(); } else { $("#btnSave").hide(); }                       
-                    },
-                    error: function (error) {
-                        $('#alertModal .modal-body').html(error.responseJSON.message)
-                        $('#alertModal').modal('show');
-                    }
-                }); 
-            });     
-
-            /*
-            * Save currente edition register (create ou update)
-            */
-            $('.btnSave').on("click", function (e) {
-                e.stopImmediatePropagation();
-
-                var activeValue = getAtivoValue();                           // recupera o ativo switch
-                var operation = $(this).data('operation');                    // recupera a operação
-                // alert(operation);
-
-                // lets join form fields and use index form .get(0)
-                const formData = new FormData($('#editModal #formEntity').get(0));
-                formData.append('active', activeValue);                       // adiciona o campo ativo ao formData
-
-                $.ajax({
-                    type: "POST",
-                    url: ( operation == 'insert' ? "{{ url()->current() }}/store" : "{{ url()->current() }}/update"), // ajusta a rota conforme a operação
-                    data: formData,
-                    dataType: 'json',
-                    processData: false,
-                    contentType: false,
-                    success: function (response) {
-
-                        $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}<b> " + response.id + '</b>');
-                        $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
-                        $('#editModal').modal('hide');
-                        $('#datatables').DataTable().ajax.reload(null, false);
-                    },
-                    error: function (error) {
-
-                        // show errors fields messages from the validator
-                        $("#editModal .invalid-feedback").text('').hide();
-                        $.each( error.responseJSON.errors, function( key, value ) {
-                            $("#editModal #error-" + key ).text(value).show(); 
-                        });
-
-                        // show error messages
-                        if (error.responseJSON.message.indexOf("1062") != -1) {
-                            $('#msgOperacao').html("{{ __('acl.crud.errorMessage1062')}}").show();
-                        } else {
-                            $('#msgOperacao').html(error.responseJSON.message).show();
-                        }
-                    }
-                });                
-            });
-
-            /*
-            * Delete button action
-            */
-            $("#datatables tbody").delegate('tr td .btnDestroy', 'click', function (e) {
-                e.stopImmediatePropagation();            
-
-                id = $(this).parents('tr').attr("id");
-
-                // abre Form Modal Bootstrap e pede confirmação da Exclusão do Registro
-                $('#msgOperacaoExcluir').text('');
-                $('#confirmaExcluirModal .modal-title').html("{{ __('acl.crud.modalDestroyTitle') }} " + entityName);                
-                $("#confirmaExcluirModal .modal-body p").html('').html("{{ __('acl.crud.modalDestroyText') }} <b>" + id + '</b>?');
-                $('#confirmaExcluirModal').modal('show');
-
-                // se confirmar a Exclusão, exclui o Registro via Ajax
-                $('#confirmaExcluirModal').find('.modal-footer #confirm').on('click', function (e) {
-                    e.stopImmediatePropagation();
-
-                    $.ajax({
-                        type: "POST",
-                        url: "{{ url()->current() }}/destroy",
-                        data: {"id": id},
-                        dataType: 'json',
-                        success: function (data) {
-
-                            $("#alert .alert-content").html("{{ __('acl.crud.confirmMessageDestroy') }} <b>" + id + '</b>');
-                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
-                            $('#confirmaExcluirModal').modal('hide');
-                            $('#datatables').DataTable().ajax.reload(null, false);
-                        },
-                        error: function (error) {
-                            
-                            if (ERROR_HTTP_STATUS.has(error.status)) {
-                                window.location.href = "{{ url('/login') }}";
-                                return;
-                            } 
-
-                            // show errors messages
-                            $('#msgOperacaoExcluir').html(error.responseJSON.message).show();
-                            // if(error.responseJSON.message.indexOf("1451") != -1) {
-                            //     $('#msgOperacaoExcluir').html("{{ __('acl.crud.errorMessage1451') }}").show();
-                            // } else {
-                            //     $('#msgOperacaoExcluir').html(error.responseJSON.message).show();
-                            // }
-                        }
-                    });
-                });
-            }); 
-
             /**
              * põe o foco no primeiro campo do modal
              */
@@ -928,13 +836,10 @@
                 $('#name').focus();
             })      
             
-            /*
-            * convert active checkbox to 'Y' : 'N'
-            */
+            // convert active checkbox to 'Y' : 'N'            
             function getAtivoValue() {
                 return $('input[id="active"]:checked').val() ? 'Y' : 'N';
-            }            
-
+            }
         });   
 
     </script>      

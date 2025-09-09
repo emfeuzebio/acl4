@@ -131,15 +131,41 @@ class MenuController extends Controller
 
     public function saveRoleMenus(Request $request, $roleId)
     {
-        $role = Profile::findOrFail($roleId);
-        $role->menus()->sync($request->menus);
-        
+        // TODO ver aqui o problem que não salva a nova ordem
+        // 1 atualizar no Menu em si
+        // 2 Atualizar no updateExistingPivot acl_profile_menu
+
+
+        // $role = Profile::findOrFail($roleId);
+        // $role->menus()->sync($request->menus);
+
         // Atualizar posições
-        foreach ($request->menus as $position => $menuId) {
-            $role->menus()->updateExistingPivot($menuId, ['position' => $position]);
-        }
+        // foreach ($request->menus as $position => $menuId) {
+        //     $role->menus()->updateExistingPivot($menuId, ['position' => $position]);
+        // }
+
+        // TODO Abaixo última solução do DeepSeek
+
+        $menus = $request->input('menus');
+    
+        foreach ($menus as $menuData) {
+            // Atualiza a posição de cada menu
+             Menu::where('id', $menuData['id'])
+                ->update(['position' => $menuData['position']]);
+                
+            // Ou, se você tem uma tabela de relacionamento entre roles e menus:
+            // DB::table('role_menu')
+            //     ->where('role_id', $roleId)
+            //     ->where('menu_id', $menuData['id'])
+            //     ->update(['position' => $menuData['position']]);
+        }        
         
-        return response()->json(['success' => true]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Menus Atualizados no Perfil de Acesso com sucesso.',
+        ], Response::HTTP_OK);
+
     }    
 
     public function removeMenuFromRole(Request $request, $profileId)
@@ -151,13 +177,14 @@ class MenuController extends Controller
             
             return response()->json([
                 'success' => true,
-                'message' => 'Menu removido do perfil com sucesso!'
-            ]);
+                'message' => 'Menu removido do Perfil de Acesso com sucesso.',
+            ], Response::HTTP_OK);
+            
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erro ao remover menu: ' . $e->getMessage()
-            ], 500);
+                'message' => 'Erro ao Remover o Item de Menu do Perfil de Acesso. ' . $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }    
 
@@ -168,20 +195,7 @@ class MenuController extends Controller
 
     public function show(Request $request)
     {        
-
-        // Habilita o log de todas as consultas SQL executadas a partir deste ponto.
-        DB::enableQueryLog();
-        
-            $profile = Profile::with('authorizations.action')->find($request->id);    // recupera o Perfil com suas Autorizacoes e as Rotas associadas
-            $organization['ACLupdate'] = Gate::allows('profile.update');     // returns true if the User has permission to Update            
-            // $profile['ACLupdate'] = true;     // returns true if the User has permission to Update
-
-        // Retorna um array com todas as consultas SQL executadas.
-        DB::getQueryLog();
-        // print_r(DB::getQueryLog()); // para ver as queries num array
-        // die();
-
-        return response()->json($profile);
+        return;
     }      
 
     public function store(Request $request)
@@ -196,11 +210,11 @@ class MenuController extends Controller
                 'active' => 'in:Y,N'
             ]);
 
-            Menu::Create(
+            $menu = Menu::Create(
                 $request->only(['menu_id', 'name', 'icon', 'route', 'position', 'active'])
             );  
 
-            return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.'], Response::HTTP_OK);
+            return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.', 'dados' => $menu], Response::HTTP_OK);           
                         
         } catch (ValidationException $e) {
 
@@ -221,7 +235,6 @@ class MenuController extends Controller
 
     public function update(Request $request)
     {
-        // dd($request);
         try {
             $request->validate([
                 'menu_id' => 'nullable|exists:acl_menus,id',
@@ -235,8 +248,7 @@ class MenuController extends Controller
             $menu = Menu::findOrFail($request->id);
             $menu->update($request->only(['menu_id','name', 'icon', 'route', 'active','position']));
 
-            return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.'], Response::HTTP_OK);
-            
+            return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.', 'dados' => $menu], Response::HTTP_OK);           
         } catch (ValidationException $e) {
 
             return response()->json([
@@ -269,9 +281,9 @@ class MenuController extends Controller
 
             // the canDelete() is on Model
             if ($menu->canDelete()) {
-                // delete Cascade on menu_profile
-                $menu->delete();
-                return response()->json($menu);
+                $menu->delete();    // delete Cascade on menu_profile
+
+                return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.', 'dados' => $menu], Response::HTTP_OK);
             } else {
                 return Response()->json(['message'=>'Exception: Não é possível excluir o Item de Menu, pois está concedido a Outros Perfis de Acesso'], Response::HTTP_UNPROCESSABLE_ENTITY); //422
             }
@@ -282,7 +294,7 @@ class MenuController extends Controller
             return response()->json([
                 'sucesso' => false,
                 'message' => ($e->getCode() == 23000 ? 'Impossível EXCLUIR porque há registros relacionados. (SQL-1451).' : 'Houve um ERRO desconhecido! A Operação foi cancelada.'),
-                'error' => ($e->getCode() == 23000 ? 'errorMessage1451' : 'errorMessage0000' ),
+                'error' => ($e->getCode() == 23000 ? 'errorMessage1451' : $e->getMessage()),
                 'code' => $e->getCode(),
             ], Response::HTTP_FORBIDDEN);            
         }
