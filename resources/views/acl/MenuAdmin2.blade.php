@@ -297,6 +297,22 @@
         </div>
     </div>
 
+    <!-- modal para exibir Alertas necessários -->
+    <div class="modal fade" id="alertModal" tabindex="-1" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-sm modal-dialog-centered" role="document">            
+            <div class="modal-content">
+                <div class="modal-header alert-warning">
+                    <h4 class="modal-title">Alerta</h4>
+                    <button type="button" class="close btnCancelar" data-bs-dismiss="modal" data-toggle="tooltip" title="Cancelar a operação (Esc ou Alt+C)" onClick="$('#alertModal').modal('hide');">&times;</button>
+                </div>
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal" data-toggle="tooltip" title="Cancelar a operação (Esc ou Alt+C)" onClick="$('#alertModal').modal('hide');">Cancelar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @stop
 
 {{-- Add common Javascript/Jquery code --}}
@@ -342,8 +358,9 @@
                     let html = renderRoleMenus(response);
                     $('#roleMenus').html(html);
                 },
-                error: function() {
-                    alert('Erro ao carregar os Menus do Perfil de Acesso.');
+                error: function(error) {
+                    $('#alertModal .modal-body').html(error.responseJSON.message);
+                    $('#alertModal').modal('show');
                 }
             });
         }
@@ -551,16 +568,17 @@
                             alert('Erro: ' + response.message);
                         }
                     },
-                    error: function(xhr) {
-                        if (xhr.status === 422) {
-                            const errors = xhr.responseJSON.errors;
+                    error: function(error) {
+                        if (error.status === 422) {
+                            const errors = error.responseJSON.errors;
 
                             $("#editMenuForm .invalid-feedback").text('').hide();
-                            $.each( xhr.responseJSON.errors, function( key, value ) {
+                            $.each( error.responseJSON.errors, function( key, value ) {
                                 $("#editMenuForm #error-" + key ).text(value).show(); 
                             });                            
                         } else {
-                            alert('Erro ao criar menu. Status: ' + xhr.status);
+                            $('#alertModal .modal-body').html(error.responseJSON.message);
+                            $('#alertModal').modal('show');
                         }
                     }
                 });                
@@ -590,16 +608,17 @@
                             alert('Erro: ' + response.message);
                         }
                     },
-                    error: function(xhr) {
-                        if (xhr.status === 422) {
-                            const errors = xhr.responseJSON.errors;
+                    error: function(error) {
+                        if (error.status === 422) {
+                            const errors = error.responseJSON.errors;
 
                             $("#editMenuForm .invalid-feedback").text('').hide();
-                            $.each( xhr.responseJSON.errors, function( key, value ) {
+                            $.each( error.responseJSON.errors, function( key, value ) {
                                 $("#editMenuForm #error-" + key ).text(value).show(); 
                             });                            
                         } else {
-                            alert('Erro ao criar menu. Status: ' + xhr.status);
+                            $('#alertModal .modal-body').html(error.responseJSON.message);
+                            $('#alertModal').modal('show');                            
                         }
                     }
                 });                
@@ -628,9 +647,9 @@
                             alert('Erro: ' + response.message);
                         }
                     },
-                    error: function(xhr) {
-                        const errors = xhr.responseJSON.message;
-                        alert('Erro ao excluir o menu. Status: ' + xhr.message);
+                    error: function(error) {
+                        $('#alertModal .modal-body').html(error.responseJSON.message);
+                        $('#alertModal').modal('show');                            
                     }
                 });                
             });
@@ -662,9 +681,9 @@
                             loadRoleMenus(currentRoleId);
                         }
                     },
-                    error: function(xhr) {
-                        const errors = xhr.responseJSON.message;
-                        alert('Erro ao salvar as Posições dos Menus do Perfil de Acesso. Status: ' + xhr.message);
+                    error: function(error) {
+                        $('#alertModal .modal-body').html(error.responseJSON.message);
+                        $('#alertModal').modal('show');                                                    
                     }
                 });                
             });
@@ -705,9 +724,9 @@
                             $('#btnRefresh').trigger("click");
                         }
                     },
-                    error: function(xhr) {
-                        const errors = xhr.responseJSON.message;
-                        alert('Erro ao salvar as Posições dos Menus. Status: ' + xhr.message);
+                    error: function(error) {
+                        $('#alertModal .modal-body').html(error.responseJSON.message);
+                        $('#alertModal').modal('show');
                     }
                 });                
             });
@@ -747,9 +766,9 @@
                             loadRoleMenus(currentRoleId);
                         }
                     },
-                    error: function(xhr) {
-                        const errors = xhr.responseJSON.message;
-                        alert('Erro ao excluir o Menu do Perfil de Acesso. Status: ' + xhr.message);
+                    error: function(error) {
+                        $('#alertModal .modal-body').html(error.responseJSON.message);
+                        $('#alertModal').modal('show');
                     }
                 });                
             });
