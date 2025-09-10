@@ -92,10 +92,10 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
-                            <div class="col-md-3 text-left h5"><b>Administração de Menus</b></div>
+                            <div class="col-md-4 text-left h5"><b>Administração de Menus</b></div>
                             
                             <!-- message area -->
-                            <div class="col-md-4 text-left">
+                            <div class="col-md-6 text-left">
                                 <div style="padding: 0px;  background-color: transparent;">
                                     <div id="alert" class="alert alert-danger" style="margin-bottom: 0px; display: none; padding: 2px 5px 2px 5px;">
                                         <a class="close" onClick="$('.alert').hide()">&times;</a>  
@@ -105,72 +105,37 @@
                             </div>
                                                 
                             <!-- buttons area -->
-                            <div class="col-md-5 text-right">
-
-                                <!-- extra buttons from entity config json -->
-                                @foreach(optional($entityConfig ?? null)->pageButtons ?? [] as $button)
-                                    <button id="{{ $button->btnName }}" class="{{ $button->btnClass }}" data-toggle="tooltip" 
-                                        title="{{ $button->btnTitle }}" >{{ $button->btnLabel }}
-                                    </button>
-                                @endforeach
-
+                            <div class="col-md-2 text-right">
                                 <button id="btnRefresh" class="btnRefresh btn btn-default btn-sm" data-toggle="tooltip" title="{{ __('acl.crud.btnRefreshTip') }}"><i class="fas fa-fw fa-redo"></i> {{ __('acl.crud.btnRefresh') }}</button>
-                                <button id="btnInsertNew" style="display: none;" class="btnInsertNew btn btn-success btn-sm" data-toggle="tooltip" title="{{ __('acl.crud.btnInsertNewTip') }}"><i class="fas fa-fw fa-plus"></i> {{ __('acl.crud.btnInsertNew') }}</button>
                             </div>
                         </div>
                     </div>
 
                     <!-- filters area -->
-                    <div class="card-header" id="filter_area" style="display: none;">
+                    <div class="card-header">
                         <div class="row">
-                            <div id="filterDiv1" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
-                                <label id="filterLabel1" class="form-label">Filter 1</label>
-                                <select id="filterSelect1" name="filterSelect1" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
-                                    <option value="">{{ __('acl.crud.todes')}}</option>
-                                    @foreach($filterOptions1 ?? (object) [] as $option) 
-                                    <option value="{{$option->id}}">{{$option->description}}</option>
-                                    @endforeach
-                                </select>
+                            <div class="col-md-12" style="margin-bottom: 0px;">
+                                <div class="form-group row">
+                                    <label class="col-form-label col-md-3" for="systemSelect">Selecione o Sistema</label>
+                                    <div class="col-md-6">
+                                        <select id="systemSelect" name="systemSelect" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="filterDiv2" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
-                                <label id="filterLabel2" class="form-label">Filter 2 </label>
-                                <select id="filterSelect2" name="filterSelect2" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
-                                    <option value="">{{ __('acl.crud.todes')}}</option>
-                                    @foreach($filterOptions2 ?? (object) [] as $option) 
-                                    <option value="{{$option->id}}">{{$option->description}}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div id="filterDiv3" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
-                                <label id="filterLabel3" class="form-label">Filter 3</label>
-                                <select id="filterSelect3" name="filterSelect3" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
-                                    <option value="">{{ __('acl.crud.todes')}}</option>
-                                    @foreach($filterOptions3 ?? (object) [] as $option) 
-                                    <option value="{{$option->id}}">{{$option->description}}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div id="filterDiv4" class="col-md-3 form-group" style="margin-bottom: 0px; display: none;">
-                                <label id="filterLabel4" class="form-label">Filter 4</label>
-                                <select id="filterSelect4" name="filterSelect4" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
-                                    <option value="">{{ __('acl.crud.todes')}}</option>
-                                    <option value="SIM">SIM</option>
-                                    <option value="NÃO">NÃO</option>
-                                </select>
-                            </div>
-                        </div>
+                        </div>                    
                     </div>                
 
                     <div class="card-body">
                         <div class="row">
 
                             <!-- Todos os Menus Disponíveis -->
-                            <div class="col-md-6" style="background-color: grey;">
-
+                            <div class="col-md-6">
                                 <div class="card">
                                     <div class="card-header">
+                                        <label for="roleSelect" class="form-label" style="margin-bottom: 11px;">Ações</label>
                                         <h5 class="mb-0">
-                                            <button id="openNewMenuModal" type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#createMenuModal">
+                                            <button id="openNewMenuModal" type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#createMenuModal">
                                                 <i class="fas fa-plus-circle me-2"></i> Criar Novo Menu
                                             </button>
                                         </h5>
@@ -194,11 +159,10 @@
                             </div>
 
                             <!-- Menus do Perfil Selecionado -->
-                            <div class="col-md-6" style="background-color: grey;">
+                            <div class="col-md-6">
 
                                 <div class="card">
                                     <div class="card-header">
-
                                         <label for="roleSelect" class="form-label">Selecione um Perfil:</label>
                                         <select class="form-control" id="roleSelect" onchange="loadRoleMenus(this.value)">
                                             <option value=""> Selecione </option>
@@ -307,7 +271,6 @@
         </div>
     </div>
 
-
 @stop
 
 {{-- Add common Javascript/Jquery code --}}
@@ -352,17 +315,14 @@
                 success: function(response) {
                     let html = renderRoleMenus(response);
                     $('#roleMenus').html(html);
-                    // document.getElementById('roleMenus').innerHTML = response.html;
-                    // updateAssignedCount();
-                    // updateMenuModalHierarchy();
                 },
                 error: function() {
-                    alert('Erro ao carregar menus do perfil.');
+                    alert('Erro ao carregar os Menus do Perfil de Acesso.');
                 }
             });
         }
 
-        // Monta a lista de Menus do Perfil
+        // Monta a lista de Menus do Perfil de Acesso
         function renderRoleMenus(menus) {
 
             if (!Array.isArray(menus)) {
@@ -418,7 +378,6 @@
                             </div>
                         `;
                     });
-                    // onclick="removeMenuFromRole(${child.id})"
                     html += '</div>';
                 }
             });
@@ -460,66 +419,59 @@
             });
         }
 
-        // DataTables operações padrão
+        // Após o Documento pronto
         $(document).ready(function() {
 
-            // Dispara o clique automaticamente ao carregar a página
-            $('#btnRefresh').trigger("click");
-
-                // Inicializar Sortable para o container de menus disponíveis
-                new Sortable($('#availableMenus')[0], {
-                    group: {
-                        name: 'menus',
-                        pull: 'clone',
-                        put: false
-                    },
-                    animation: 150,
-                    sort: false,
-                    onEnd: function(evt) {
-                        if (evt.to.id === 'roleMenus') {
-                            updateAssignedCount();
-                            updateMenuHierarchy();
-                        }
-                    }
-                });
-                
-                // Inicializar Sortable para o container de menus atribuídos
-                new Sortable($('#roleMenus')[0], {
-                    group: 'menus',
-                    animation: 150,
-                    onEnd: function(evt) {
+            // Inicializar Sortable para o container de menus disponíveis
+            new Sortable($('#availableMenus')[0], {
+                group: {
+                    name: 'menus',
+                    pull: 'clone',
+                    put: false
+                },
+                animation: 150,
+                sort: false,
+                onEnd: function(evt) {
+                    if (evt.to.id === 'roleMenus') {
+                        updateAssignedCount();
                         updateMenuHierarchy();
                     }
-                });
-
-                // Função para atualizar contagem
-                function updateAssignedCount() {
-                    const count = $('#roleMenus .menu-item').length;
-                    $('#assignedCount').text(count);
                 }
-
-                // Função para atualizar hierarquia (exemplo)
-                function updateMenuHierarchy() {
-                    const menuOrder = [];
-                    $('#roleMenus .menu-item').each(function(index) {
-                        menuOrder.push({
-                            id: $(this).data('id'),
-                            order: index + 1,
-                            menu_id: $(this).data('menu-id')
-                        });
-                    });
-                    
-                    // Aqui você pode enviar para o servidor
-                    console.log('Ordem atualizada:', menuOrder);
-                }
-
-                // Eventos de clique para botões (se necessário)
-                $(document).on('click', '.btn-remove', function() {
-                    $(this).closest('.menu-item').remove();
-                    updateAssignedCount();
-                    updateMenuHierarchy();
-                });
+            });
             
+            // Inicializar Sortable para o container de menus atribuídos
+            new Sortable($('#roleMenus')[0], {
+                group: 'menus',
+                animation: 150,
+                onEnd: function(evt) {
+                    updateMenuHierarchy();
+                }
+            });
+
+            // Função para atualizar contagem
+            function updateAssignedCount() {
+                const count = $('#roleMenus .menu-item').length;
+                $('#assignedCount').text(count);
+            }
+
+            // Função para atualizar hierarquia (exemplo)
+            function updateMenuHierarchy() {
+                const menuOrder = [];
+                $('#roleMenus .menu-item').each(function(index) {
+                    menuOrder.push({
+                        id: $(this).data('id'),
+                        order: index + 1,
+                        menu_id: $(this).data('menu-id')
+                    });
+                });
+            }
+
+            // Eventos de clique para botões (se necessário)
+            $(document).on('click', '.btn-remove', function() {
+                $(this).closest('.menu-item').remove();
+                updateAssignedCount();
+                updateMenuHierarchy();
+            });
 
             $.ajaxSetup({
                 headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
@@ -689,21 +641,14 @@
                     return;
                 }
 
-                const menuOrder = [];
-                // document.querySelectorAll('#roleMenus .menu-item').forEach(item => {
-                //     menuOrder.push(item.dataset.menuId);
-                // });
-                // console.log(menuOrder);
+                // Monta array com a ordenação atual no formato correto para o sync a ser realizado no  backend (menuOrder)
+                const syncData = {};
                 $('#roleMenus .menu-item').each(function(index) {
-                    // menuOrder.push($(this).data('menu-id'));
+                    const menuId = $(this).data('menu-id');
+                    syncData[menuId] = { position: index + 1 };
+                });                
 
-                    menuOrder.push({
-                        id: $(this).data('menu-id'),
-                        position: index + 1  // A posição é baseada na ordem atual (index + 1)
-                    });                    
-                });  
-
-                if (menuOrder.length === 0) {
+                if (syncData.length === 0) {
                     alert('Primeiro inclua os Menus.');
                     return;
                 }
@@ -711,11 +656,11 @@
                 $.ajax({
                     url: '/menu/saveRoleMenus/' + currentRoleId,
                     method: 'POST',
-                    data: { menus: menuOrder },
+                    data: { menus: syncData },
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
-                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}");
+                            $('#alert .alert-content').html(response.message);
                             $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
                             loadRoleMenus(currentRoleId);
                         }
@@ -730,8 +675,6 @@
             // Refresh button action
             $('#btnRefresh').on("click", function (e) {
                 e.stopImmediatePropagation();
-
-                // document.getElementById('roleMenus').innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
 
                 $.ajax({
                     type: "GET",
@@ -762,10 +705,19 @@
                                 profileOptions += `<option value="${profile.id}">${profile.name}</option>`;
                             });
                         }
-
                         $('#roleSelect').html(profileOptions);
 
-                        // 3. Monta os Menus Pai no <select>
+                        // 3. Monta os Systems no <select>
+                        let systemOptions = '<option value=""> Seleção é obrigatória </option>';
+
+                        if (response.systems && response.systems.length > 0) {
+                            response.systems.forEach(system => {
+                                systemOptions += `<option value="${system.id}">${system.name}</option>`;
+                            });
+                        }
+                        $('#systemSelect').html(systemOptions);
+
+                        // 4. Monta os Menus Pai no <select>
                         let menusPaiOptions = '<option value=""> Menu Principal (sem pai) </option>';
 
                         if (response.menusPai && response.menusPai.length > 0) {
@@ -773,13 +725,11 @@
                                 menusPaiOptions += `<option value="${menusPai.id}">${menusPai.name}</option>`;
                             });
                         }
-
                         $('#editMenuParent').html(menusPaiOptions);
-
                     },
                     error: function (error) {
-                        console.error('Erro ao carregar os menus:', error);
-                        $('#menu-list').html('<p>Erro ao carregar os menus.</p>');
+                        console.error('Erro ao carregar os Itens de Menus:', error);
+                        $('#menu-list').html('<p>Erro ao carregar os Itens de Menus.</p>');
                     },
                     complete: function() {
                         $('#roleMenus').empty();
@@ -795,14 +745,11 @@
                     html += `
                         <div class="menu-item" data-menu-id="${menu.id}">
                             <div>
-                                <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
+                                ${menu.id} <span class="drag-handle"><i class="fas fa-list"></i></span>
                                 ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
                                 ${menu.name}
                                 ${menu.route ? `<small class="text-muted">(${menu.route})</small>` : ''}
-                                ${menu.id}
-                                ${menu.menu_id}
-                                ${menu.position}
-                                ${menu.active}
+                                <br/> ${menu.id    ? `<span style="text-indent: 1.8cm;display: inline-block;"><small class="text-muted">Filho de ${menu.menu_id} Posição ${menu.position}</small></span>` : ''}
                             </div>
                             <div class="actions">
                                 <button data-menuid="${menu.id}" class="btn btn-sm btn-outline-primary btnEditMenu" 
@@ -829,17 +776,19 @@
                 return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
             }   
 
-            /**
-             * põe o foco no primeiro campo do modal
-             */
-            $('body').on('shown.bs.modal', '#editModal', function () {
-                $('#name').focus();
+            // põe o foco no primeiro campo do modal
+            $('body').on('shown.bs.modal', '#editMenuModal', function () {
+                $('#editMenuParent').focus();
             })      
             
             // convert active checkbox to 'Y' : 'N'            
             function getAtivoValue() {
                 return $('input[id="active"]:checked').val() ? 'Y' : 'N';
             }
+
+            // Dispara o clique automaticamente ao carregar a página
+            $('#btnRefresh').trigger("click");
+
         });   
 
     </script>      

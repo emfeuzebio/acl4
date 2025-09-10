@@ -23,43 +23,6 @@ class MenuController extends Controller
         $this->middleware('auth');
     }
 
-    public function admin(Request $request) 
-    {
-        return view('acl/MenuAdmin2');
-    }
-
-
-
-    public function listDados(Request $request) 
-    {
-        // verifica se recebeu o SystemId no request
-        $systemId = $request->input('systemId');
-        // if (! $systemId) {
-        //     return response()->json(['error' => 'Informar o SystemId é obrigatório.'], Response::HTTP_UNAUTHORIZED);   // 401
-        // }
-
-        // TODO filtrar por apenas os Systems que o User tem acesso
-        $systems = System::where('active','Y')->orderBy('name')->get();
-
-        // TODO filtrar pelo System filtro
-        $menus = Menu::with('children')->whereNull('menu_id')->orderBy('position')->get();
-
-        $menusPai = Menu::whereNull('menu_id')->orderBy('position')->get();
-
-        // TODO filtrar pelo System filtro
-        $profiles = Profile::where('active','Y')->OrderBy('name')->get();
-
-        return response()->json([
-            'systems' => $systems,
-            'profiles' => $profiles,
-            'menusPai' => $menusPai,
-            'menus' => $menus,
-        ]);
-    }
-
-
-
-
     public function index(Request $request) 
     {
         // $autorizacaos = Autorizacao::where('active','=','SIM')->with('perfil')->get();
@@ -117,9 +80,44 @@ class MenuController extends Controller
         return view('acl/MenuAdmin',['filterOptions1' => $systems, 'menus' => $menus, 'roles' => $roles, 'systems' => $systems]);
     }
 
+    public function admin(Request $request) 
+    {
+        return view('acl/MenuAdmin2');
+    }
+
+    public function listDados(Request $request) 
+    {
+        // verifica se recebeu o SystemId no request
+        $systemId = $request->input('systemId');
+        // if (! $systemId) {
+        //     return response()->json(['error' => 'Informar o SystemId é obrigatório.'], Response::HTTP_UNAUTHORIZED);   // 401
+        // }
+
+        // TODO filtrar por apenas os Systems que o User tem acesso
+        $systems = System::where('active','Y')->orderBy('name')->get();
+
+        // TODO filtrar pelo System filtro
+        $menus = Menu::with('children')->whereNull('menu_id')->orderBy('position')->get();
+
+        $menusPai = Menu::whereNull('menu_id')->orderBy('position')->get();
+
+        // TODO filtrar pelo System filtro
+        $profiles = Profile::where('active','Y')->OrderBy('name')->get();
+
+        return response()->json([
+            'systems' => $systems,
+            'profiles' => $profiles,
+            'menusPai' => $menusPai,
+            'menus' => $menus,
+        ]);
+    }
+
     public function listRoleMenus($roleId, $html = false )
     {
-        $role = Profile::with('menus')->findOrFail($roleId);
+        // recupera os Itens de Menu do Perfil ordenados pelo position
+        $role = Profile::with(['menus' => function($query) {
+            $query->orderByPivot('position', 'asc');
+        }])->findOrFail($roleId);        
 
         if ($html) {
             $html = view('acl/MenuAdminProfiles', ['menus' => $role->menus])->render();
@@ -131,41 +129,24 @@ class MenuController extends Controller
 
     public function saveRoleMenus(Request $request, $roleId)
     {
-        // TODO ver aqui o problem que não salva a nova ordem
-        // 1 atualizar no Menu em si
-        // 2 Atualizar no updateExistingPivot acl_profile_menu
+        try {
+            $role = Profile::findOrFail($roleId);
 
+            // Faz sync salvando as novas posições - Apaga todos os registro Pivot e insere novamente
+            $role->menus()->sync($request->menus);
 
-        // $role = Profile::findOrFail($roleId);
-        // $role->menus()->sync($request->menus);
+            return response()->json([
+                'success' => true,
+                'message' => 'Novas posições dos Itens de Menu salvas com sucesso.'
+            ], Response::HTTP_OK);
+            
+        } catch (Exception $e) {        
 
-        // Atualizar posições
-        // foreach ($request->menus as $position => $menuId) {
-        //     $role->menus()->updateExistingPivot($menuId, ['position' => $position]);
-        // }
-
-        // TODO Abaixo última solução do DeepSeek
-
-        $menus = $request->input('menus');
-    
-        foreach ($menus as $menuData) {
-            // Atualiza a posição de cada menu
-             Menu::where('id', $menuData['id'])
-                ->update(['position' => $menuData['position']]);
-                
-            // Ou, se você tem uma tabela de relacionamento entre roles e menus:
-            // DB::table('role_menu')
-            //     ->where('role_id', $roleId)
-            //     ->where('menu_id', $menuData['id'])
-            //     ->update(['position' => $menuData['position']]);
-        }        
-        
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Menus Atualizados no Perfil de Acesso com sucesso.',
-        ], Response::HTTP_OK);
-
+            return response()->json([
+                'sucesso' => false,
+                'error' => 'Não foi possível atualizar as posições dos Itens de Menu. ' . $e->getCode() . '-' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);            
+        }
     }    
 
     public function removeMenuFromRole(Request $request, $profileId)
@@ -187,10 +168,6 @@ class MenuController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }    
-
-
-
-
 
 
     public function show(Request $request)
