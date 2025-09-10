@@ -43,6 +43,13 @@ class System extends Model
         return $this->hasMany(Profile::class);
     }    
     
+    // One-to-many relationship - lowercase plural. "A System have many Menus children"
+    // System is PARENT of Menus
+    public function menus()
+    {
+        return $this->hasMany(Menu::class);
+    }    
+    
     public function users()
     {
         return $this->belongsToMany(User::class,'acl_system_user');

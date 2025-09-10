@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use App\Traits\ACLTrait;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class MenuController extends Controller
@@ -82,27 +83,37 @@ class MenuController extends Controller
 
     public function admin(Request $request) 
     {
-        return view('acl/MenuAdmin2');
+        $user = Auth::user();
+        $userId = $user->id;
+
+        // vamos recuperar a lista de Systems concedidos ao User
+        $systems = System::where('active', 'Y')
+            ->whereHas('users', function($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })
+            ->orderBy('name')
+            ->get();
+
+        return view('acl/MenuAdmin2', compact('systems'));
     }
 
     public function listDados(Request $request) 
     {
-        // verifica se recebeu o SystemId no request
-        $systemId = $request->input('systemId');
-        // if (! $systemId) {
-        //     return response()->json(['error' => 'Informar o SystemId é obrigatório.'], Response::HTTP_UNAUTHORIZED);   // 401
-        // }
+        // Todos os dados abaixo são filtrados pelo System
 
-        // TODO filtrar por apenas os Systems que o User tem acesso
-        $systems = System::where('active','Y')->orderBy('name')->get();
+        $user = Auth::user();
+        $userId = $user->id;
 
-        // TODO filtrar pelo System filtro
-        $menus = Menu::with('children')->whereNull('menu_id')->orderBy('position')->get();
+        $systems = System::where('active', 'Y')
+            ->whereHas('users', function($query) use ($userId) {
+                $query->where('user_id', $userId);
+            })->orderBy('name')->get();
 
-        $menusPai = Menu::whereNull('menu_id')->orderBy('position')->get();
+        $menus = Menu::with('children')->where('system_id',$request->systemId)->whereNull('menu_id')->orderBy('position')->get();
 
-        // TODO filtrar pelo System filtro
-        $profiles = Profile::where('active','Y')->OrderBy('name')->get();
+        $menusPai = Menu::where('system_id',$request->systemId)->whereNull('menu_id')->orderBy('position')->get();
+
+        $profiles = Profile::where('system_id',$request->systemId)->where('active','Y')->OrderBy('name')->get();
 
         return response()->json([
             'systems' => $systems,
@@ -179,6 +190,7 @@ class MenuController extends Controller
     {
         try {
             $request->validate([
+                'system_id' => 'required|exists:acl_systems,id',
                 'menu_id' => 'nullable|exists:acl_menus,id',
                 'name' => 'required|string|max:255',
                 'icon' => 'nullable|string|max:50',
@@ -188,7 +200,7 @@ class MenuController extends Controller
             ]);
 
             $menu = Menu::Create(
-                $request->only(['menu_id', 'name', 'icon', 'route', 'position', 'active'])
+                $request->only(['system_id','menu_id', 'name', 'icon', 'route', 'position', 'active'])
             );  
 
             return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.', 'dados' => $menu], Response::HTTP_OK);           

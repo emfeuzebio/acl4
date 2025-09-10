@@ -16,6 +16,7 @@ class Menu extends Model
     protected $table = 'acl_menus';
     protected $fillable = [
             'id', 
+            'system_id',
             'menu_id',
             'name',
             'icon',
@@ -41,6 +42,13 @@ class Menu extends Model
     {
         return $this->belongsToMany(Menu::class, 'menu_id');
     }    
+
+    // Many-to-one relationship - lowercase singular - "Many Menus belongs to a System"
+    // Menu is CHILD of System
+    public function system()
+    {
+        return $this->belongsTo(System::class);
+    }
 
     // One-to-Many relationship - lowercase plural - "Many Menus belongs to a Parent"
     /**

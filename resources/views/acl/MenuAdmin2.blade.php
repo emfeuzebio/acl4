@@ -117,8 +117,20 @@
                             <div class="col-md-12" style="margin-bottom: 0px;">
                                 <div class="form-group row">
                                     <label class="col-form-label col-md-3" for="systemSelect">Selecione o Sistema</label>
+
+                                    <!-- 
+                                        <div class="col-md-6">
+                                            <select id="systemSelect" name="systemSelect" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
+                                            </select>
+                                        </div>
+                                    -->
+
                                     <div class="col-md-6">
                                         <select id="systemSelect" name="systemSelect" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
+                                        <option value=""> Seleção é obrigatória </option>                                            
+                                        @foreach($systems as $system)
+                                            <option value="{{ $system->id }}">{{ $system->name }}</option>
+                                        @endforeach                                            
                                         </select>
                                     </div>
                                 </div>
@@ -214,6 +226,15 @@
                 <div class="modal-body">
                     <form id="editMenuForm">
                         <input type="hidden" id="editMenuId" name="id">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Sistema a que pertence o Item de Menu</label>
+                                <select class="form-control selectpicker" id="editSystemParent" name="system_id">                                  
+                                </select>
+                                <div id="error-system_id" class="error invalid-feedback" style="display: none;"></div>
+                            </div>
+                        </div>
+                        
                         <div class="row">
                             <div class="col-md-6">
                                 <label class="form-label">Menu Pai</label>
@@ -340,6 +361,12 @@
             // onclick="removeMenuFromRole(${menu.id})"
 
             menus.forEach(menu => {
+
+                // TODO - 
+                // o menu não tem a position no pivot para mostrar a ordem
+                // recuperar isso e por nu lugar de menu.pivot.profile_id
+                // console.log(menu);
+
                 html += `
                     <div class="menu-item" data-menu-id="${menu.id}">
                         <div>
@@ -347,6 +374,7 @@
                             ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
                             ${menu.name}
                             ${menu.route ? `<small class="text-muted">(${menu.route})</small>` : ''}
+                            <br/> ${menu.id ? `<span style="text-indent: 1.8cm;display: inline-block;"><small class="text-muted">Filho de ${menu.menu_id ?? '0'} > Posição ${menu.pivot.profile_id}</small></span>` : ''}
                         </div>
                         <div class="actions">
                             <button class="btn btn-sm btn-outline-danger btnRemoveMenuFromRole" data-menu-id="${menu.id}">
@@ -386,10 +414,13 @@
         }
 
         // Abrir modal para editar menu
-        function editMenu(menuId, menuName, menuIcon, menuRoute, menuPosition, menuActive) {
+        function editMenu(menuId, systemParentId, menuParentId, menuName, menuIcon, menuRoute, menuPosition, menuActive) {
 
             $("#editMenuForm #editMenuId").val(menuId);
-            $("#editMenuForm #editMenuParent").val(menuId);
+
+            $("#editMenuForm #editSystemParent").val(systemParentId);
+            $("#editMenuForm #editMenuParent").val(menuParentId);
+
             $("#editMenuForm #editMenuName").val(menuName);
             $("#editMenuForm #editMenuIcon").val(menuIcon);
             $("#editMenuForm #editMenuRoute").val(menuRoute);
@@ -676,9 +707,12 @@
             $('#btnRefresh').on("click", function (e) {
                 e.stopImmediatePropagation();
 
+                systemIdSelected = $('#systemSelect').val();
+
                 $.ajax({
                     type: "GET",
                     url: "{{ route('menu.listDados') }}",
+                    data: { systemId: systemIdSelected },
                     dataType: 'json',
                     beforeSend: function() {
                         $('#roleMenus').html('<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>');
@@ -707,15 +741,19 @@
                         }
                         $('#roleSelect').html(profileOptions);
 
-                        // 3. Monta os Systems no <select>
-                        let systemOptions = '<option value=""> Seleção é obrigatória </option>';
+                            // 3. Monta os Systems no <select>
+                            let systemOptions = '<option value=""> Seleção é obrigatória </option>';
+                            let systemSelectId = $('#systemSelect').val();
 
-                        if (response.systems && response.systems.length > 0) {
-                            response.systems.forEach(system => {
-                                systemOptions += `<option value="${system.id}">${system.name}</option>`;
-                            });
-                        }
-                        $('#systemSelect').html(systemOptions);
+                            if (response.systems && response.systems.length > 0) {
+                                response.systems.forEach(system => {
+                                    // sempre marca selecionado o System corrente
+                                    if (system.id == systemSelectId) {
+                                        systemOptions += `<option value="${system.id}" selected>${system.name}</option>`;    
+                                    }
+                                });
+                            }
+                            $('#editSystemParent').html(systemOptions);
 
                         // 4. Monta os Menus Pai no <select>
                         let menusPaiOptions = '<option value=""> Menu Principal (sem pai) </option>';
@@ -749,11 +787,11 @@
                                 ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
                                 ${menu.name}
                                 ${menu.route ? `<small class="text-muted">(${menu.route})</small>` : ''}
-                                <br/> ${menu.id    ? `<span style="text-indent: 1.8cm;display: inline-block;"><small class="text-muted">Filho de ${menu.menu_id} Posição ${menu.position}</small></span>` : ''}
+                                <br/> ${menu.id    ? `<span style="text-indent: 1.8cm;display: inline-block;"><small class="text-muted">Filho de ${menu.menu_id ?? '0'} > Posição ${menu.position}</small></span>` : ''}
                             </div>
                             <div class="actions">
                                 <button data-menuid="${menu.id}" class="btn btn-sm btn-outline-primary btnEditMenu" 
-                                    onclick="editMenu(${menu.id}, '${escapeJS(menu.name)}', '${escapeJS(menu.icon ?? '')}', '${escapeJS(menu.route ?? '')}', ${menu.position}, '${menu.active}')">
+                                    onclick="editMenu(${menu.id}, ${menu.system_id}, ${menu.menu_id}, '${escapeJS(menu.name)}', '${escapeJS(menu.icon ?? '')}', '${escapeJS(menu.route ?? '')}', ${menu.position}, '${menu.active}')">
                                     <i class="fas fa-edit"></i>
                                 </button>
                             </div>
@@ -769,6 +807,13 @@
 
                 return html;
             }
+
+            // On change System select refresh page data
+            $('#systemSelect').on("change", function (e) {
+                e.stopImmediatePropagation();
+
+                $('#btnRefresh').trigger("click");
+            });
 
             // Função utilitária para escapar aspas em strings JS
             function escapeJS(str) {
