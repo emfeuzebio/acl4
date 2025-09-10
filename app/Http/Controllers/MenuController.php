@@ -138,6 +138,39 @@ class MenuController extends Controller
         }
     }    
 
+    public function saveMenusOrder(Request $request, $systemId)
+    {
+        try {
+
+            $request->validate([
+                'menus' => 'required|array',
+                'menus.*.id' => 'required|integer|exists:acl_menus,id',
+                'menus.*.position' => 'required|integer|min:1'
+            ]);
+            
+            $systemId = (int) $systemId;
+            
+            foreach ($request->menus as $menuData) {
+                Menu::where('id', $menuData['id'])
+                    ->where('system_id', $systemId)
+                    ->update(['position' => $menuData['position']]);
+            }            
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Novas posições dos Itens de Menu salvas com sucesso.'
+            ], Response::HTTP_OK);
+            
+        } catch (Exception $e) {        
+
+            return response()->json([
+                'sucesso' => false,
+                'error' => 'Não foi possível atualizar as posições dos Itens de Menu. ' . $e->getCode() . '-' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);            
+        }
+    }    
+
+
     public function saveRoleMenus(Request $request, $roleId)
     {
         try {

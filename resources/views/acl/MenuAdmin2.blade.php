@@ -165,6 +165,11 @@
                                         <div class="menu-container" id="availableMenus">
                                             <!-- Montado dinamicamente AJAX -->
                                         </div>
+                                        <div class="mt-2">
+                                            <button id="btnSaveMenuPaiOrder" class="btn btn-sm btn-info">
+                                                <i class="fas fa-save me-2"></i> Salvar Alterações
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 
@@ -196,7 +201,7 @@
                                             <div class="menu-container" id="roleMenus">
                                                 <!-- Menus serão carregados via AJAX -->
                                             </div>
-                                            <div class="mt-3">
+                                            <div class="mt-2">
                                                 <button class="btn btn-sm btn-primary btnSaveMenuOrder">
                                                     <i class="fas fa-save me-2"></i> Salvar Alterações
                                                 </button>
@@ -457,11 +462,15 @@
             new Sortable($('#availableMenus')[0], {
                 group: {
                     name: 'menus',
-                    pull: 'clone',
-                    put: false
+                    pull: 'clone', // Clona o item ao arrastar
+                    put: false // Não permite soltar itens aqui
                 },
                 animation: 150,
-                sort: false,
+
+                    sort: true, // Permite ordenação interna
+                    // filter: '.no-drag', // Seletor para itens que não podem ser arrastados
+                    // draggable: '.menu-item', // Especifica quais elementos são arrastáveis
+
                 onEnd: function(evt) {
                     if (evt.to.id === 'roleMenus') {
                         updateAssignedCount();
@@ -651,12 +660,54 @@
                             $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageDestroy') }}" + menuId);
                             $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
                             loadRoleMenus(currentRoleId);
-                            // $('#btnRefresh').trigger("click");
                         }
                     },
                     error: function(xhr) {
                         const errors = xhr.responseJSON.message;
-                        alert('Erro ao excluir o Menu do Perfil de Acesso. Status: ' + xhr.message);
+                        alert('Erro ao salvar as Posições dos Menus do Perfil de Acesso. Status: ' + xhr.message);
+                    }
+                });                
+            });
+
+            // Salva os Menus no Perfil de Acesso depois de Ordenados
+            $(document).on('click', '#btnSaveMenuPaiOrder', function(e) {
+                e.stopImmediatePropagation();
+
+                let systemId = $('#systemSelect').val();
+
+                // Monta array com a ordenação atual para enviar ao backend (menuOrder)
+                const menuOrder = [];
+                $('#availableMenus .menu-item').each(function(index) {
+                    menuOrder.push({
+                        id: $(this).data('menu-id'),
+                        position: index + 1
+                    });
+                });                
+
+                if (menuOrder.length === 0) {
+                    alert('Primeiro inclua os Menus.');
+                    return;
+                }
+
+                // alert('btnSaveMenuPaiOrder. SystemId: ' + systemId);
+                // console.log(menuOrder);
+                // return;
+
+                $.ajax({
+                    url: '/menu/saveMenusOrder/' + systemId,
+                    method: 'POST',
+                    data: { menus: menuOrder },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#alert .alert-content').html(response.message);
+                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
+                            $('#btnRefresh').trigger("click");
+                        }
+                    },
+                    error: function(xhr) {
+                        const errors = xhr.responseJSON.message;
+                        alert('Erro ao salvar as Posições dos Menus. Status: ' + xhr.message);
                     }
                 });                
             });
