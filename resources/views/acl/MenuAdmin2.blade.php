@@ -767,7 +767,22 @@
                     error: function(error) {
                         showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
                     }
-                });                
+                });     
+
+                // Correspondente ao Ajax acima com axios e como instalar no Laravel 11
+                // Ver solução no Deepseek: Laravel Blade FormData Error Solutions
+                // axios.post('/menu/saveRoleMenus/' + currentRoleId, { menus: syncData })
+                //     .then(function(response) {
+                //         if (response.data.success) {
+                //             loadRoleMenus(currentRoleId);
+                //             showToast(response.data.message, 'success');
+                //         }
+                //     })
+                //     .catch(function(error) {
+                //         showAlert(error.response?.data?.message || 'Erro desconhecido', 'error');
+                //     });             
+                
+                
             });
 
             // Refresh button action
