@@ -191,6 +191,10 @@ class MenuController extends Controller
     public function saveRoleMenus(Request $request, $roleId)
     {
         try {
+            if (empty($request->menus)) {
+                throw new Exception("<b>NÃO HÁ itens de Menu para salvar.</b>");
+            }
+
             $role = Profile::findOrFail($roleId);
 
             // Faz sync salvando as novas posições - Apaga todos os registro Pivot e insere novamente
@@ -205,6 +209,7 @@ class MenuController extends Controller
 
             return response()->json([
                 'sucesso' => false,
+                'message' => 'Não foi possível atualizar as posições dos Itens de Menu. ' . $e->getMessage(),
                 'error' => 'Não foi possível atualizar as posições dos Itens de Menu. ' . $e->getCode() . '-' . $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);            
         }
