@@ -408,16 +408,10 @@ return [
             'can'  => 'profile.index', 
         ],
         [
-            'text' => 'menu_menu_label',
-            'url' => 'menu',
-            'icon' => 'fas fa-fw fa-shield-alt',
-            'can'  => 'menu.index', 
-        ],
-        [
             'text' => 'Menus Admin',
             'url' => 'menuadmin',
-            'icon' => 'fas fa-fw fa-shield-alt',
-            'label' => 4,
+            'icon' => 'fas fa-bars',
+            // 'label' => 4,
             'label_color' => 'success',
         ],
         [

@@ -15,8 +15,8 @@
             background-color: #f8f9fa;
         }
         .menu-item {
-            padding: 10px 15px;
-            margin: 5px 0;
+            padding: 8px 12px;
+            margin: 4px 0;
             background: white;
             border: 1px solid #dee2e6;
             border-radius: 5px;
@@ -29,7 +29,7 @@
             background-color: #e9ecef;
         }
         .menu-item i {
-            margin-right: 10px;
+            margin-right: 2px;
             width: 20px;
             text-align: center;
         }
@@ -103,26 +103,19 @@
 
                     <!-- filters area -->
                     <div class="card-header">
-                        <div class="row">
-                            <div class="col-md-12" style="margin-bottom: 0px;">
-                                <div class="form-group row">
-                                    <label class="col-form-label col-md-3" for="systemSelect">Selecione o Sistema</label>
-
-                                    <!-- 
-                                        <div class="col-md-6">
-                                            <select id="systemSelect" name="systemSelect" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
-                                            </select>
-                                        </div>
-                                    -->
-
+                        <div class="row mb-0">
+                            <div class="col-md-12">
+                                <div class="form-group row mb-0">
+                                    <label class="col-form-label col-md-3 text-md-right" for="systemSelect">Selecione o Sistema</label>
                                     <div class="col-md-6">
-                                        <select id="systemSelect" name="systemSelect" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="{{ __('acl.crud.selectToFilterTip')}}">
+                                        <select id="systemSelect" name="systemSelect" class="form-control selectpicker" data-live-search="true" data-style="form-control" data-toggle="tooltip" title="Selecione o Sistema do qual deseja Administrar os Menus">
                                         <option value=""> Seleção é obrigatória </option>                                            
                                         @foreach($systems as $system)
                                             <option value="{{ $system->id }}">{{ $system->name }}</option>
                                         @endforeach                                            
                                         </select>
-                                    </div>
+                                        <p class="text-muted mb-0">Somente os Sistemas concedidos ao Usuário logado estão na lista.</p>
+                                    </div>                                    
                                 </div>
                             </div>
                         </div>                    
@@ -137,7 +130,7 @@
                                     <div class="card-header">
                                         <label for="roleSelect" class="form-label" style="margin-bottom: 11px;">Ações</label>
                                         <h5 class="mb-0">
-                                            <button id="openNewMenuModal" type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#createMenuModal">
+                                            <button id="openNewMenuModal" type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#createMenuModal" data-toggle="tooltip" title="Clique para Criar um Novo Item de Menu">
                                                 <i class="fas fa-plus-circle me-2"></i> Criar Novo Menu
                                             </button>
                                         </h5>
@@ -149,14 +142,25 @@
                                         </h5>
                                     </div>
                                     <div class="card-body">
-                                        <div class="mb-3">
-                                            <input type="text" class="form-control" id="searchMenu" placeholder="Buscar menu..." onkeyup="filterMenus()">
+                                        <div class="row">
+                                            <div class="col-sm-8">
+                                                <div class="mb-3">
+                                                    <input type="text" class="form-control" id="searchMenu" placeholder="Buscar menu..." onkeyup="filterMenus()" data-toggle="tooltip" title="Digite as inícias para filtrar os Itens de Menu">
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4">
+                                                <div class="mb-4 d-flex justify-content-end">
+                                                    <button id="btnSaveMenuPaiOrder" class="btn btn-sm btn-info" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
+                                                        <i class="fas fa-save me-2"></i> Salvar Alterações
+                                                    </button>
+                                                </div>                                            
+                                            </div>
                                         </div>
                                         <div class="menu-container" id="availableMenus">
                                             <!-- Montado dinamicamente AJAX -->
                                         </div>
-                                        <div class="mt-2">
-                                            <button id="btnSaveMenuPaiOrder" class="btn btn-sm btn-info">
+                                        <div class="mt-2 d-flex justify-content-end">
+                                            <button id="btnSaveMenuPaiOrder" class="btn btn-sm btn-info" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
                                                 <i class="fas fa-save me-2"></i> Salvar Alterações
                                             </button>
                                         </div>
@@ -171,7 +175,7 @@
                                 <div class="card">
                                     <div class="card-header">
                                         <label for="roleSelect" class="form-label">Selecione um Perfil:</label>
-                                        <select class="form-control" id="roleSelect" onchange="loadRoleMenus(this.value)">
+                                        <select class="form-control" id="roleSelect" onchange="loadRoleMenus(this.value)" data-toggle="tooltip" title="Selecione o Perfil de Acesso para ver os Itens de Menu a ele concedidos">
                                             <option value=""> Selecione </option>
                                         </select>                                    
                                     </div>                                    
@@ -187,12 +191,24 @@
                                             Selecione um perfil à esquerda para gerenciar seus menus.
                                         </div>
                                         <div id="roleMenusContainer">
-                                            <p class="text-muted">Arraste os menus da esquerda para cá e organize a hierarquia arrastando e soltando</p>
+                                            <div class="row">
+                                                <div class="col-sm-8">
+                                                    <p class="text-muted">Arraste os menus da esquerda para cá e ordene arrastando e soltando. Por último salve.</p>
+                                                </div>
+                                                <div class="col-sm-4">
+                                                <div class="mb-4 d-flex justify-content-end">
+                                                        <button class="btn btn-sm btn-success btnSaveMenuOrder" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
+                                                            <i class="fas fa-save me-2"></i> Salvar Alterações
+                                                        </button>                                                    
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
                                             <div class="menu-container" id="roleMenus">
                                                 <!-- Menus serão carregados via AJAX -->
                                             </div>
-                                            <div class="mt-2">
-                                                <button class="btn btn-sm btn-success btnSaveMenuOrder">
+                                            <div class="mt-2 d-flex justify-content-end">
+                                                <button class="btn btn-sm btn-success btnSaveMenuOrder" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
                                                     <i class="fas fa-save me-2"></i> Salvar Alterações
                                                 </button>
                                                 <!-- <button class="btn btn-sm btn-outline-secondary" onclick="resetMenuOrder()">
@@ -331,7 +347,6 @@
             $(this).removeData('bs.modal');
             $('.invalid-feedback').text('').hide();     // clean fields errors messages
             $('#formEntity').trigger("reset");          // clean data fields from form
-            // alert('Fechou Modal');
         });  
 
         // Mostra TOAST 6 segundos de confirmaçãoes ou alertas
@@ -471,7 +486,6 @@
             $("#editMenuForm #editMenuRoute").val(menuRoute);
             $("#editMenuForm #editMenuPosition").val(menuPosition);
             $("#editMenuForm #editMenuActive").val(menuActive);
-            // alert('menuActive: ' + menuActive);
             
             // Abrir modal
             $('#insertMenuModal').hide();
@@ -497,6 +511,8 @@
 
         // Após o Documento pronto
         $(document).ready(function() {
+
+            // $('.selectpicker').selectpicker();            
 
             // Inicializar Sortable para o container de menus disponíveis
             new Sortable($('#availableMenus')[0], {
@@ -641,7 +657,6 @@
                 e.stopImmediatePropagation();
 
                 const menuId = $("#editMenuForm #editMenuId").val();
-                // alert(menuId);
 
                 $.ajax({
                     url: '/menu/destroy',
@@ -668,11 +683,10 @@
 
                 const menuId = $(this).data('menu-id');
                 const currentRoleId = $('#roleSelect').val();
-                // alert('btnRemoveMenuFromRole ' + menuId);
                 // alert('currentRoleId ' + currentRoleId);
 
                 if (!currentRoleId) {
-                    alert('Necessário selecionar um Perfil de Acesso.');
+                    showToast('Necessário selecionar um Perfil de Acesso.', 'warning');
                     return;
                 }
 
@@ -709,7 +723,8 @@
                 });                
 
                 if (menuOrder.length === 0) {
-                    alert('Primeiro inclua os Menus.');
+                    showToast('NECESSÁRIO primeiro selecionar um Sistema.', 'warning');
+                    $('#systemSelect').focus();
                     return;
                 }
 
@@ -737,7 +752,8 @@
                 const currentRoleId = $('#roleSelect').val();
 
                 if (!currentRoleId) {
-                    alert('Necessário selecionar um Perfil de Acesso.');
+                    showToast('Necessário selecionar um Perfil de Acesso.', 'warning');
+                    $('#roleSelect').focus();
                     return;
                 }
 
@@ -874,11 +890,11 @@
                     html += `
                         <div class="menu-item" data-menu-id="${menu.id}">
                             <div>
-                                ${menu.id} <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
+                                <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                                 ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
                                 ${menu.name}
                                 ${menu.route ? `<small class="text-muted">(${menu.route})</small>` : ''}
-                                <br/> ${menu.id    ? `<span style="text-indent: 1.8cm;display: inline-block;"><small class="text-muted">Filho de ${menu.menu_id ?? '0'} > Posição ${menu.position}</small></span>` : ''}
+                                <br/> ${menu.id ? `<span style="text-indent: 1.8cm;display: inline-block;"><small class="text-muted">${menu.id} > Filho de ${menu.menu_id ?? '0'} > Posição ${menu.position}</small></span>` : ''}
                             </div>
                             <div class="actions">
                                 <button data-menuid="${menu.id}" class="btn btn-sm btn-outline-primary btnEditMenu" 
