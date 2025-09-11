@@ -100,7 +100,6 @@ class MenuController extends Controller
     public function listDados(Request $request) 
     {
         // Todos os dados abaixo são filtrados pelo System
-
         $user = Auth::user();
         $userId = $user->id;
 
@@ -115,9 +114,23 @@ class MenuController extends Controller
 
         $profiles = Profile::where('system_id',$request->systemId)->where('active','Y')->OrderBy('name')->get();
 
+        /* 
+            Recupera todas as Rotas do SystemId
+
+            SELECT acl_actions.id, acl_actions.route 
+            FROM acl_profiles
+                INNER JOIN acl_authorizations ON acl_authorizations.profile_id = acl_profiles.id
+                INNER JOIN acl_actions ON acl_actions.id = acl_authorizations.action_id
+            WHERE acl_profiles.system_id = 1
+            ORDER BY acl_actions.entity_id, acl_actions.id;
+        */            
+        $routes = Profile::where('system_id', $request->systemId)->with('actions')->get()
+            ->pluck('actions')->flatten()->sortBy(['entity_id', 'id'])->values();
+
         return response()->json([
             'systems' => $systems,
             'profiles' => $profiles,
+            'routes' => $routes,
             'menusPai' => $menusPai,
             'menus' => $menus,
         ]);
@@ -125,6 +138,10 @@ class MenuController extends Controller
 
     public function listRoleMenus($roleId, $html = false )
     {
+        if (!$roleId) {
+            return [];
+        }
+
         // recupera os Itens de Menu do Perfil ordenados pelo position
         $role = Profile::with(['menus' => function($query) {
             $query->orderByPivot('position', 'asc');
@@ -202,7 +219,7 @@ class MenuController extends Controller
             
             return response()->json([
                 'success' => true,
-                'message' => 'Menu removido do Perfil de Acesso com sucesso.',
+                'message' => 'Menu Removido do Perfil de Acesso com sucesso.',
             ], Response::HTTP_OK);
             
         } catch (Exception $e) {
@@ -236,7 +253,8 @@ class MenuController extends Controller
                 $request->only(['system_id','menu_id', 'name', 'icon', 'route', 'position', 'active'])
             );  
 
-            return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.', 'dados' => $menu], Response::HTTP_OK);           
+            // return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.', 'dados' => $menu], Response::HTTP_OK);
+            return response()->json(['success' => true, 'message' => "Menu <b>'{$menu->name}'</b> Inserido com sucesso.", 'dados' => $menu], Response::HTTP_OK);
                         
         } catch (ValidationException $e) {
 
@@ -270,7 +288,7 @@ class MenuController extends Controller
             $menu = Menu::findOrFail($request->id);
             $menu->update($request->only(['menu_id','name', 'icon', 'route', 'active','position']));
 
-            return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.', 'dados' => $menu], Response::HTTP_OK);           
+            return response()->json(['success' => true, 'message' => "Menu '{$menu->name}' Atualizado com sucesso.", 'dados' => $menu], Response::HTTP_OK);
         } catch (ValidationException $e) {
 
             return response()->json([
@@ -304,15 +322,13 @@ class MenuController extends Controller
             // the canDelete() is on Model
             if ($menu->canDelete()) {
                 $menu->delete();    // delete Cascade on menu_profile
-
-                return response()->json(['success' => true, 'message' => 'Operação realizada com sucesso.', 'dados' => $menu], Response::HTTP_OK);
+                return response()->json(['success' => true, 'message' => "Menu <b>'{$menu->name}'</b> Excluído com sucesso.", 'dados' => $menu], Response::HTTP_OK);
             } else {
-                return Response()->json(['message'=>'Exception: Não é possível excluir o Item de Menu, pois está concedido a Outros Perfis de Acesso'], Response::HTTP_UNPROCESSABLE_ENTITY); //422
+                return Response()->json(['message' => "Exception: Não é possível Excluir o Menu <b>'{$menu->name}'</b>, pois está concedido a Outros Perfis de Acesso"], Response::HTTP_UNPROCESSABLE_ENTITY); //422
             }
             
         } catch (Exception $e) {        
 
-            // Get all gerenical errors
             return response()->json([
                 'sucesso' => false,
                 'message' => ($e->getCode() == 23000 ? 'Impossível EXCLUIR porque há registros relacionados. (SQL-1451).' : 'Houve um ERRO desconhecido! A Operação foi cancelada.'),

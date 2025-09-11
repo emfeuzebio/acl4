@@ -49,7 +49,7 @@ class Profile extends Model
         // Checks if there is any active authorization (whose active column = 'Y') associated with this Profile
         return !$this->authorizations()->where('active', 'Y')->exists();
 
-        // TERMINAR NOVA REGRAS DE NEGOCIO
+        // TODO TERMINAR NOVA REGRAS DE NEGOCIO
         // pode apagar mesmo com active = Y desde que sejam das Entidades Bases com ID <= 7
 
         // $authorizations = Profile::find($profileId)
@@ -68,7 +68,8 @@ class Profile extends Model
     // Many-to-many relationship - lowercase plural. "A Profile can have many Actions children"
     public function actions()
     {
-        return $this->belongsToMany(Action::class, 'acl_authorizations');
+        // return $this->belongsToMany(Action::class, 'acl_authorizations');
+        return $this->belongsToMany(Action::class, 'acl_authorizations', 'profile_id', 'action_id');        
     }
 
     // Relacionamento com a tabela de menus (muitos para muitos)

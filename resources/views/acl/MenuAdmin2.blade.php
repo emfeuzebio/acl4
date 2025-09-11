@@ -92,20 +92,10 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="row">
-                            <div class="col-md-4 text-left h5"><b>Administração de Menus</b></div>
-                            
-                            <!-- message area -->
-                            <div class="col-md-6 text-left">
-                                <div style="padding: 0px;  background-color: transparent;">
-                                    <div id="alert" class="alert alert-danger" style="margin-bottom: 0px; display: none; padding: 2px 5px 2px 5px;">
-                                        <a class="close" onClick="$('.alert').hide()">&times;</a>  
-                                        <div class="alert-content">Mensagem</div>
-                                    </div>
-                                </div>                         
-                            </div>
+                            <div class="col-md-8 text-left h5"><b>Administração de Menus</b></div>
                                                 
                             <!-- buttons area -->
-                            <div class="col-md-2 text-right">
+                            <div class="col-md-4 text-right">
                                 <button id="btnRefresh" class="btnRefresh btn btn-default btn-sm" data-toggle="tooltip" title="{{ __('acl.crud.btnRefreshTip') }}"><i class="fas fa-fw fa-redo"></i> {{ __('acl.crud.btnRefresh') }}</button>
                             </div>
                         </div>
@@ -196,13 +186,13 @@
                                         <div id="selectedRoleInfo" class="alert alert-info d-none">
                                             Selecione um perfil à esquerda para gerenciar seus menus.
                                         </div>
-                                        <div id="roleMenusContainer" class="d-none">
+                                        <div id="roleMenusContainer">
                                             <p class="text-muted">Arraste os menus da esquerda para cá e organize a hierarquia arrastando e soltando</p>
                                             <div class="menu-container" id="roleMenus">
                                                 <!-- Menus serão carregados via AJAX -->
                                             </div>
                                             <div class="mt-2">
-                                                <button class="btn btn-sm btn-primary btnSaveMenuOrder">
+                                                <button class="btn btn-sm btn-success btnSaveMenuOrder">
                                                     <i class="fas fa-save me-2"></i> Salvar Alterações
                                                 </button>
                                                 <!-- <button class="btn btn-sm btn-outline-secondary" onclick="resetMenuOrder()">
@@ -264,6 +254,10 @@
                             <div class="col-md-6">
                                 <label class="form-label">Rota</label>
                                 <input type="text" class="form-control" id="editMenuRoute" name="route" placeholder="Ex: /dashboard">
+                                
+                                <select class="form-control selectpicker" id="editRoute" name="route_id">
+                                </select>
+
                                 <div id="error-route" class="error invalid-feedback" style="display: none;"></div>
                             </div>
                         </div>
@@ -313,6 +307,10 @@
         </div>
     </div>
 
+    <!-- Container dos toasts -->
+    <div id="toastContainer" class="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+    </div>
+
 @stop
 
 {{-- Add common Javascript/Jquery code --}}
@@ -336,19 +334,45 @@
             // alert('Fechou Modal');
         });  
 
+        // Mostra TOAST 6 segundos de confirmaçãoes ou alertas
+        function showToast(message, type = 'success') {
+            const bgColor = type === 'success' ? 'bg-success' : 'bg-danger';
+            
+            const toast = $(`
+                <div class="toast ${bgColor} text-white" role="alert" data-delay="5000">
+                    <div class="toast-body">
+                        <button type="button" class="close text-white mr-2" data-dismiss="toast">
+                            <span>&times;</span>
+                        </button>
+                        ${message}
+                    </div>
+                </div>
+            `);
+            
+            $('#toastContainer').append(toast);
+            toast.toast('show');
+            
+            // Remove após fechar
+            toast.on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }        
+
+        // Mostra Modal com alertas que interromperam o fluxo do programa
+        function showAlert(message, type = 'error') {
+            $('#alertModal .modal-body').html(message);
+            $('#alertModal .modal-header')
+                .removeClass('alert-success alert-warning alert-danger')
+                .addClass(type === 'success' ? 'alert-success' : 
+                        type === 'warning' ? 'alert-warning' : 'alert-danger');
+            $('#alertModal').modal('show');
+        }        
+
         // Carrega os menus do perfil selecionado
         function loadRoleMenus(roleId) {
             
-            if (!roleId) {
-                document.getElementById('selectedRoleInfo').classList.remove('d-none');
-                document.getElementById('roleMenusContainer').classList.add('d-none');
-                return;
-            }
-            
             // Mostrar loading
             document.getElementById('roleMenus').innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
-            document.getElementById('selectedRoleInfo').classList.add('d-none');
-            document.getElementById('roleMenusContainer').classList.remove('d-none');
             
             // AJAX para carregar menus do perfil
             $.ajax({
@@ -359,8 +383,7 @@
                     $('#roleMenus').html(html);
                 },
                 error: function(error) {
-                    $('#alertModal .modal-body').html(error.responseJSON.message);
-                    $('#alertModal').modal('show');
+                    showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
                 }
             });
         }
@@ -559,14 +582,10 @@
                     contentType: false,
                     success: function(response) {
                         if (response.success) {
-                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}" + response.dados.name);
-                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
-
                             $('#editMenuModal').modal('hide');
                             $('#btnRefresh').trigger("click");
-                        } else {
-                            alert('Erro: ' + response.message);
-                        }
+                            showToast(response.message, 'success');
+                        } 
                     },
                     error: function(error) {
                         if (error.status === 422) {
@@ -577,8 +596,7 @@
                                 $("#editMenuForm #error-" + key ).text(value).show(); 
                             });                            
                         } else {
-                            $('#alertModal .modal-body').html(error.responseJSON.message);
-                            $('#alertModal').modal('show');
+                            showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
                         }
                     }
                 });                
@@ -598,15 +616,10 @@
                     contentType: false,
                     success: function(response) {
                         if (response.success) {
-                            // showAlert('Menu criado com sucesso!', 'success');
-                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageInsert') }}" + response.dados.name);
-                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
-
                             $('#editMenuModal').modal('hide');
                             $('#btnRefresh').trigger("click");
-                        } else {
-                            alert('Erro: ' + response.message);
-                        }
+                            showToast(response.message, 'success');
+                        } 
                     },
                     error: function(error) {
                         if (error.status === 422) {
@@ -617,8 +630,7 @@
                                 $("#editMenuForm #error-" + key ).text(value).show(); 
                             });                            
                         } else {
-                            $('#alertModal .modal-body').html(error.responseJSON.message);
-                            $('#alertModal').modal('show');                            
+                            showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
                         }
                     }
                 });                
@@ -638,18 +650,13 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
-                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageDestroy') }}" + response.dados.name);
-                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
-
                             $('#editMenuModal').modal('hide');
                             $('#btnRefresh').trigger("click");
-                        } else {
-                            alert('Erro: ' + response.message);
-                        }
+                            showToast(response.message, 'success');
+                        } 
                     },
                     error: function(error) {
-                        $('#alertModal .modal-body').html(error.responseJSON.message);
-                        $('#alertModal').modal('show');                            
+                        showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
                     }
                 });                
             });
@@ -676,14 +683,12 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
-                            $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageDestroy') }}" + menuId);
-                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
                             loadRoleMenus(currentRoleId);
+                            showToast(response.message, 'success');
                         }
                     },
                     error: function(error) {
-                        $('#alertModal .modal-body').html(error.responseJSON.message);
-                        $('#alertModal').modal('show');                                                    
+                        showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
                     }
                 });                
             });
@@ -708,10 +713,6 @@
                     return;
                 }
 
-                // alert('btnSaveMenuPaiOrder. SystemId: ' + systemId);
-                // console.log(menuOrder);
-                // return;
-
                 $.ajax({
                     url: '/menu/saveMenusOrder/' + systemId,
                     method: 'POST',
@@ -719,14 +720,12 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
-                            $('#alert .alert-content').html(response.message);
-                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
                             $('#btnRefresh').trigger("click");
+                            showToast(response.message, 'success');
                         }
                     },
                     error: function(error) {
-                        $('#alertModal .modal-body').html(error.responseJSON.message);
-                        $('#alertModal').modal('show');
+                        showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
                     }
                 });                
             });
@@ -761,14 +760,12 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
-                            $('#alert .alert-content').html(response.message);
-                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
                             loadRoleMenus(currentRoleId);
+                            showToast(response.message, 'success');
                         }
                     },
                     error: function(error) {
-                        $('#alertModal .modal-body').html(error.responseJSON.message);
-                        $('#alertModal').modal('show');
+                        showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
                     }
                 });                
             });
@@ -834,10 +831,19 @@
                             });
                         }
                         $('#editMenuParent').html(menusPaiOptions);
+
+                        // 5. Monta as Rotas no <select>
+                        let routeOptions = '<option value=""> Selecione uma Rota previamente criada </option>';
+
+                        if (response.routes && response.routes.length > 0) {
+                            response.routes.forEach(routes => {
+                                routeOptions += `<option value="${routes.id}">${routes.route}</option>`;
+                            });
+                        }
+                        $('#editRoute').html(routeOptions);
                     },
-                    error: function (error) {
-                        console.error('Erro ao carregar os Itens de Menus:', error);
-                        $('#menu-list').html('<p>Erro ao carregar os Itens de Menus.</p>');
+                    error: function(error) {
+                        showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
                     },
                     complete: function() {
                         $('#roleMenus').empty();
@@ -853,7 +859,7 @@
                     html += `
                         <div class="menu-item" data-menu-id="${menu.id}">
                             <div>
-                                ${menu.id} <span class="drag-handle"><i class="fas fa-list"></i></span>
+                                ${menu.id} <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                                 ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
                                 ${menu.name}
                                 ${menu.route ? `<small class="text-muted">(${menu.route})</small>` : ''}
@@ -952,6 +958,28 @@
             font-weight: bold;
         }
 
+        .toast {
+            min-width: 250px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }        
+
+        .toast-body {
+            font-size: 16px !important;
+        }        
+
+        .alert-success { background-color: #d4edda; color: #155724; }
+        .alert-warning { background-color: #fff3cd; color: #856404; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; }        
 
     </style>
 @endpush
