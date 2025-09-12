@@ -138,7 +138,7 @@
                                     <div class="card-header bg-info text-white">
                                         <h5 class="mb-0">
                                             <i class="fas fa-list me-2"></i> Menus Disponíveis
-                                            <span class="badge bg-light text-dark badge-menu-count"></span>
+                                            <span class="badge bg-light text-dark badge-menu-count" id="menusDisoiniveisCount">0</span>
                                         </h5>
                                     </div>
                                     <div class="card-body">
@@ -381,7 +381,16 @@
                 .addClass(type === 'success' ? 'alert-success' : 
                         type === 'warning' ? 'alert-warning' : 'alert-danger');
             $('#alertModal').modal('show');
-        }        
+        }     
+        
+        // Função para atualizar contagem dos menus de cada container
+        function updateAssignedCount() {
+            const countaMenusAvailable = $('#availableMenus .menu-item').length;
+            $('#menusDisoiniveisCount').text(countaMenusAvailable);
+
+            const countMenusAssigned = $('#roleMenus .menu-item').length;
+            $('#assignedCount').text(countMenusAssigned);
+        }
 
         // Carrega os menus do perfil selecionado
         function loadRoleMenus(roleId) {
@@ -396,6 +405,7 @@
                 success: function(response) {
                     let html = renderRoleMenus(response);
                     $('#roleMenus').html(html);
+                    updateAssignedCount();
                 },
                 error: function(error) {
                     showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
@@ -544,15 +554,10 @@
                 }
             });
 
-            // Função para atualizar contagem
-            function updateAssignedCount() {
-                const count = $('#roleMenus .menu-item').length;
-                $('#assignedCount').text(count);
-            }
-
             // Função para atualizar hierarquia (exemplo)
             function updateMenuHierarchy() {
                 const menuOrder = [];
+                // alert('updateMenuHierarchy()');
                 $('#roleMenus .menu-item').each(function(index) {
                     menuOrder.push({
                         id: $(this).data('id'),
@@ -634,6 +639,7 @@
                         if (response.success) {
                             $('#editMenuModal').modal('hide');
                             $('#btnRefresh').trigger("click");
+                            updateAssignedCount();
                             showToast(response.message, 'success');
                         } 
                     },
@@ -667,6 +673,7 @@
                         if (response.success) {
                             $('#editMenuModal').modal('hide');
                             $('#btnRefresh').trigger("click");
+                            updateAssignedCount();
                             showToast(response.message, 'success');
                         } 
                     },
@@ -736,6 +743,7 @@
                     success: function(response) {
                         if (response.success) {
                             $('#btnRefresh').trigger("click");
+                            updateAssignedCount();
                             showToast(response.message, 'success');
                         }
                     },
@@ -872,6 +880,8 @@
                             });
                         }
                         $('#editRoute').html(routeOptions);
+                        
+                        updateAssignedCount();
                     },
                     error: function(error) {
                         showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
