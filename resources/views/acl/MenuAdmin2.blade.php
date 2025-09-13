@@ -480,7 +480,6 @@
                 console.warn("Dados inválidos recebidos em renderRoleMenus:", menus);
                 return '<p>Erro ao carregar menus do perfil. Devia ser um Array</p>';
             }            
-
             // console.log(Array.isArray(menus)); // Deve retornar true
             // console.log(menus); // Veja o que vem na resposta
 
@@ -488,25 +487,24 @@
             menus.sort((a, b) => a.pivot.position - b.pivot.position);
 
             let html = '';
-            // onclick="removeMenuFromRole(${menu.id})"
 
             menus.forEach(menu => {
 
-                // TODO - 
-                // o menu não tem a position no pivot para mostrar a ordem
-                // recuperar isso e por nu lugar de menu.pivot.profile_id
-                // console.log(menu);
-
                 html += `
-                    <div class="menu-item" data-menu-id="${menu.id}">
+                    <div class="menu-item ${menu.active === 'Y' ? 'active-Y' : 'active-N'}" data-menu-id="${menu.id}">
                         <div>
                             <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                             ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
                             ${menu.name}
                             ${menu.route ? `<small class="text-muted">(${menu.route})</small>` : ''}
-                            <br/> ${menu.id ? `<span style="text-indent: 1.8cm;display: inline-block;"><small class="text-muted">Filho de ${menu.menu_id ?? '0'} > Posição ${menu.pivot.profile_id}</small></span>` : ''}
+                            <br/> ${menu.id ? `<span style="text-indent: 1.2cm;display: inline-block;"><small class="text-muted">Filho de ${menu.menu_id ?? '0'} > Posição ${menu.pivot.position}</small></span>` : ''}
                         </div>
                         <div class="actions">
+                            <label class="switch">
+                                <input type="checkbox" id="chkMenu-${menu.id}" class="switch-input toggleRoleMenuActive" data-profileId="${menu.pivot.profile_id}" data-menuid="${menu.id}" ${menu.pivot.active === 'Y' ? 'checked' : ''}>
+                                    <span class="switch-label" data-on="SIM" data-off="NÃO"></span>
+                                <span class="switch-handle"></span>
+                            </label>
                             <button class="btn btn-sm btn-outline-danger btnRemoveMenuFromRole" data-menu-id="${menu.id}">
                                 <i class="fas fa-times"></i>
                             </button>
@@ -896,6 +894,35 @@
                 });     
             });
 
+            // Salva apenas o Active do Role Item de Menu (direita)
+            $(document).on('click', '.toggleRoleMenuActive', function(e) {
+                e.stopImmediatePropagation();
+
+                const $checkbox = $(this);
+                let profileId = $(this).data("profileid");
+                let toggleRoleMenuActiveId = $(this).data("menuid");
+                let isChecked = $(this).is(':checked');
+                let toggleRoleMenuActive = isChecked ? 'Y' : 'N';
+
+                $.ajax({
+                    url: '/menu/saveRoleMenuActive/' + toggleRoleMenuActiveId,
+                    method: 'POST',
+                    data: { profileId: profileId, active: toggleRoleMenuActive },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            // $('#btnRefresh').trigger("click");
+                            loadRoleMenus(profileId);
+                            showToast(response.message, 'success');
+                        }
+                    },
+                    error: function(error) {
+                        $checkbox.prop('checked', !$checkbox.prop('checked'));  // reverte o estado
+                        showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
+                    }
+                });     
+            });
+
             // Refresh button action
             $('#btnRefresh').on("click", function (e) {
                 e.stopImmediatePropagation();
@@ -979,13 +1006,13 @@
                 });                
             });
 
-            // Função recursiva para renderizar menus e submenus
+            // Função recursiva para renderizar todos Menus e Submenus da Disponíveis à esquerda
             function renderMenus(menus, level) {
                 let html = '';
 
                 menus.forEach(menu => {
                     html += `
-                        <div data-name="menuOrigem" class="menu-item ${menu.active === 'Y' ? 'active-Y' : 'active-N'}" data-menu-id="${menu.id}">
+                        <div class="menu-item ${menu.active === 'Y' ? 'active-Y' : 'active-N'}" data-menu-id="${menu.id}">
                             <div>
                                 <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                                 ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
@@ -1034,11 +1061,6 @@
             $('body').on('shown.bs.modal', '#editMenuModal', function () {
                 $('#editMenuParent').focus();
             })      
-            
-            // convert active checkbox to 'Y' : 'N'            
-            function getAtivoValue() {
-                return $('input[id="active"]:checked').val() ? 'Y' : 'N';
-            }
 
             // Dispara o clique automaticamente ao carregar a página
             $('#btnRefresh').trigger("click");

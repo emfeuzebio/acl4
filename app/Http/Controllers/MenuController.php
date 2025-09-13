@@ -243,6 +243,37 @@ class MenuController extends Controller
         }
     }    
 
+    public function saveRoleMenuActive(Request $request, $menuId)
+    {
+        try {
+            // Atualizar diretamente na tabela pivot
+            $updated = DB::table('acl_menu_profile')
+                ->where('profile_id', $request->profileId)
+                ->where('menu_id', $menuId)
+                ->update([
+                    'active' => $request->active,
+                    'updated_at' => now()
+                ]);            
+
+            if ($updated === 0) {
+                throw new Exception("Itens de Menu ID $menuId concedido ao Perfil de Acesso {$request->profileId} NÂO encontrado.");
+            }                
+
+            return response()->json([
+                'success' => true,
+                'message' => "Itens de Menu ID $menuId " . ($request->active == 'Y' ? 'ATIVADO' : 'DESATIVADO') . " com sucesso.",
+            ], Response::HTTP_OK);
+            
+        } catch (Exception $e) {        
+
+            return response()->json([
+                'sucesso' => false,
+                'message' => 'Erro: <b>' . $e->getMessage() . '</b>',
+                'error' => 'Erro:. ' . $e->getCode() . '-' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);            
+        }
+    }    
+
     public function removeMenuFromRole(Request $request, $profileId)
     {
         try {

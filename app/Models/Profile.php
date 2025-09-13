@@ -76,7 +76,10 @@ class Profile extends Model
     // Many-to-many relationship - lowercase plural. "A Profile can have many Menus children"
     public function menus()
     {
-        // return $this->belongsToMany(Menu::class, 'acl_menu_profile', 'profile_id', 'menu_id');
-        return $this->belongsToMany(Menu::class, 'acl_menu_profile');
+        // return $this->belongsToMany(Menu::class, 'acl_menu_profile');
+        
+        return $this->belongsToMany(Menu::class, 'acl_menu_profile')
+                    ->withPivot('position','active')
+                    ->withTimestamps();        
     }    
 }

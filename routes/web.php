@@ -95,6 +95,7 @@ Route::middleware(['auth', 'AccessControlList'])->group(function () {
         Route::get('menu/listRoleMenus/{id?}','listRoleMenus')->name('menu.listRoleMenus');
         Route::post('menu/saveMenusOrder/{id?}','saveMenusOrder')->name('menu.saveMenusOrder');                 // salva a ordem dos Menus
         Route::post('menu/saveRoleMenus/{id?}','saveRoleMenus')->name('menu.listRoleMenus');                    // salva a ordem dos Menus concedidos ao Perfil de Acesso
+        Route::post('menu/saveRoleMenuActive/{id?}','saveRoleMenuActive')->name('menu.saveRoleMenuActive');                    // salva a ordem dos Menus concedidos ao Perfil de Acesso
         Route::post('menu/saveMenuActive/{id?}','saveMenuActive')->name('menu.saveMenuActive');                    // salva a ordem dos Menus concedidos ao Perfil de Acesso
         Route::delete('menu/removeMenuFromRole/{id?}','removeMenuFromRole')->name('menu.removeMenuFromRole');
     });              
