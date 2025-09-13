@@ -17,7 +17,8 @@
         .menu-item {
             padding: 8px 12px;
             margin: 4px 0;
-            background: white;
+            /* background: white; */
+            /* background: #f7e7e7; */
             border: 1px solid #dee2e6;
             border-radius: 5px;
             cursor: move;
@@ -58,6 +59,65 @@
             margin-right: 10px;
             color: #6c757d;
         }
+
+
+
+
+        /* Estilos para itens activos e inactivos */
+        .menu-item.active-Y {
+            background-color: #ffffff;
+            border-left: 4px solid #28a745;
+        }
+
+        .menu-item.active-N {
+            background-color: #f8f9fa;
+            border-left: 4px solid #a0aec0;
+            color: #6c757d;
+        }
+
+        .menu-item.active-N .menu-text {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .menu-item.active-N .delete-btn {
+            color: #6c757d;
+        }
+
+        .menu-item.active-N .delete-btn:hover {
+            background-color: #a0aec0;
+            color: white;
+        }
+
+        /* Hierarquia para itens inactivos */
+        .nested-sortable .menu-item.active-N {
+            background-color: #e9ecef;
+        }
+
+        .nested-sortable .nested-sortable .menu-item.active-N {
+            background-color: #dee2e6;
+        }
+
+        /* Indicador visual de status */
+        .status-badge {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .status-badge.active-Y {
+            background-color: #28a745;
+        }
+
+        .status-badge.active-N {
+            background-color: #6c757d;
+        }
+
     </style>
     
 @stop
@@ -151,7 +211,7 @@
                                             <div class="col-sm-4">
                                                 <div class="mb-4 d-flex justify-content-end">
                                                     <button id="btnSaveMenuPaiOrder" class="btn btn-sm btn-info" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
-                                                        <i class="fas fa-save me-2"></i> Salvar Alterações
+                                                        <i class="fas fa-save me-2"></i> Salvar Posições
                                                     </button>
                                                 </div>                                            
                                             </div>
@@ -161,7 +221,7 @@
                                         </div>
                                         <div class="mt-2 d-flex justify-content-end">
                                             <button id="btnSaveMenuPaiOrder" class="btn btn-sm btn-info" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
-                                                <i class="fas fa-save me-2"></i> Salvar Alterações
+                                                <i class="fas fa-save me-2"></i> Salvar Posições
                                             </button>
                                         </div>
                                     </div>
@@ -198,7 +258,7 @@
                                                 <div class="col-sm-4">
                                                 <div class="mb-4 d-flex justify-content-end">
                                                         <button class="btn btn-sm btn-success btnSaveMenuOrder" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
-                                                            <i class="fas fa-save me-2"></i> Salvar Alterações
+                                                            <i class="fas fa-save me-2"></i> Salvar Posições
                                                         </button>                                                    
                                                     </div>
                                                 </div>
@@ -209,7 +269,7 @@
                                             </div>
                                             <div class="mt-2 d-flex justify-content-end">
                                                 <button class="btn btn-sm btn-success btnSaveMenuOrder" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
-                                                    <i class="fas fa-save me-2"></i> Salvar Alterações
+                                                    <i class="fas fa-save me-2"></i> Salvar Posições
                                                 </button>
                                                 <!-- <button class="btn btn-sm btn-outline-secondary" onclick="resetMenuOrder()">
                                                     <i class="fas fa-undo me-2"></i> Reverter
@@ -398,7 +458,7 @@
             // Mostrar loading
             document.getElementById('roleMenus').innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
             
-            // AJAX para carregar menus do perfil
+            // AJAX para carregar menus do perfil de Acesso
             $.ajax({
                 url: '/menu/listRoleMenus/' + roleId,
                 method: 'GET',
@@ -809,6 +869,33 @@
                 
             });
 
+            // Salva apenas o Active do Item de Menu
+            $(document).on('click', '.toggleMenuActive', function(e) {
+                e.stopImmediatePropagation();
+
+                const $checkbox = $(this);
+                let toggleMenuActiveId = $(this).data("menuid");
+                let isChecked = $(this).is(':checked');
+                let toggleMenuActive = isChecked ? 'Y' : 'N';
+
+                $.ajax({
+                    url: '/menu/saveMenuActive/' + toggleMenuActiveId,
+                    method: 'POST',
+                    data: { active: toggleMenuActive },
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#btnRefresh').trigger("click");
+                            showToast(response.message, 'success');
+                        }
+                    },
+                    error: function(error) {
+                        $checkbox.prop('checked', !$checkbox.prop('checked'));  // reverte o estado
+                        showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
+                    }
+                });     
+            });
+
             // Refresh button action
             $('#btnRefresh').on("click", function (e) {
                 e.stopImmediatePropagation();
@@ -898,7 +985,7 @@
 
                 menus.forEach(menu => {
                     html += `
-                        <div class="menu-item" data-menu-id="${menu.id}">
+                        <div data-name="menuOrigem" class="menu-item ${menu.active === 'Y' ? 'active-Y' : 'active-N'}" data-menu-id="${menu.id}">
                             <div>
                                 <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                                 ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
@@ -907,6 +994,11 @@
                                 <br/> ${menu.id ? `<span style="text-indent: 1.8cm;display: inline-block;"><small class="text-muted">${menu.id} > Filho de ${menu.menu_id ?? '0'} > Posição ${menu.position}</small></span>` : ''}
                             </div>
                             <div class="actions">
+                                <label class="switch">
+                                    <input type="checkbox" id="chkMenu-${menu.id}" class="switch-input toggleMenuActive" data-menuid="${menu.id}" ${menu.active === 'Y' ? 'checked' : ''}>
+                                        <span class="switch-label" data-on="SIM" data-off="NÃO"></span>
+                                    <span class="switch-handle"></span>
+                                </label>
                                 <button data-menuid="${menu.id}" class="btn btn-sm btn-outline-primary btnEditMenu" 
                                     onclick="editMenu(${menu.id}, ${menu.system_id}, ${menu.menu_id}, '${escapeJS(menu.name)}', '${escapeJS(menu.icon ?? '')}', '${escapeJS(menu.route ?? '')}', ${menu.position}, '${menu.active}')">
                                     <i class="fas fa-edit"></i>

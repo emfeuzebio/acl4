@@ -187,7 +187,6 @@ class MenuController extends Controller
         }
     }    
 
-
     public function saveRoleMenus(Request $request, $roleId)
     {
         try {
@@ -211,6 +210,35 @@ class MenuController extends Controller
                 'sucesso' => false,
                 'message' => 'Não foi possível atualizar as posições dos Itens de Menu. ' . $e->getMessage(),
                 'error' => 'Não foi possível atualizar as posições dos Itens de Menu. ' . $e->getCode() . '-' . $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);            
+        }
+    }    
+
+    public function saveMenuActive(Request $request, $menuId)
+    {
+        try {
+            // $request->active = '';
+            // $menuId = 999;
+
+            if (empty($request->active)) {
+                throw new Exception("<b>Item de Menu não informado.</b>");
+            }
+
+            $menu = Menu::findOrFail($menuId);
+            $menu->active = $request->active;
+            $menu->save();            
+
+            return response()->json([
+                'success' => true,
+                'message' => "Itens de Menu $menuId " . ($request->active == 'Y' ? 'ATIVADO' : 'DESATIVADO') . " com sucesso.",
+            ], Response::HTTP_OK);
+            
+        } catch (Exception $e) {        
+
+            return response()->json([
+                'sucesso' => false,
+                'message' => 'Erro: ' . $e->getMessage(),
+                'error' => 'Erro:. ' . $e->getCode() . '-' . $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);            
         }
     }    

@@ -718,7 +718,7 @@
                             window.location.href = "{{ url('/login') }}"; return;
                         } 
 
-                        $('#' + chkObjeto + ':checkbox').prop('checked', (chkCheked == 'Y' ? false : true));                        
+                        $('#' + chkObjeto + ':checkbox').prop('checked', (chkCheked == 'Y' ? false : true));
                         $('#alertModal .modal-body').html(error.responseJSON.message)
                         $('#alertModal').modal('show');                        
                     }
