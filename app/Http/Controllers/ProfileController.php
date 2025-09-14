@@ -124,12 +124,12 @@ class ProfileController extends Controller
 
     public function show(Request $request)
     {        
-
         // Habilita o log de todas as consultas SQL executadas a partir deste ponto.
         DB::enableQueryLog();
         
             $profile = Profile::with('authorizations.action')->find($request->id);    // recupera o Perfil com suas Autorizacoes e as Rotas associadas
-            $organization['ACLupdate'] = Gate::allows('profile.update');     // returns true if the User has permission to Update            
+
+            $profile['ACLupdate'] = Gate::allows('profile.update');     // returns true if the User has permission to Update            
             // $profile['ACLupdate'] = true;     // returns true if the User has permission to Update
 
         // Retorna um array com todas as consultas SQL executadas.
