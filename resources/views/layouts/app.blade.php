@@ -223,6 +223,16 @@
     <!-- APP js todas as páginas - EUZ Customise -->
     <script>
 
+        // Mostra Modal com alertas que interromperam o fluxo do programa
+        function showAlert(message, type = 'error') {
+            $('#alertModal .modal-body').html(message);
+            $('#alertModal .modal-header')
+                .removeClass('alert-success alert-warning alert-danger')
+                .addClass(type === 'success' ? 'alert-success' : 
+                        type === 'warning' ? 'alert-warning' : 'alert-danger');
+            $('#alertModal').modal('show');
+        }     
+
         $(document).ready(function() {
             // traduz todos DataTables
             $.extend(true, $.fn.dataTable.defaults, {
@@ -445,7 +455,13 @@
                         $('#datatables').DataTable().ajax.reload(null, false);
                     },
                     error: function (error) {
-
+                        
+                        if (error.status == 500) {
+                            let errorText = error.responseJSON?.message + ' ' + error.responseJSON?.error;
+                            showAlert(errorText || 'Erro desconhecido', 'error');
+                            return;
+                        }
+                        
                         // show errors fields messages from the validator
                         $("#editModal .invalid-feedback").text('').hide();
                         $.each( error.responseJSON.errors, function( key, value ) {
@@ -453,11 +469,11 @@
                         });
 
                         // show error messages
-                        if (error.responseJSON.message.indexOf("1062") != -1) {
-                            $('#msgOperacao').html("{{ __('acl.crud.errorMessage1062')}}").show();
-                        } else {
-                            $('#msgOperacao').html(error.responseJSON.message).show();
-                        }
+                        // if (error.responseJSON.message.indexOf("1062") != -1) {
+                        //     $('#msgOperacao').html("{{ __('acl.crud.errorMessage1062')}}").show();
+                        // } else {
+                        //     $('#msgOperacao').html(error.responseJSON.message).show();
+                        // }
                     }
                 });                
             });

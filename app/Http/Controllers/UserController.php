@@ -245,10 +245,11 @@ class UserController extends Controller
             }
 
             return response()->json([
+                'sucesso' => false,
                 'message' => 'Erro ao atualizar o usuário.',
                 'error' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
+        } 
     }
 
     public function updateProfile(Request $request)
