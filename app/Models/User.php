@@ -76,11 +76,18 @@ class User extends Authenticatable implements JWTSubject
      */
     public function adminlte_image()
     {
-        return $this->profile_image 
-            ? asset('storage/' . $this->profile_image) 
-            : '/vendor/adminlte/dist/img/avatar-blue.png';
-            // : '/vendor/adminlte/dist/img/avatar.png';
-            // : 'https://adminlte.io/themes/v4/dist/img/user2-160x160.jpg';
+        $user = Auth::user();
+
+        // return asset('storage/' . 'users/c6ad2b46-5b80-4da9-b311-5b309eea1bee.jpg');
+        return $user->photo
+                ? asset('storage/' . $user->photo)
+                : asset('storage/' . 'users/avatar.jpg');
+
+            // return $this->profile_image 
+            //     ? asset('storage/' . $this->profile_image) 
+            //     : '/vendor/adminlte/dist/img/avatar-blue.png';
+            //     // : '/vendor/adminlte/dist/img/avatar.png';
+            //     // : 'https://adminlte.io/themes/v4/dist/img/user2-160x160.jpg';
     }
 
     /**
