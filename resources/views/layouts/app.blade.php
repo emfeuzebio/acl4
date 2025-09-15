@@ -209,6 +209,10 @@
         </div>
     </div>
 
+    <!-- Container dos toasts -->
+    <div id="toastContainer" class="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
+    </div>
+
 @stop
 
 {{-- Add common Javascript/Jquery code --}}
@@ -222,6 +226,30 @@
 
     <!-- APP js todas as páginas - EUZ Customise -->
     <script>
+
+        // Mostra TOAST 6 segundos de confirmaçãoes ou alertas
+        function showToast(message, type = 'success') {
+            const bgColor = type === 'success' ? 'bg-success' : 'bg-danger';
+            
+            const toast = $(`
+                <div class="toast ${bgColor} text-white" role="alert" data-delay="5000">
+                    <div class="toast-body">
+                        <button type="button" class="close text-white mr-2" data-dismiss="toast">
+                            <span>&times;</span>
+                        </button>
+                        ${message}
+                    </div>
+                </div>
+            `);
+            
+            $('#toastContainer').append(toast);
+            toast.toast('show');
+            
+            // Remove após fechar
+            toast.on('hidden.bs.toast', function() {
+                $(this).remove();
+            });
+        }        
 
         // Mostra Modal com alertas que interromperam o fluxo do programa
         function showAlert(message, type = 'error') {
@@ -448,9 +476,7 @@
                     processData: false,
                     contentType: false,
                     success: function (response) {
-
-                        $('#alert .alert-content').html("{{ __('acl.crud.confirmMessageSave') }}<b> " + response.id + '</b>');
-                        $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
+                        showToast("{{ __('acl.crud.confirmMessageSave') }}<b> " + response.id + "</b>", 'success');
                         $('#editModal').modal('hide');
                         $('#datatables').DataTable().ajax.reload(null, false);
                     },
@@ -501,10 +527,9 @@
                         url: "{{ url()->current() }}/destroy",
                         data: {"id": id},
                         dataType: 'json',
-                        success: function (data) {
-
-                            $("#alert .alert-content").html("{{ __('acl.crud.confirmMessageDestroy') }} <b>" + id + '</b>');
-                            $('#alert').removeClass().addClass('alert alert-success').show().delay(5000).fadeOut(1000);
+                        success: function (response) {
+                            showToast("{{ __('acl.crud.confirmMessageDestroy') }}", 'success');
+                            // showToast(response.message, 'success');
                             $('#confirmaExcluirModal').modal('hide');
                             $('#datatables').DataTable().ajax.reload(null, false);
                         },
@@ -589,6 +614,18 @@
             font-weight: bold;
         }
 
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }        
+
+        .toast-body {
+            font-size: 16px !important;
+        }        
+
+        .alert-success { background-color: #d4edda; color: #155724; }
+        .alert-warning { background-color: #fff3cd; color: #856404; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; }        
 
     </style>
 @endpush
