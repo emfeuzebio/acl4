@@ -309,7 +309,7 @@ class UserController extends Controller
     /**
      * List Role's User
      */
-    public function listRoles(Request $request)
+    public function listRolesOLD(Request $request)
     {
         // solução da versão ACL 1
         // $profiles = Profile::orderBy('id')->where('active', 'Y')->orderBy('name')->get();
@@ -330,6 +330,29 @@ class UserController extends Controller
 
         return Response()->json($profiles);        
     }   
+
+    public function listRoles(Request $request)
+    {
+        $userId = $request->id;
+
+        $profiles = Profile::where(function($query) use ($userId) {
+                $query->whereHas('system.users', function($q) use ($userId) {
+                    $q->where('users.id', $userId);
+                })
+                ->orWhere('id', 1); // Exceção para o Profile ID 1
+            })
+            ->with(['users' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            }])
+            ->get()
+            ->map(function ($profile) {
+                $profile->granted = $profile->users->isNotEmpty() ? 'checked' : '';
+                return $profile;
+            });
+
+        return response()->json($profiles); 
+        
+    }    
 
     /**
      * List System's User 

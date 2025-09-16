@@ -200,7 +200,7 @@
                                             <tr>
                                                 <th>#</th>
                                                 <th>Sistema</th>
-                                                <th>Concedidos ao Usuário</th>
+                                                <th>Concedido ao Usuário</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -253,7 +253,7 @@
                                             <tr>
                                                 <th>#</th>
                                                 <th>Perfil de Acesso</th>
-                                                <th>Concedidos ao Usuário</th>
+                                                <th>Concedido ao Usuário</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -662,7 +662,7 @@
                             '</tr>' + "\n";
                         })
 
-                        tblPerfis = tblPerfis ? tblPerfis : '<tr><td class="text-center" colspan="2">Nenhuma registro</td></tr>';
+                        tblPerfis = tblPerfis ? tblPerfis : '<tr><td class="text-center" colspan="3">Nenhuma registro</td></tr>';
 
                         $('#modalGrantRole #tblRolesGranted tbody').empty().append(tblPerfis);     // adiciona as linhas na tabela do modal
                         $('#modalGrantRole #user_id').val(id);                                    // carrega o User ID no modal
@@ -715,7 +715,7 @@
                             '</tr>' + "\n";
                         })
 
-                        tblSystems = tblSystems ? tblSystems : '<tr><td class="text-center" colspan="2">Nenhuma registro</td></tr>';
+                        tblSystems = tblSystems ? tblSystems : '<tr><td class="text-center" colspan="3">Nenhuma registro</td></tr>';
                         
                         $('#modalGrantSystem #tblSystemsGranted tbody').empty().append(tblSystems);     // adiciona as linhas na tabela do modal
                         $('#modalGrantSystem #user_id').val(id);                                        // carrega o User ID no modal
