@@ -471,12 +471,12 @@ class UserController extends Controller
             if ($request->operation == 'assignRole') {
                 $user->profiles()->attach($request->role_id);   // assign de Role (attach)
 
-                $subject = "Concessão de Perfil de Acesso à Usuário.";
+                $subject = "Concessão de Perfil de Acesso a Usuário.";
                 $text = htmlspecialchars("O Perfil de Acesso '{$roleName}' lhe foi Concedido com sucesso.");    // Usar assim para não quebrar Email
             } elseif ($request->operation == 'revokeRole') {
                 $user->profiles()->detach($request->role_id);   // Revoke the a Role (detach)
 
-                $subject = "Revogação de Perfil de Acesso à Usuário.";
+                $subject = "Revogação de Perfil de Acesso a Usuário.";
                 $text = htmlspecialchars("O Perfil de Acesso '{$roleName}' lhe foi Revogado com sucesso.");
             } 
 
@@ -508,12 +508,17 @@ class UserController extends Controller
             // get the User
             $user = User::find($request->user_id);
 
-            $system = System::find($request->system_id);
-            $systemName = $system->name;
-
             if (!$user) {
                 throw new Exception('Usuário não encontrado.');
             }            
+
+            $system = System::find($request->system_id);
+            
+            if (!$system) {
+                throw new Exception('Sistema não encontrado.');
+            }            
+            $systemName = $system->name;
+
     
             if ($request->operacao == 'assignSystem') {
 
