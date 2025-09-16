@@ -213,10 +213,11 @@ class UserController extends Controller
             // Notificação por e-mail se o campo 'active' mudou
             if ($currentActive != $request->active) {
                 if ($request->active == 'Y') {
-                    $subject = config('app.name') . " - Ativação de Usuário.";
+                    $subject = "Ativação de Usuário.";
                     $text = "Sua conta de Usuário foi Ativada com sucesso.";
                 } else {
-                    $subject = config('app.name') . " - Desativação de Usuário.";
+                    // $subject = config('app.name') . " - Desativação de Usuário.";
+                    $subject = "Desativação de Usuário.";
                     $text = "Sua conta de Usuário expirou ou foi Desativada.\n" .
                             "Caso necessite Ativar novamente, procure o Administrador.";
 
@@ -471,14 +472,15 @@ class UserController extends Controller
             if ($request->operation == 'assignRole') {
                 $user->profiles()->attach($request->role_id);   // assign de Role (attach)
 
-                $subject = config('app.name') . " - Concessão de Perfil de Acesso à Usuário.";
-                $text = "O Perfil de Acesso '{$roleName}' lhe foi Concedido com sucesso.";
+                $subject = "Concessão de Perfil de Acesso à Usuário.";
+                $text = "O Perfil de Acesso lhe foi Concedido com sucesso." . $roleName;
+                // $text = "O Perfil de Acesso '{$roleName}' lhe foi Concedido com sucesso.";
             } elseif ($request->operation == 'revokeRole') {
                 $user->profiles()->detach($request->role_id);   // Revoke the a Role (detach)
 
-                // $subject = config('app.name') . " - Revogação de Perfil de Acesso à Usuário.";
                 $subject = "Revogação de Perfil de Acesso à Usuário.";
-                $text = "O Perfil de Acesso '{$roleName}' lhe foi Revogado com sucesso.";
+                $text = "O Perfil de Acesso '" . $roleName . "' lhe foi Revogado com sucesso.";
+                // $text = "O Perfil de Acesso '{$roleName}' lhe foi Revogado com sucesso.";
             } 
 
             // Notifica o usuário por email
