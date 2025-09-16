@@ -455,7 +455,6 @@ class UserController extends Controller
     public function toggleRole(Request $request)
     {
         try {
-            // get the User
             $user = User::find($request->user_id);
 
             if (!$user) {
@@ -509,25 +508,36 @@ class UserController extends Controller
             // get the User
             $user = User::find($request->user_id);
 
+            $system = System::find($request->system_id);
+            $systemName = $system->name;
+
             if (!$user) {
                 throw new Exception('Usuário não encontrado.');
             }            
     
             if ($request->operacao == 'assignSystem') {
+
                 // assign de System (attach)
                 $user->systems()->attach($request->system_id);
+
+                $subject = "Concessão de Acesso a Sistema.";
+                $text = htmlspecialchars("O Administrador lhe concedeu acesso ao Sistema '{$systemName}' com sucesso.");
+
             } elseif ($request->operacao == 'revokeSystem') {
-
-                $systemCount = $user->systems()->count();
-
-                // If the user has only one System, do not allow removal
-                // if ($systemCount <= 1) {
-                //     throw new Exception("<b>Impossível revogar!</b><br/> O usuário deve pertencer a pelo menos um Sistema.");
-                // }
 
                 // Revoke the a System (detach)
                 $user->systems()->detach($request->system_id);
+
+                $subject = "Revogação de Acesso a Sistema.";
+                $text = htmlspecialchars("O Administrador revogou seu acesso ao Sistema '{$systemName}' com sucesso.");
             } 
+
+            // Notifica o usuário por email
+            Mail::to($user->email)->send(new NotifyUserMail(
+                $subject,
+                $user->name,
+                $text
+            ));        
             
             return response()->json(['sucesso' => true, 'message' => 'Salvo com sucesso.'], Response::HTTP_OK);
 
