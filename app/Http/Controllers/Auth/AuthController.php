@@ -76,21 +76,18 @@ class AuthController extends Controller
                     return response()->json(['error' => 'Usuário ainda não têm Acesso a este Sistema.'], Response::HTTP_UNAUTHORIZED);
                 }
 
-                $count = $user->profiles()
-                    ->where('system_id', $request->systemId)
-                    ->count();                    
-                echo "count: {$count}";
+                $countProfilesOnSystem = $user->profiles()->where('system_id', $request->systemId)->count();
+                // echo "count: {$countProfilesOnSystem}";
 
-                $profiles = $user->profiles()
-                    ->where('system_id', $request->systemId)
-                    ->get();                
+                if ($countProfilesOnSystem == 0) {
+                    return response()->json(['error' => 'Usuário ainda não têm Perfil de Acesso a este Sistema.'], Response::HTTP_UNAUTHORIZED);
+                }
 
-                dd($profiles);
-
-
-
-
-
+                // $profiles: Collection dos Profiles do usuário dentro daquele system
+                // $profiles = $user->profiles()
+                //     ->where('system_id', $request->systemId)
+                //     ->get();                
+                // dd($profiles);
 
                 // PASSO 2 - Verifica se já existe um token ativo para o usuário
                 $existingToken = Token::where('user_id', $user->id)
