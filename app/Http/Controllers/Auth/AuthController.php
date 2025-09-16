@@ -74,7 +74,9 @@ class AuthController extends Controller
 
                 // $systems = $user->systems;
                 // $hasSystem = $user->systems->contains('id', $request->systemId);
-                if (! $user->systems()->where('systems.id', $request->systemId)->exists()) {
+
+                // if (! $user->systems()->where('systems.id', $request->systemId)->exists()) {
+                if (! $user->systems->contains('id', $request->systemId)) {
                     return response()->json(['error' => 'Usuário SEM Acesso a este Sistema.'], Response::HTTP_UNAUTHORIZED);
                 }
 
