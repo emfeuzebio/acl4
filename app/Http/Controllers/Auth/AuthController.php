@@ -305,49 +305,6 @@ class AuthController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR); // 500
         }    
     }    
-    
-    public function APAAGARresetPassword(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|string|email|max:255',
-            'token' => 'required|string',
-            'password' => 'required|string|min:6|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/',
-        ]);
-    
-        $record = DB::table('password_reset_tokens')
-            ->where('email', $request->email)
-            ->first();
-    
-        if (!$record) {
-            return response()->json(['message' => 'Token não encontrado.'], Response::HTTP_NOT_FOUND);   // 404
-        }
-    
-        // Valida o token
-        if (!Hash::check($request->token, $record->token)) {
-            return response()->json(['message' => 'Token inválido ou expirado.'], Response::HTTP_UNAUTHORIZED);   // 401
-        }
-    
-        // Redefine a senha
-        $user = User::where('email', $request->email)->first();
-        if (!$user) {
-            return response()->json(['message' => 'Usuário não encontrado.'], Response::HTTP_NOT_FOUND);   // 404
-        }
-    
-        $user->password = Hash::make($request->password);
-        $user->save();
-    
-        // Remove o token após uso
-        DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-
-        // Notifica o Usuário da operação
-        Mail::to($user->email)->send(new NotifyUserMail(
-            config('app.name') . " - Alteração de Senha.", 
-            $user->name, 
-            "Sua senha foi alterado com sucesso.",
-        ));
-    
-        return response()->json(['message' => 'Senha redefinida com sucesso.'], Response::HTTP_OK);   // 200
-    }    
 
     public function resetPassword(Request $request)
     {
@@ -385,7 +342,7 @@ class AuthController extends Controller
 
                 // Notifica por e-mail
                 Mail::to($user->email)->send(new NotifyUserMail(
-                    config('app.name') . " - Alteração de Senha.", 
+                    "Reset Password", 
                     $user->name, 
                     "Sua senha foi alterada com sucesso.",
                 ));
@@ -953,12 +910,9 @@ class AuthController extends Controller
 
             // Notifica o Usuário da operação
             Mail::to($user->email)->send(new NotifyUserMail(
-                config('app.name') . " - Alteração de Senha.", 
+                "Alteração de Senha.", 
                 $user->name, 
-                // "{$systemName} - Sua senha de acesso ao foi alterada com sucesso.",
-                // "Sua solicitação para alterar a senha de acesso foi executada com sucesso.",
                 "A operação que você solicitou a partir do {$systemName} para alterar sua senha de acesso foi executada com sucesso.",
-                // "Sua senha de acesso ao Sistema " . config('app.name') . " foi alterada com sucesso.",
             ));
 
             return response()->json(['message' => 'Senha alterada com sucesso.'], Response::HTTP_OK);
