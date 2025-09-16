@@ -72,13 +72,25 @@ class AuthController extends Controller
                     return response()->json(['error' => 'Usuário Não Ativo.'], Response::HTTP_UNAUTHORIZED);
                 }
 
-                // $systems = $user->systems;
-                // $hasSystem = $user->systems->contains('id', $request->systemId);
-
-                // if (! $user->systems()->where('systems.id', $request->systemId)->exists()) {
                 if (! $user->systems->contains('id', $request->systemId)) {
-                    return response()->json(['error' => 'Usuário SEM Acesso a este Sistema.'], Response::HTTP_UNAUTHORIZED);
+                    return response()->json(['error' => 'Usuário ainda não têm Acesso a este Sistema.'], Response::HTTP_UNAUTHORIZED);
                 }
+
+                $count = $user->profiles()
+                    ->where('system_id', $request->systemId)
+                    ->count();                    
+                echo "count: {$count}";
+
+                $profiles = $user->profiles()
+                    ->where('system_id', $request->systemId)
+                    ->get();                
+
+                dd($profiles);
+
+
+
+
+
 
                 // PASSO 2 - Verifica se já existe um token ativo para o usuário
                 $existingToken = Token::where('user_id', $user->id)
