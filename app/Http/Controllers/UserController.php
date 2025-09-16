@@ -521,7 +521,7 @@ class UserController extends Controller
                 $user->systems()->attach($request->system_id);
 
                 $subject = "Concessão de Acesso a Sistema.";
-                $text = htmlspecialchars("O Administrador lhe concedeu acesso ao Sistema '{$systemName}' com sucesso.");
+                $text = "O Administrador lhe concedeu acesso ao Sistema '{$systemName}' com sucesso.";
 
             } elseif ($request->operacao == 'revokeSystem') {
 
@@ -529,7 +529,7 @@ class UserController extends Controller
                 $user->systems()->detach($request->system_id);
 
                 $subject = "Revogação de Acesso a Sistema.";
-                $text = htmlspecialchars("O Administrador revogou seu acesso ao Sistema '{$systemName}' com sucesso.");
+                $text = "O Administrador revogou seu acesso ao Sistema '{$systemName}' com sucesso.";
             } 
 
             // Notifica o usuário por email
