@@ -474,13 +474,11 @@ class UserController extends Controller
 
                 $subject = "Concessão de Perfil de Acesso à Usuário.";
                 $text = htmlspecialchars("O Perfil de Acesso '{$roleName}' lhe foi Concedido com sucesso.");    // Usar assim para não quebrar Email
-                // $text = "O Perfil de Acesso \"" . $roleName . "' lhe foi Concedido com sucesso.";    // Usar assim para não quebrar Email
-                // $text = "O Perfil de Acesso '{$roleName}' lhe foi Concedido com sucesso.";
             } elseif ($request->operation == 'revokeRole') {
                 $user->profiles()->detach($request->role_id);   // Revoke the a Role (detach)
 
                 $subject = "Revogação de Perfil de Acesso à Usuário.";
-                $text = "O Perfil de Acesso '" . $roleName . "' lhe foi Revogado com sucesso.";
+                $text = htmlspecialchars("O Perfil de Acesso '{$roleName}' lhe foi Revogado com sucesso.");
             } 
 
             // Notifica o usuário por email
