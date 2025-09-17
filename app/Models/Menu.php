@@ -31,9 +31,13 @@ class Menu extends Model
      */
     public function profiles(): BelongsToMany
     {
-        return $this->belongsToMany(Profile::class, 'menu_role')
-                    ->withPivot('position')
-                    ->withTimestamps();
+        // return $this->belongsToMany(Profile::class, 'acl_menu_profile')
+        //             ->withPivot('position')
+        //             ->withTimestamps();
+
+        return $this->belongsToMany(Profile::class, 'acl_menu_profile')
+                    ->withPivot('position', 'active')
+                    ->withTimestamps();                    
     }
 
 

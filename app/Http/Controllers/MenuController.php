@@ -143,15 +143,33 @@ class MenuController extends Controller
         }
 
         // recupera os Itens de Menu do Perfil ordenados pelo position
-        $role = Profile::with(['menus' => function($query) {
-            $query->orderByPivot('position', 'asc');
-        }])->findOrFail($roleId);        
+        // $role = Profile::with(['menus' => function($query) {
+        //     $query->orderByPivot('position', 'asc');
+        // }])->findOrFail($roleId);        
+
+        // NOVO - Trás array de MenuPai e cada um desse com seus Filhos embutidos
+        $menus = Menu::whereHas('profiles', function($q) use ($roleId) {
+                $q->where('profile_id', $roleId);
+            })
+            // recupera os Menus filhos concedidos ao Perfil
+            ->with(['children' => function ($query) use ($roleId) {
+                $query->whereHas('profiles', function($q) use ($roleId) {
+                    $q->where('profile_id', $roleId);
+                });
+            }])
+            ->whereNull('menu_id')          // Apenas pais
+            ->orderBy('position', 'asc')    // ordena pela position do Menu e não do pivot
+            ->get();
+            // ->fresh();                   // força carregar dados do BD e não usar o cache
 
         if ($html) {
-            $html = view('acl/MenuAdminProfiles', ['menus' => $role->menus])->render();
+            // $html = view('acl/MenuAdminProfiles', ['menus' => $role->menus])->render();
+            $html = view('acl/MenuAdminProfiles', ['menus' => ''])->render();
             return response()->json(['html' => $html]);
         } else {
-            return response()->json($role->menus);
+            // return response()->json($role->menus);
+            // NOVO
+            return response()->json($menus);
         }
     }    
 
@@ -196,8 +214,15 @@ class MenuController extends Controller
 
             $role = Profile::findOrFail($roleId);
 
-            // Faz sync salvando as novas posições - Apaga todos os registro Pivot e insere novamente
+            // Primeiro faz sync salvando os Itens de Menu - Apaga todos os registro Pivot e insere novamente
             $role->menus()->sync($request->menus);
+
+            // Depois atualiza o POSITION na tabela MENUS que ordena os itens de Menu
+            foreach ($request->menus as $menuId => $data) {
+                Menu::where('id', $menuId)->update([
+                    'position' => $data['position']
+                ]);
+            }            
 
             return response()->json([
                 'success' => true,
@@ -278,9 +303,11 @@ class MenuController extends Controller
     {
         try {
             $profile = Profile::findOrFail($profileId);
-
             $profile->menus()->detach($request->menuId);
-            
+
+            // Recarregar o modelo COM os relacionamentos atualizados
+            $profile->load('menus');
+           
             return response()->json([
                 'success' => true,
                 'message' => 'Menu Removido do Perfil de Acesso com sucesso.',

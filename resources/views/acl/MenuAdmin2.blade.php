@@ -15,7 +15,7 @@
             background-color: #f8f9fa;
         }
         .menu-item {
-            padding: 8px 12px;
+            padding: 6px 6px;
             margin: 4px 0;
             /* background: white; */
             /* background: #f7e7e7; */
@@ -455,7 +455,7 @@
         // Carrega os menus do perfil selecionado
         function loadRoleMenus(roleId) {
             
-            // Mostrar loading
+            // TODO criar função para o loading
             document.getElementById('roleMenus').innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
             
             // AJAX para carregar menus do perfil de Acesso
@@ -463,83 +463,84 @@
                 url: '/menu/listRoleMenus/' + roleId,
                 method: 'GET',
                 success: function(response) {
-                    let html = renderRoleMenus(response);
+
+                    // renderiza os itens de menu recursivamente, pais, filhos e netos
+                    const html = renderRoleMenus(response);
                     $('#roleMenus').html(html);
-                    updateAssignedCount();
+                    updateAssignedCount();                    
                 },
                 error: function(error) {
                     showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
+                },
+                complete: function() {
+                    // TODO criar função para o loading
+                    // $('#roleMenus').empty();
                 }
             });
         }
 
-        // Monta a lista de Menus do Perfil de Acesso
-        function renderRoleMenus(menus) {
-
+        // Função para renderizar menus de forma recursiva
+        function renderRoleMenus(menus, level = 0) {
             if (!Array.isArray(menus)) {
-                console.warn("Dados inválidos recebidos em renderRoleMenus:", menus);
-                return '<p>Erro ao carregar menus do perfil. Devia ser um Array</p>';
-            }            
-            // console.log(Array.isArray(menus)); // Deve retornar true
-            // console.log(menus); // Veja o que vem na resposta
-
-            // Ordena menus pela posição do pivot
-            menus.sort((a, b) => a.pivot.position - b.pivot.position);
+                return '<p>Erro ao carregar menus do perfil</p>';
+            }
 
             let html = '';
 
             menus.forEach(menu => {
-
+                // Calcular recuo baseado no nível
+                const indent = level * 20;
+                
                 html += `
-                    <div class="menu-item ${menu.active === 'Y' ? 'active-Y' : 'active-N'}" data-menu-id="${menu.id}">
+                    <div class="menu-item ${menu.active === 'Y' ? 'active-Y' : 'active-N'}" 
+                        data-menu-id="${menu.id}" style="margin-left: ${indent}px">
                         <div>
                             <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                             ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
-                            ${menu.name}
+                            <span class="menu-text">${menu.name}</span>
                             ${menu.route ? `<small class="text-muted">(${menu.route})</small>` : ''}
-                            <br/> ${menu.id ? `<span style="text-indent: 1.2cm;display: inline-block;"><small class="text-muted">Filho de ${menu.menu_id ?? '0'} > Posição ${menu.pivot.position}</small></span>` : ''}
+                            <br/>
+                            <span style="text-indent: 1cm; display: inline-block;">
+                                <small class="text-muted">
+                                    ID: ${menu.id} | 
+                                    Pai: ${menu.menu_id || '0'} | 
+                                    Pos: ${menu.position || '0'}
+                                </small>
+                            </span>
                         </div>
                         <div class="actions">
-                            <label class="switch">
-                                <input type="checkbox" id="chkMenu-${menu.id}" class="switch-input toggleRoleMenuActive" data-profileId="${menu.pivot.profile_id}" data-menuid="${menu.id}" ${menu.pivot.active === 'Y' ? 'checked' : ''}>
-                                    <span class="switch-label" data-on="SIM" data-off="NÃO"></span>
-                                <span class="switch-handle"></span>
-                            </label>
-                            <button class="btn btn-sm btn-outline-danger btnRemoveMenuFromRole" data-menu-id="${menu.id}">
+                            <button style="padding: 2px !important" class="btn btn-sm btn-outline-danger btnRemoveMenuFromRole" data-menu-id="${menu.id}">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
                     </div>
                 `;
 
-                if (menu.children && menu.children.length > 0) {
-                    // Ordena filhos também pela posição
-                    menu.children.sort((a, b) => a.pivot.position - b.pivot.position);
+                        // TODO a possibilidade de active no Menu Concedido eu retirei
+                        //      acho melhor deixar apenas nos Menus disponíveis, para faciliar o controle
+                        //      dessa forma, só é possível activar/des Menu para todo sistema
+                        //      para o Perfil de acesso, BASTA NÃO CONCEDER
+                        // TODO Ao manter essa arquitetura, há que exluir os métodos envolvidos     
+                        //
+                        // <label class="switch">
+                        //     <input type="checkbox" class="switch-input toggleRoleMenuActive" 
+                        //         data-profileid="${menu.pivot?.profile_id}" 
+                        //         data-menuid="${menu.id}" 
+                        //         ${menu.active === 'Y' ? 'checked' : ''}>
+                        //     <span class="switch-label" data-on="SIM" data-off="NÃO"></span>
+                        //     <span class="switch-handle"></span>
+                        // </label>
 
-                    html += '<div class="nestable-list">';
-                    menu.children.forEach(child => {
-                        html += `
-                            <div class="menu-item" data-menu-id="${child.id}">
-                                <div>
-                                    <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
-                                    ${child.icon ? `<i class="${child.icon}"></i>` : ''}
-                                    ${child.name}
-                                    ${child.route ? `<small class="text-muted">(${child.route})</small>` : ''}
-                                </div>
-                                <div class="actions">
-                                    <button class="btn btn-sm btn-outline-danger" >
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
+                
+                // Renderizar filhos recursivamente - CORREÇÃO AQUI
+                if (menu.children && menu.children.length > 0) {
+                    html += renderRoleMenus(menu.children, level + 1);
                 }
             });
 
             return html;
         }
+
 
         // Abrir modal para editar menu
         function editMenu(menuId, systemParentId, menuParentId, menuName, menuIcon, menuRoute, menuPosition, menuActive) {
@@ -775,7 +776,6 @@
             // Salva os Menus no Perfil de Acesso depois de Ordenados
             $(document).on('click', '#btnSaveMenuPaiOrder', function(e) {
                 e.stopImmediatePropagation();
-
                 let systemId = $('#systemSelect').val();
 
                 // Monta array com a ordenação atual para enviar ao backend (menuOrder)
@@ -827,7 +827,14 @@
                 const syncData = {};
                 $('#roleMenus .menu-item').each(function(index) {
                     const menuId = $(this).data('menu-id');
-                    syncData[menuId] = { position: index + 1 };
+                    // let active = $(this).find('.toggleRoleMenuActive').is(':checked') ? 'Y' : 'N';
+                    let active = $('#chkMenu-' + menuId).is(':checked') ? 'Y' : 'N';
+                    
+                    syncData[menuId] = {
+                        position: index + 1,
+                        active: active, 
+                    };                    
+                    // syncData[menuId] = { position: index + 1, active: active };
                 });                
 
                 if (syncData.length === 0) {
@@ -899,7 +906,8 @@
                 e.stopImmediatePropagation();
 
                 const $checkbox = $(this);
-                let profileId = $(this).data("profileid");
+                // let profileId = $(this).data("profileid");
+                let profileId = $('#roleSelect').val();
                 let toggleRoleMenuActiveId = $(this).data("menuid");
                 let isChecked = $(this).is(':checked');
                 let toggleRoleMenuActive = isChecked ? 'Y' : 'N';
@@ -1018,7 +1026,7 @@
                                 ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
                                 ${menu.name}
                                 ${menu.route ? `<small class="text-muted">(${menu.route})</small>` : ''}
-                                <br/> ${menu.id ? `<span style="text-indent: 1.8cm;display: inline-block;"><small class="text-muted">${menu.id} > Filho de ${menu.menu_id ?? '0'} > Posição ${menu.position}</small></span>` : ''}
+                                <br/> ${menu.id ? `<span style="text-indent: 1cm; display: inline-block;"><small class="text-muted">${menu.id} > Filho de ${menu.menu_id ?? '0'} > Posição ${menu.position}</small></span>` : ''}
                             </div>
                             <div class="actions">
                                 <label class="switch">
@@ -1067,6 +1075,7 @@
 
         });   
 
+    
     </script>      
     
 @endpush
@@ -1135,6 +1144,10 @@
         .alert-success { background-color: #d4edda; color: #155724; }
         .alert-warning { background-color: #fff3cd; color: #856404; }
         .alert-danger { background-color: #f8d7da; color: #721c24; }        
+
+        .btn-outline {
+            padding: 4px;
+        }
 
     </style>
 @endpush

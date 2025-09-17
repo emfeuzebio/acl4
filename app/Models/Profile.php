@@ -78,8 +78,12 @@ class Profile extends Model
     {
         // return $this->belongsToMany(Menu::class, 'acl_menu_profile');
         
+        // return $this->belongsToMany(Menu::class, 'acl_menu_profile')
+        //             ->withPivot(['position','active'])
+        //             ->withTimestamps();        
+
         return $this->belongsToMany(Menu::class, 'acl_menu_profile')
-                    ->withPivot('position','active')
+                    ->withPivot('position')
                     ->withTimestamps();        
     }    
 }
