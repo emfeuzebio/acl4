@@ -190,7 +190,7 @@
                                     <div class="card-header">
                                         <label for="roleSelect" class="form-label" style="margin-bottom: 11px;">Ações</label>
                                         <h5 class="mb-0">
-                                            <button id="openNewMenuModal" type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#createMenuModal" data-toggle="tooltip" title="Clique para Criar um Novo Item de Menu">
+                                            <button id="openNewMenuModal" type="button" class="btn btn-info" disabled data-bs-toggle="modal" data-bs-target="#createMenuModal" data-toggle="tooltip" title="Clique para Criar um Novo Item de Menu">
                                                 <i class="fas fa-plus-circle me-2"></i> Criar Novo Menu
                                             </button>
                                         </h5>
@@ -210,7 +210,7 @@
                                             </div>
                                             <div class="col-sm-4">
                                                 <div class="mb-4 d-flex justify-content-end">
-                                                    <button id="btnSaveMenuPaiOrder" class="btn btn-sm btn-info" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
+                                                    <button id="btnSaveMenuPaiOrder" disabled class="btn btn-sm btn-info btnSaveMenuPaiOrder" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
                                                         <i class="fas fa-save me-2"></i> Salvar Posições
                                                     </button>
                                                 </div>                                            
@@ -220,7 +220,7 @@
                                             <!-- Montado dinamicamente AJAX -->
                                         </div>
                                         <div class="mt-2 d-flex justify-content-end">
-                                            <button id="btnSaveMenuPaiOrder" class="btn btn-sm btn-info" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
+                                            <button id="btnSaveMenuPaiOrder" disabled class="btn btn-sm btn-info btnSaveMenuPaiOrder" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
                                                 <i class="fas fa-save me-2"></i> Salvar Posições
                                             </button>
                                         </div>
@@ -235,7 +235,7 @@
                                 <div class="card">
                                     <div class="card-header">
                                         <label for="roleSelect" class="form-label">Selecione um Perfil:</label>
-                                        <select class="form-control" id="roleSelect" onchange="loadRoleMenus(this.value)" data-toggle="tooltip" title="Selecione o Perfil de Acesso para ver os Itens de Menu a ele concedidos">
+                                        <select class="form-control" disabled id="roleSelect" onchange="loadRoleMenus(this.value)" data-toggle="tooltip" title="Selecione o Perfil de Acesso para ver os Itens de Menu a ele concedidos">
                                             <option value=""> Selecione </option>
                                         </select>                                    
                                     </div>                                    
@@ -257,7 +257,7 @@
                                                 </div>
                                                 <div class="col-sm-4">
                                                 <div class="mb-4 d-flex justify-content-end">
-                                                        <button class="btn btn-sm btn-success btnSaveMenuOrder" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
+                                                        <button class="btn btn-sm btn-success btnSaveMenuOrder" disabled data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
                                                             <i class="fas fa-save me-2"></i> Salvar Posições
                                                         </button>                                                    
                                                     </div>
@@ -268,7 +268,7 @@
                                                 <!-- Menus serão carregados via AJAX -->
                                             </div>
                                             <div class="mt-2 d-flex justify-content-end">
-                                                <button class="btn btn-sm btn-success btnSaveMenuOrder" data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
+                                                <button class="btn btn-sm btn-success btnSaveMenuOrder" disabled data-toggle="tooltip" title="Digite as Salvar a nova Ordem dos Itens de Menu">
                                                     <i class="fas fa-save me-2"></i> Salvar Posições
                                                 </button>
                                                 <!-- <button class="btn btn-sm btn-outline-secondary" onclick="resetMenuOrder()">
@@ -787,6 +787,9 @@
                     });
                 });                
 
+                // TODO criar função para o loading
+                // document.getElementById('availableMenus').innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
+
                 if (menuOrder.length === 0) {
                     showToast('NECESSÁRIO primeiro selecionar um Sistema.', 'warning');
                     $('#systemSelect').focus();
@@ -849,8 +852,9 @@
                     dataType: 'json',
                     success: function(response) {
                         if (response.success) {
-                            loadRoleMenus(currentRoleId);
+                            // loadRoleMenus(currentRoleId);
                             showToast(response.message, 'success');
+                            $('#btnRefresh').trigger("click");
                         }
                     },
                     error: function(error) {
@@ -935,7 +939,11 @@
             $('#btnRefresh').on("click", function (e) {
                 e.stopImmediatePropagation();
 
+                // TODO criar função para o loading
+                document.getElementById('availableMenus').innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
+
                 systemIdSelected = $('#systemSelect').val();
+                currentRoleId = $('#roleSelect').val();
 
                 $.ajax({
                     type: "GET",
@@ -959,17 +967,17 @@
 
                         $('#availableMenus').html(html); // atualiza o container com os menus
 
-                        // 2. Monta os Perfis no <select>
+                        // 2. Monta a lista de Perfis de Acesso no <select>
                         let profileOptions = '<option value="">Selecione</option>';
 
                         if (response.profiles && response.profiles.length > 0) {
                             response.profiles.forEach(profile => {
-                                profileOptions += `<option value="${profile.id}">${profile.name}</option>`;
+                                profileOptions += `<option value="${profile.id}" ${currentRoleId == profile.id ? 'selected' : '' }>${profile.name}</option>`;
                             });
                         }
                         $('#roleSelect').html(profileOptions);
 
-                            // 3. Monta os Systems no <select>
+                            // 3. Monta a lista de Systems no <select>
                             let systemOptions = '<option value=""> Seleção é obrigatória </option>';
                             let systemSelectId = $('#systemSelect').val();
 
@@ -983,7 +991,7 @@
                             }
                             $('#editSystemParent').html(systemOptions);
 
-                        // 4. Monta os Menus Pai no <select>
+                        // 4. Monta a lista de Menus Pai no <select>
                         let menusPaiOptions = '<option value=""> Menu Principal (sem pai) </option>';
 
                         if (response.menusPai && response.menusPai.length > 0) {
@@ -993,7 +1001,7 @@
                         }
                         $('#editMenuParent').html(menusPaiOptions);
 
-                        // 5. Monta as Rotas no <select>
+                        // 5. Monta a lista de Rotas no <select>
                         let routeOptions = '<option value=""> Selecione uma Rota previamente criada </option>';
 
                         if (response.routes && response.routes.length > 0) {
@@ -1004,6 +1012,10 @@
                         $('#editRoute').html(routeOptions);
                         
                         updateAssignedCount();
+
+                        // carrega a lista de Menus Concedidos ao Perfil selecionado
+                        // console.log(currentRoleId);
+                        loadRoleMenus(currentRoleId);
                     },
                     error: function(error) {
                         showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
@@ -1055,6 +1067,11 @@
             // On change System select refresh page data
             $('#systemSelect').on("change", function (e) {
                 e.stopImmediatePropagation();
+
+                $('#openNewMenuModal').prop('disabled', $('#systemSelect').val() ? false : true );
+                $('#roleSelect').prop('disabled', $('#systemSelect').val() ? false : true );
+                $('.btnSaveMenuPaiOrder').prop('disabled', $('#systemSelect').val() ? false : true );
+                $('.btnSaveMenuOrder').prop('disabled', $('#systemSelect').val() ? false : true );
 
                 $('#btnRefresh').trigger("click");
             });
