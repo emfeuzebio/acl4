@@ -13,21 +13,26 @@ return new class extends Migration
     {
         if (!Schema::hasTable('acl_menus')) {
             Schema::create('acl_menus', function (Blueprint $table) {
-                $table->increments('id');
-                $table->unsignedInteger('menu_id')->nullable();          // forey key auto relationship acpted null
-                // $table->foreignId('parent_id')->nullable()->constrained('acl_menus')->onDelete('cascade');
+                $table->increments('id');  
+                $table->unsignedInteger('system_id');           // foreing key
+                $table->unsignedInteger('menu_id');             // foreing key
                 $table->string('name', 50);
-                $table->string('link', 50);
-                $table->integer('position')->default(0);
+                $table->string('icon', 50)->nullable();
+                $table->string('route', 50)->nullable();
+                $table->unsignedInteger('position')->default(0);  
                 $table->enum('active', ['Y', 'N'])->default('Y');
+                // $table->timestamps();  
 
-                $table->unique(["name"], 'name_ukey');
-                $table->unique(["link"], 'link_ukey');
+                // $table->unique("route", 'route_ukey');
+                $table->unique(["system_id", "name"], 'system_id_name_ukey');
+                $table->unique(["system_id", "route"], 'system_id_route_ukey');
+                
+                $table->foreign('system_id')
+                    ->references('id')->on('acl_systems')->onDelete('restrict')->onUpdate('cascade');
 
-                // $table->foreign('organizacao_id','<tabela>_<coluna_estrangeira>_foreign')
-                // cria o relacionamento com a conveção de nome padrão: acl_sistemas_organizacao_id_foreign
-                $table->foreign('menu_id')
-                      ->references('id')->on('acl_menus')->onDelete('cascade')->onUpdate('cascade');
+                // autorelacionamento    
+                // $table->foreign('menu_id')
+                //     ->references('id')->on('acl_menus')->onDelete('cascade')->onUpdate('cascade');
             });
         }
     }

@@ -6,6 +6,53 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+
+/* SUGESTÃO DE MELHORIA
+
+Porque NÃO usar $table->increments('id') em Tabelas Pivot
+📌 Razões Técnicas:
+1. Chave Primária Composta é Melhor:
+php
+
+// ✅ CORRETO - Chave primária composta
+$table->primary(['menu_id', 'profile_id']);
+
+// ❌ EVITE - ID autoincrement desnecessário
+$table->increments('id');
+$table->unique(['menu_id', 'profile_id']);
+
+// ❌ COM autoincrement - Permite duplicatas
+menu_id | profile_id | id
+1       | 1          | 1
+1       | 1          | 2  // ← DUPLICATA PERMITIDA!
+
+// ✅ SEM autoincrement - Bloqueia duplicatas
+menu_id | profile_id  
+1       | 1          
+1       | 1          // ← ERRO: Chave duplicada
+
+
+Estrutura Ideal:
+
+
+    Schema::create('acl_menu_profile', function (Blueprint $table) {
+        // Chaves estrangeiras
+        $table->foreignId('menu_id')->constrained()->onDelete('cascade');
+        $table->foreignId('profile_id')->constrained()->onDelete('cascade');
+        
+        // Campos extras
+        $table->integer('position')->default(0);
+        $table->enum('active', ['Y', 'N'])->default('Y');
+        $table->timestamps();
+        
+        // Chave primária composta (IMPORTANTE)
+        $table->primary(['menu_id', 'profile_id']);
+    });
+
+
+
+*/
+
     /**
      * Run the migrations.
      */

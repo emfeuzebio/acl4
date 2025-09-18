@@ -395,7 +395,7 @@
     <!-- DataTables JS -->
     <script src="{{ asset('vendor/datatables/js/jquery.dataTables.js') }}"></script>
     <script src="{{ asset('vendor/datatables/js/dataTables.bootstrap4.min.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="{{ asset('vendor/sortable/Sortable.min.js.js') }}"></script>
 
     <script>
 
@@ -471,10 +471,6 @@
                 },
                 error: function(error) {
                     showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
-                },
-                complete: function() {
-                    // TODO criar função para o loading
-                    // $('#roleMenus').empty();
                 }
             });
         }
@@ -516,21 +512,12 @@
                     </div>
                 `;
 
-                        // TODO a possibilidade de active no Menu Concedido eu retirei
-                        //      acho melhor deixar apenas nos Menus disponíveis, para faciliar o controle
-                        //      dessa forma, só é possível activar/des Menu para todo sistema
-                        //      para o Perfil de acesso, BASTA NÃO CONCEDER
-                        // TODO Ao manter essa arquitetura, há que exluir os métodos envolvidos     
-                        //
-                        // <label class="switch">
-                        //     <input type="checkbox" class="switch-input toggleRoleMenuActive" 
-                        //         data-profileid="${menu.pivot?.profile_id}" 
-                        //         data-menuid="${menu.id}" 
-                        //         ${menu.active === 'Y' ? 'checked' : ''}>
-                        //     <span class="switch-label" data-on="SIM" data-off="NÃO"></span>
-                        //     <span class="switch-handle"></span>
-                        // </label>
-
+                // REGRA a possibilidade de active no Menu Concedido eu retirei
+                //      acho melhor deixar apenas nos Menus disponíveis, para faciliar o controle
+                //      dessa forma, só é possível ati/desativar Menu para todo sistema,
+                //      para o Perfil de acesso, BASTA NÃO CONCEDER
+                // TODO Ao manter essa arquitetura, há que exluir os métodos envolvidos
+                //
                 
                 // Renderizar filhos recursivamente - CORREÇÃO AQUI
                 if (menu.children && menu.children.length > 0) {
@@ -939,9 +926,6 @@
             $('#btnRefresh').on("click", function (e) {
                 e.stopImmediatePropagation();
 
-                // TODO criar função para o loading
-                document.getElementById('availableMenus').innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
-
                 systemIdSelected = $('#systemSelect').val();
                 currentRoleId = $('#roleSelect').val();
 
@@ -951,33 +935,36 @@
                     data: { systemId: systemIdSelected },
                     dataType: 'json',
                     beforeSend: function() {
+                        // TODO criar função para o loading
+                        $('#availableMenus').html('<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>');
                         $('#roleMenus').html('<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>');
                     },
                     success: function (response) {
 
                         // 1. Monta a lista de Menus Disponíveis
-                        let menus = response.menus;
-                        let html = '';
+                            let menus = response.menus;
+                            let html = '';
 
-                        if (!menus || menus.length === 0) {
-                            html = '<p>Nenhum menu encontrado.</p>';
-                        } else {
-                            html = renderMenus(menus, 0); // chamada recursiva inicial
-                        }
+                            if (!menus || menus.length === 0) {
+                                html = '<p>Nenhum menu encontrado.</p>';
+                            } else {
+                                html = renderMenus(menus, 0); // chamada recursiva inicial
+                            }
 
-                        $('#availableMenus').html(html); // atualiza o container com os menus
+                            $('#availableMenus').html(html); // atualiza o container com os menus
 
                         // 2. Monta a lista de Perfis de Acesso no <select>
-                        let profileOptions = '<option value="">Selecione</option>';
+                            let profileOptions = '<option value="">Selecione</option>';
 
-                        if (response.profiles && response.profiles.length > 0) {
-                            response.profiles.forEach(profile => {
-                                profileOptions += `<option value="${profile.id}" ${currentRoleId == profile.id ? 'selected' : '' }>${profile.name}</option>`;
-                            });
-                        }
-                        $('#roleSelect').html(profileOptions);
+                            if (response.profiles && response.profiles.length > 0) {
+                                response.profiles.forEach(profile => {
+                                    profileOptions += `<option value="${profile.id}" ${currentRoleId == profile.id ? 'selected' : '' }>${profile.name}</option>`;
+                                });
+                            }
+                            $('#roleSelect').html(profileOptions);
+                            let newCurrentRoleId = $('#roleSelect').val();
 
-                            // 3. Monta a lista de Systems no <select>
+                        // 3. Monta a lista de Systems no <select>
                             let systemOptions = '<option value=""> Seleção é obrigatória </option>';
                             let systemSelectId = $('#systemSelect').val();
 
@@ -990,32 +977,30 @@
                                 });
                             }
                             $('#editSystemParent').html(systemOptions);
-
+                        
                         // 4. Monta a lista de Menus Pai no <select>
-                        let menusPaiOptions = '<option value=""> Menu Principal (sem pai) </option>';
+                            let menusPaiOptions = '<option value=""> Menu Principal (sem pai) </option>';
 
-                        if (response.menusPai && response.menusPai.length > 0) {
-                            response.menusPai.forEach(menusPai => {
-                                menusPaiOptions += `<option value="${menusPai.id}">${menusPai.name}</option>`;
-                            });
-                        }
-                        $('#editMenuParent').html(menusPaiOptions);
+                            if (response.menusPai && response.menusPai.length > 0) {
+                                response.menusPai.forEach(menusPai => {
+                                    menusPaiOptions += `<option value="${menusPai.id}">${menusPai.name}</option>`;
+                                });
+                            }
+                            $('#editMenuParent').html(menusPaiOptions);
 
                         // 5. Monta a lista de Rotas no <select>
-                        let routeOptions = '<option value=""> Selecione uma Rota previamente criada </option>';
+                            let routeOptions = '<option value=""> Selecione uma Rota previamente criada </option>';
 
-                        if (response.routes && response.routes.length > 0) {
-                            response.routes.forEach(routes => {
-                                routeOptions += `<option value="${routes.id}">${routes.route}</option>`;
-                            });
-                        }
-                        $('#editRoute').html(routeOptions);
+                            if (response.routes && response.routes.length > 0) {
+                                response.routes.forEach(routes => {
+                                    routeOptions += `<option value="${routes.id}">${routes.route}</option>`;
+                                });
+                            }
+                            $('#editRoute').html(routeOptions);
                         
                         updateAssignedCount();
 
-                        // carrega a lista de Menus Concedidos ao Perfil selecionado
-                        // console.log(currentRoleId);
-                        loadRoleMenus(currentRoleId);
+                        loadRoleMenus(newCurrentRoleId);
                     },
                     error: function(error) {
                         showAlert(error.responseJSON?.message || 'Erro desconhecido', 'error');
