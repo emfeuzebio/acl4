@@ -205,7 +205,7 @@
                                         <div class="row">
                                             <div class="col-sm-8">
                                                 <div class="mb-3">
-                                                    <input type="text" class="form-control" id="searchMenu" placeholder="Buscar menu..." onkeyup="filterMenus()" data-toggle="tooltip" title="Digite as inícias para filtrar os Itens de Menu">
+                                                    <input type="text" class="form-control" id="searchMenu" placeholder="Buscar menu pai..." onkeyup="filterMenus()" data-toggle="tooltip" title="Digite as inícias para filtrar os Itens de Menu">
                                                 </div>
                                             </div>
                                             <div class="col-sm-4">
@@ -550,17 +550,20 @@
             $('#editMenuModal').modal('show');
         }    
 
-        // Filtrar menus na busca
+        // Filtrar menus Pai na busca mantendo os filhos visíveis
         function filterMenus() {
             const searchText = document.getElementById('searchMenu').value.toLowerCase();
-            const menuItems = document.querySelectorAll('#availableMenus .menu-item');
+            // const menuItems = document.querySelectorAll('#availableMenus .menu-item');
+            const parentMenus = document.querySelectorAll('#availableMenus .menu-pai');
             
-            menuItems.forEach(item => {
-                const menuText = item.textContent.toLowerCase();
-                if (menuText.includes(searchText)) {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = 'none';
+            parentMenus.forEach(menu => {
+                const menuText = menu.textContent.toLowerCase();
+                menu.style.display = menuText.includes(searchText) ? 'flex' : 'none';
+                
+                // Opcional: esconder/mostrar filhos junto
+                const nestedList = menu.nextElementSibling;
+                if (nestedList && nestedList.classList.contains('nestable-list')) {
+                    nestedList.style.display = menuText.includes(searchText) ? 'block' : 'none';
                 }
             });
         }
@@ -1014,10 +1017,11 @@
             // Função recursiva para renderizar todos Menus e Submenus da Disponíveis à esquerda
             function renderMenus(menus, level) {
                 let html = '';
+                const parentClass = level === 0 ? 'menu-pai' : '';
 
                 menus.forEach(menu => {
                     html += `
-                        <div class="menu-item ${menu.active === 'Y' ? 'active-Y' : 'active-N'}" data-menu-id="${menu.id}">
+                        <div class="menu-item ${parentClass} ${menu.active === 'Y' ? 'active-Y' : 'active-N'}" data-menu-id="${menu.id}">
                             <div>
                                 <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
                                 ${menu.icon ? `<i class="${menu.icon}"></i>` : ''}
