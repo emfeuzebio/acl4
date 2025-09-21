@@ -341,17 +341,24 @@ class UserController extends Controller
                 })
                 ->orWhere('id', 1); // Exceção para o Profile ID 1
             })
+            ->with(['system' => function ($query) {
+                $query->select('id', 'acronym');        // Carrega apenas ID e acronym do system
+            }])            
             ->with(['users' => function ($query) use ($userId) {
-                $query->where('user_id', $userId);
+                $query->where('user_id', $userId);      // Carrega dados do User
             }])
             ->get()
+            ->sortBy([ // Ordena após buscar os dados
+                ['system.acronym', 'asc'],
+                ['name', 'asc']
+            ])
+            ->values() // Reindexa o array
             ->map(function ($profile) {
                 $profile->granted = $profile->users->isNotEmpty() ? 'checked' : '';
                 return $profile;
             });
 
         return response()->json($profiles); 
-        
     }    
 
     /**

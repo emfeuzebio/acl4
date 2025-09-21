@@ -76,20 +76,19 @@ return [
         'todos' => 'Todos',
         'todes' => 'Todos(as)',
         'selectToFilterTip' => 'Selecione para filtrar',
-
     ],    
 
     // Static Form User Profile
     // Entidade Perfil de Acesso
     'userprofile' => [
-        'title' => 'Perfil de Usuário',
+        'title' => 'Perfil de Acesso',
         'page_title' => '',
         'page_subtitle' => '',
         'breadcrumb1' => 'Início',
         'breadcrumb2' => 'Administração',
-        'breadcrumb3' => 'Perfil de Usuário',
-        'table_title' => 'Cadastro de Perfis de Usuário',
-        'entityName' => 'Perfils de Usuário',
+        'breadcrumb3' => 'Perfil de Acesso',
+        'table_title' => 'Cadastro de Perfis de Acesso',
+        'entityName' => 'Perfils de Acesso',
 
         'columns' => [
 

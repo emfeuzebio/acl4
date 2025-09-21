@@ -233,7 +233,7 @@
 
     <!-- Modal Grant Profile (Role) to User -->
     <div class="modal fade" id="modalGrantRole" tabindex="-1" aria-hidden="true" data-backdrop="static">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h4 class="modal-title" id="modalLabel">Modal title</h4>
@@ -252,12 +252,14 @@
                                         <thead>
                                             <tr>
                                                 <th>#</th>
+                                                <th>Sistema</th>
                                                 <th>Perfil de Acesso</th>
                                                 <th>Concedido ao Usuário</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr>
+                                                <td></td>
                                                 <td></td>
                                                 <td></td>
                                                 <td></td>
@@ -437,7 +439,7 @@
         </div>
     </div>
 
-    <!-- modal Confirmação registro -->
+    <!-- modal Confirmação -->
     <div class="modal fade" id="confirmaModal" tabindex="-1" aria-hidden="true" data-backdrop="static">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -553,7 +555,7 @@
                     //     render: function (data) { return '<b>' + 'Org' + '</b>';}
                     // },
                     {"data": "name", "name": "name", "class": "dt-left", "width": "50px", "title": "{{ __('acl.user.columns.name-name') }}"},
-                    {"data": "email", "name": "email", "class": "dt-left", "width": "180px", "title": "{{ __('acl.user.columns.email-name') }}",
+                    {"data": "email", "name": "email", "class": "dt-left", "width": "160px", "title": "{{ __('acl.user.columns.email-name') }}",
                         render: function (data) { return '<b>' + data + '</b>';}},
                     // Organizations
                     {"data": null, "name": "", "class": "dt-left", "width": "100px", "title": "Organizações",
@@ -573,7 +575,7 @@
                         }
                     },
                     // Systems
-                    {"data": null, "name": "", "class": "dt-left", "width": "100px", "title": "Sistemas",
+                    {"data": null, "name": "", "class": "dt-left", "width": "90px", "title": "Sistemas",
                         render: function (data, type, row)  {
                             // return 'Systems';
 
@@ -591,7 +593,7 @@
                         }
                     },
                     // Roles
-                    {"data": null, "name": "", "class": "dt-left", "width": "100px", "title": "Perfis de Acesso",
+                    {"data": null, "name": "", "class": "dt-left", "width": "90px", "title": "Perfis de Acesso",
                         render: function (data, type, row) { 
 
                             var btnGrantRole = '';
@@ -608,13 +610,12 @@
                         }
                     },
                     // ACL do current User - Actives Authorizations's User List without repetition
-                    {"data": null, "name": "", "class": "dt-left", "width": "40px", "title": "Autorizações",
+                    {"data": null, "name": "", "class": "dt-left", "width": "40px", "title": "Autoriz.",
                         render: function (data, type, row) { 
-
                             return btnGrantRole = '<button class="btn btn-xs btn-info btnShowUserAuthorizations" data-toggle="tooltip" title="Ver as Autorizações Ativas do Usuário"><i class="fas fa-fw fa-user-shield"></i> Ver</button> ';
                         }
                     },                    
-                    {"data": "active", "name": "", "class": "dt-center", "width": "30px", "title": "{{ __('acl.user.columns.active-name') }}",
+                    {"data": "active", "name": "", "class": "dt-center", "width": "20px", "title": "{{ __('acl.user.columns.active-name') }}",
                         render: function (data) { return '<span class="' + ( data == 'Y' ? 'text-primary' : 'text-danger') + '">' + ( data == 'Y' ? '{{ __('acl.crud.columns_data.yes') }}' : '{{ __('acl.crud.columns_data.no') }}' ) + '</span>';}
                     },
                     // Buttons
@@ -669,8 +670,8 @@
                             tblPerfis += '' + 
                             '<tr id="' + obj.id + '">' + 
                                 '<td>' + (i+1) + '</td>' + 
-                                '<td>' + obj.id + ' ' + obj.name + '</td>' + 
-                                // '<td>' + obj.nome + '</td>' + 
+                                '<td>' + obj.system.acronym + '</td>' + 
+                                '<td>' + obj.name + '</td>' + 
                                 '<td class="text-center">' + ( id >= 1 ? // Usuário 1-Admin sempre têm todos Perfis de Acesso
                                     '<label class="switch">' + 
                                     '<input type="checkbox" id="chk' + obj.id + '" ' + obj.granted + ' data-user_id="' + id + '" data-role_id="' + obj.id + '" class="switch-input">' + 
