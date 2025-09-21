@@ -284,7 +284,7 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal Role Show -->
     <div class="modal fade" id="modalRoleShow" tabindex="-1" role="dialog" aria-labelledby="modalExemploLabel" aria-hidden="true" data-backdrop="static">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -381,7 +381,7 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal Authorizations Show -->
     <div class="modal fade" id="modalAuthorizationsShow" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -436,6 +436,25 @@
             </div>
         </div>
     </div>
+
+    <!-- modal Confirmação registro -->
+    <div class="modal fade" id="confirmaModal" tabindex="-1" aria-hidden="true" data-backdrop="static">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header alert-danger">
+                    <h4 class="modal-title">Confirmar</h4>
+                    <button type="button" class="close btnCancelar" data-bs-dismiss="modal" data-toggle="tooltip" title="Cancelar a operação (Esc ou Alt+C)" onClick="$('#confirmaModal').modal('hide');">&times;</button>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <!-- onClick="$('#confirmaModal').text('');$('#confirmaModal').modal('hide');"  -->
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal" data-toggle="tooltip" id="notConfirm" onClick="$('#confirmaModal').modal('hide');" title="Cancelar a operação (Esc ou Alt+C)" ><i class="fas fa-fw fa-times"></i>Cancelar</button>
+                    <button type="button" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Confirmar o proseguir com a Operação" id="confirm"><i class="fas fa-fw fa-check"></i>Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>      
 
 @stop
 
@@ -928,26 +947,89 @@
                 var chkCheked   = $(this).is(":checked") ? "Y" : "N";
                 var operacao    = $(this).is(":checked") ? "assignSystem" : "revokeSystem";
 
-                $.ajax({
-                    type: "POST",
-                    url: "{{ url("user/toggleSystem") }}",
-                    data: {"operacao": operacao, "user_id":chkUser, "system_id":chkPerfil },
-                    dataType: 'json',
-                    success: function (response) {
-                        $('#btnRefresh').trigger('click');
-                    },
-                    error: function (error) {
-                        if (ERROR_HTTP_STATUS.has(error.status)) {
-                            window.location.href = "{{ url('/login') }}";
-                            return;
-                        } 
+                // Usuário 1-Admin não pode perder o Sistema 1-ACL
+                // if (operacao == 'revokeSystem' && chkUser == 1) {
+                //     // Usuário 1-Admin não pode perder o Sistema
+                //     $('#' + chkObjeto + ':checkbox').prop('checked', true);
+                //     $('#alertModal .modal-body').html('O Usuário <b>1-Admin</b> não pode perder o Sistema. Operação cancelada!');
+                //     $('#alertModal').modal('show');                        
+                //     return;
+                // }
 
-                        $('#' + chkObjeto + ':checkbox').prop('checked', (chkCheked == 'Y' ? false : true));
-                        $('#alertModal .modal-body').html(error.responseJSON.message)
-                        $('#alertModal').modal('show');                        
-                    }
-                });                 
-            
+                // se for 'revokeSystem'
+                if (operacao == 'revokeSystem') {
+
+                    // Previne a mudança imediata do checkbox
+                    $(this).prop('checked', !$(this).is(":checked"));
+
+                    $('#confirmaModal .modal-title').html('Revogar o Sistema');
+                    $('#confirmaModal .modal-body').html('Ao revogar um Sistema, o Usuário perderá todos os Perfis de Acesso e Autorizações vinculadas a este Sistema.<br/><br/><b>Confirma a operação?</b>');
+                    $('#confirmaModal').modal('show');
+
+                    // Remove event listeners anteriores para evitar duplicação
+                    $('#confirmaModal').off('shown.bs.modal').off('hidden.bs.modal');
+                    $('#confirmaModal #confirm, #confirmaModal #notConfirm, #confirmaModal .btnCancelar').off('click');
+
+                    // Confirmação - SIM
+                    $('#confirmaModal').find('.modal-footer #confirm').on('click', function (e) {
+                        e.stopImmediatePropagation();
+
+                        $.ajax({
+                            type: "POST",
+                            url: "{{ url("user/toggleSystem") }}",
+                            data: {"operacao": operacao, "user_id":chkUser, "system_id":chkPerfil },
+                            dataType: 'json',
+                            success: function (response) {
+                                $('#confirmaModal').modal('hide');
+                                $('#' + chkObjeto + ':checkbox').prop('checked', false);
+                                $('#btnRefresh').trigger('click');
+                            },
+                            error: function (error) {
+                                $('#confirmaModal').modal('hide');
+                                if (ERROR_HTTP_STATUS.has(error.status)) {
+                                    window.location.href = "{{ url('/login') }}";
+                                    return;
+                                } 
+
+                                $('#' + chkObjeto + ':checkbox').prop('checked', (chkCheked == 'Y' ? false : true));
+                                $('#alertModal .modal-body').html(error.responseJSON.message);
+                                $('#alertModal').modal('show');                        
+                            }
+                        });  
+
+                        // Confirmação - NÃO
+                        $('#confirmaModal').find('.modal-footer #notConfirm').on('click', function (e) {
+                            e.stopImmediatePropagation();
+
+                            $('#confirmaModal').modal('hide');
+                            $('#' + chkObjeto + ':checkbox').prop('checked', false);
+                        });
+                    });
+                } 
+                // se for 'assignSystem'
+                else {
+
+                    // Se for atribuição (assign), executa diretamente sem confirmação
+                    $.ajax({
+                        type: "POST",
+                        url: "{{ url("user/toggleSystem") }}",
+                        data: {"operacao": operacao, "user_id": chkUser, "system_id": chkPerfil },
+                        dataType: 'json',
+                        success: function (response) {
+                            $('#btnRefresh').trigger('click');
+                        },
+                        error: function (error) {
+                            if (ERROR_HTTP_STATUS.has(error.status)) {
+                                window.location.href = "{{ url('/login') }}";
+                                return;
+                            } 
+
+                            $('#' + chkObjeto + ':checkbox').prop('checked', (chkCheked == 'Y' ? false : true));
+                            $('#alertModal .modal-body').html(error.responseJSON.message);
+                            $('#alertModal').modal('show');                        
+                        }
+                    });
+                }                             
             });
 
             /**

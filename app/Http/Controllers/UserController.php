@@ -553,6 +553,15 @@ class UserController extends Controller
 
             } elseif ($request->operacao == 'revokeSystem') {
 
+                // Antes de revogar o sistema, vamos remover todos os perfis que o usuário tem naquele sistema
+                // Primeiro: Encontrar todas os Perfis que pertencem a este sistema
+                $profilesInSystem = Profile::where('system_id', $request->system_id)->pluck('id');
+
+                // Segundo: Remover apenas os perfis que pertencem ao sistema sendo revogado
+                if ($profilesInSystem->isNotEmpty()) {
+                    $user->profiles()->detach($profilesInSystem);
+                }                
+                
                 // Revoke the a System (detach)
                 $user->systems()->detach($request->system_id);
 

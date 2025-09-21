@@ -94,6 +94,7 @@ class ActionController extends Controller
     public function store(ActionRequest $request)
     {
         try {
+            // Esta disposição já gerencia automaticamente commit e rollback
             DB::transaction(function () use ($request, &$action) {
 
                 // 1. Cria nova Ação
