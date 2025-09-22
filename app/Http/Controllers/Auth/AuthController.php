@@ -247,7 +247,7 @@ class AuthController extends Controller
                 Mail::to($user->email)->send(new NotifyUserMail(
                     "Registro de Usuário.", 
                     $user->name, 
-                    "Seu pedido de Registro no {$systemName} foi executado com sucesso.\n" . 
+                    "Seu pedido de Registro no sistema '{$systemName}' foi executado com sucesso.\n" . 
                     "Aguarde o Administrador analisar e lhe conceder o Perfil de Acesso necessário.\n" .
                     "Então, um novo E-mail lhe será enviado.",
                 ));                
