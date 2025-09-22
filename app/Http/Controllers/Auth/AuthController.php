@@ -359,7 +359,7 @@ class AuthController extends Controller
 
                 // Notifica por e-mail
                 Mail::to($user->email)->send(new NotifyUserMail(
-                    "Reset Password", 
+                    "Alteração de Senha", 
                     $user->name, 
                     "Sua senha foi alterada com sucesso.",
                 ));
