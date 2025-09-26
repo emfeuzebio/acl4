@@ -397,6 +397,7 @@ class User extends Authenticatable implements JWTSubject
             'user_id' => $this->id,                                         // ID do usuário
             'system_id' => $systemId ?? null,                               // ID do System em que o usuário logou
             'user_name' => $this->name,                                     // Nome do usuário
+            'user_email' => $this->email,                                   // Email do usuário
             'user_phone' => $this->phone,                                   // Telefone do usuário
             'user_photo' => $this->photo,                                   // caminho da Foto do usuário (não é  BLOB)
             'user_systems' => $user_systems,                                // systemas aos quais o usuário tem acesso
