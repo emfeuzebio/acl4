@@ -265,7 +265,7 @@ class User extends Authenticatable implements JWTSubject
      * Ordenados pelo position 
      * Sem duplicação por mais o mesmo item de Menu estja em mais de um Perfil de Acesso
      */
-    public function getMenusByProfile()
+    public function getMenusByProfile($systemId = false): array
     {
         // Os Menus do User são montados de acordo com seus Perfis de Acesso
         $menusDoUserFromProfiles = DB::select("
@@ -286,6 +286,7 @@ class User extends Authenticatable implements JWTSubject
                 WHERE m.menu_id IS NULL
                     AND mp.active = 'Y'
                     AND m.active = 'Y'
+                    AND m.system_id = ?
                     AND mp.profile_id IN (
                         SELECT profile_id FROM acl_profile_user WHERE user_id = ?
                     )
@@ -308,6 +309,7 @@ class User extends Authenticatable implements JWTSubject
                     INNER JOIN menu_hierarchy mh ON m.menu_id = mh.id
                 WHERE mp.active = 'Y'
                     AND m.active = 'Y'
+                    AND m.system_id = ?
                     AND mp.profile_id IN (
                         SELECT profile_id FROM acl_profile_user WHERE user_id = ?
                     )
@@ -332,7 +334,7 @@ class User extends Authenticatable implements JWTSubject
             FROM ranked_menus
             WHERE rn = 1
             ORDER BY level, position
-        ", [$this->id, $this->id]);
+        ", [$this->id, $this->id, $systemId]);
 
         return $menusDoUserFromProfiles;    
     }
@@ -384,7 +386,7 @@ class User extends Authenticatable implements JWTSubject
         $user_systems = $this->grantedSystems($systemId); 
 
         // $userMenus = $this->grantedMenus($systemId); 
-        $userMenus = $this->getMenusByProfile(); 
+        $userMenus = $this->getMenusByProfile($systemId); 
         // dd($userMenus);
 
         $aud = $systemId && $user_systems ? $user_systems[0]['url'] ?? '' : '';   // tendo systemId e um System, retorna a url do primeiro sistema
