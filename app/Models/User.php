@@ -260,14 +260,14 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Obter os menus baseados nos perfis do usuário, ignora os Sistemas do User
+     * Obter os menus do SystemId baseados nos perfis de Acesso do usuário no mesmo SystemId 
      * Ordenados hierarquicamente
      * Ordenados pelo position 
-     * Sem duplicação por mais o mesmo item de Menu estja em mais de um Perfil de Acesso
+     * Sem duplicação por mais que um mesmo item de Menu esteja em mais de um Perfil de Acesso
      */
     public function getMenusByProfile($systemId = false): array
     {
-        // Os Menus do User são montados de acordo com seus Perfis de Acesso
+        // Os Menus do Usuário são montados de acordo com seus Perfis de Acesso
         $menusDoUserFromProfiles = DB::select("
             WITH RECURSIVE menu_hierarchy AS (
                 -- Menus principais (nível 1)
@@ -334,7 +334,7 @@ class User extends Authenticatable implements JWTSubject
             FROM ranked_menus
             WHERE rn = 1
             ORDER BY level, position
-        ", [$this->id, $this->id, $systemId, $systemId]);
+        ", [$systemId, $this->id, $systemId, $this->id]);
 
         return $menusDoUserFromProfiles;    
     }
