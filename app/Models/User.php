@@ -334,7 +334,7 @@ class User extends Authenticatable implements JWTSubject
             FROM ranked_menus
             WHERE rn = 1
             ORDER BY level, position
-        ", [$this->id, $this->id, $systemId]);
+        ", [$this->id, $this->id, $systemId, $systemId]);
 
         return $menusDoUserFromProfiles;    
     }
