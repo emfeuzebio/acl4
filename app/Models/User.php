@@ -284,7 +284,7 @@ class User extends Authenticatable implements JWTSubject
                 FROM acl_menus m
                     INNER JOIN acl_menu_profile mp ON mp.menu_id = m.id
                 WHERE m.menu_id IS NULL
-                    AND mp.active = 'Y'
+                    -- AND mp.active = 'Y'
                     AND m.active = 'Y'
                     AND m.system_id = ?
                     AND mp.profile_id IN (
@@ -307,8 +307,8 @@ class User extends Authenticatable implements JWTSubject
                 FROM acl_menus m
                     INNER JOIN acl_menu_profile mp ON mp.menu_id = m.id
                     INNER JOIN menu_hierarchy mh ON m.menu_id = mh.id
-                WHERE mp.active = 'Y'
-                    AND m.active = 'Y'
+                WHERE m.active = 'Y'
+                    -- AND mp.active = 'Y'                    
                     AND m.system_id = ?
                     AND mp.profile_id IN (
                         SELECT profile_id FROM acl_profile_user WHERE user_id = ?
