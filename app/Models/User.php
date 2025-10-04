@@ -218,6 +218,18 @@ class User extends Authenticatable implements JWTSubject
         return $this->profiles->pluck('name')->toArray();
     }    
 
+    public function grantedRolesBySystem($systemId): array
+    {
+        if (!$systemId) {
+            return [];
+        }
+
+        return $this->profiles()
+            ->where('system_id', $systemId)
+            ->pluck('name')
+            ->toArray();
+    }
+
     public function grantedSystems($systemId = false): array
     {
         return $this->systems()
@@ -403,7 +415,7 @@ class User extends Authenticatable implements JWTSubject
             'user_phone' => $this->phone,                                   // Telefone do usuário
             'user_photo' => $this->photo,                                   // caminho da Foto do usuário (não é  BLOB)
             'user_systems' => $user_systems,                                // systemas aos quais o usuário tem acesso
-            'user_roles' => $systemId ? $this->grantedRoles() : [],         // Roles do usuário
+            'user_roles' => $this->grantedRolesBySystem($systemId),         // Roles do usuário no SystemId
             'user_abilities' => $systemId ? $this->grantedActions() : [],   // "abilities" (Authorizaions) do usuário 
             'user_menus' => $userMenus,                                     // Menus do usuário segundo seus Perfis de Acesso
         ];
