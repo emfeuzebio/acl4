@@ -36,7 +36,8 @@ Route::post('user/updatephoto', [AuthController::class, 'updatePhoto'])->name('u
 Route::post('user/changepassword', [AuthController::class, 'changePassword'])->name('user.changePassword');
 
 
-
+// Rota para microserviço para envio de email que será usado pelo DAS Guillon, ainda não segura
+Route::get('/email/teste', [EmailTesteController::class, 'enviar']);
 
 
 // JWT
