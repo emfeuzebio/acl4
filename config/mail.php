@@ -58,6 +58,16 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
             'auth_mode' => null,
             'verify_peer' => false,
+        ],     
+        
+        // Meu gmail pessoal para testes, não usar em produção
+        'gmail' => [
+            'transport' => 'smtp',
+            'host' => env('MAIL_GMAIL_HOST'),
+            'port' => env('MAIL_GMAIL_PORT'),
+            'encryption' => env('MAIL_GMAIL_ENCRYPTION'),
+            'username' => env('MAIL_GMAIL_USERNAME'),
+            'password' => env('MAIL_GMAIL_PASSWORD'),
         ],        
 
         'ses' => [

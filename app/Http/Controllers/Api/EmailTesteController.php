@@ -21,8 +21,9 @@ class EmailTesteController extends Controller
         ];
 
         try {
-            Mail::mailer('legado')
-                ->raw('Teste de email do microserviço.', function ($message) use ($destinatario) {
+            // Mail::mailer('legado')
+            Mail::mailer('gmail')
+                ->raw('Teste de email desde Meu GMail.', function ($message) use ($destinatario) {
                     $message->to($destinatario)
                             ->subject('Teste de Envio');
                 });
