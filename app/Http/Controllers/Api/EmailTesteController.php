@@ -10,6 +10,10 @@ class EmailTesteController extends Controller
 {
     public function enviar()
     {
+
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');        
+            
         $destinatario = 'emfeuzebio72@gmail.com';
         
         $config = [
