@@ -47,23 +47,33 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
-        // ✅ NOVO: Mailer específico para o legado
         'legado' => [
             'transport' => 'smtp',
-            'host' => env('MAIL_LEGADO_HOST', 'feb.wils.com.br'),
-            'port' => env('MAIL_LEGADO_PORT', 465),
-            'encryption' => env('MAIL_LEGADO_ENCRYPTION', 'ssl'),
-            'username' => env('MAIL_LEGADO_USERNAME', 'guillon@das.febnet.org.br'),
-            'password' => env('MAIL_LEGADO_PASSWORD'),
+            'host' => env('MAIL_HOST', 'smtp.hostinger.com'),
+            'port' => env('MAIL_PORT', 587),
+            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
+            'username' => env('MAIL_USERNAME'),
+            'password' => env('MAIL_PASSWORD'),
             'timeout' => null,
-            'auth_mode' => null,
-            'verify_peer' => false,
-            'from' => [
-                'address' => env('MAIL_LEGADO_FROM_ADDRESS', 'guillon@das.febnet.org.br'),
-                'name' => env('MAIL_LEGADO_FROM_NAME', 'Guillon Ribeiro'),
-            ],
-        ],    
-        
+        ],        
+
+        // ✅ NOVO: Mailer específico para o legado
+        // 'legado' => [
+        //     'transport' => 'smtp',
+        //     'host' => env('MAIL_LEGADO_HOST', 'feb.wils.com.br'),
+        //     'port' => env('MAIL_LEGADO_PORT', 465),
+        //     'encryption' => env('MAIL_LEGADO_ENCRYPTION', 'ssl'),
+        //     'username' => env('MAIL_LEGADO_USERNAME', 'guillon@das.febnet.org.br'),
+        //     'password' => env('MAIL_LEGADO_PASSWORD'),
+        //     'timeout' => null,
+        //     'auth_mode' => null,
+        //     'verify_peer' => false,
+        //     'from' => [
+        //         'address' => env('MAIL_LEGADO_FROM_ADDRESS', 'guillon@das.febnet.org.br'),
+        //         'name' => env('MAIL_LEGADO_FROM_NAME', 'Guillon Ribeiro'),
+        //     ],
+        // ],    
+
         // Teste
         'teste' => [
             'transport' => 'smtp',
