@@ -46,6 +46,20 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN'),
         ],
 
+        // ✅ NOVO: Mailer específico para o legado
+        'legado' => [
+            'transport' => 'smtp',
+            'host' => env('MAIL_LEGADO_HOST', 'feb.wils.com.br'),
+            'port' => env('MAIL_LEGADO_PORT', 465),
+            'encryption' => env('MAIL_LEGADO_ENCRYPTION', 'ssl'),
+            'username' => env('MAIL_LEGADO_USERNAME', 'guillon@das.febnet.org.br'),
+            'password' => env('MAIL_LEGADO_PASSWORD'),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN'),
+            'auth_mode' => null,
+            'verify_peer' => false,
+        ],        
+
         'ses' => [
             'transport' => 'ses',
         ],
