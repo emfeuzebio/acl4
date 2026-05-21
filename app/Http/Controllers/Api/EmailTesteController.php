@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Exception;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
@@ -10,37 +11,39 @@ class EmailTesteController extends Controller
 {
     public function enviar()
     {
+        $destinatario = 'emfeuzebio72@gmail.com';
+        
+        $config = [
+            'host'      => config('mail.mailers.legado.host'),
+            'port'      => config('mail.mailers.legado.port'),
+            'encryption'=> config('mail.mailers.legado.encryption'),
+            'username'  => config('mail.mailers.legado.username'),
+            'from'      => config('mail.from.address'),
+        ];
+
         try {
-            $destinatario = 'emfeuzebio72@gmail.com';
-
-            Log::info('Tentando enviar email', [
-                'host' => config('mail.mailers.legado.host'),
-                'port' => config('mail.mailers.legado.port'),
-                'username' => config('mail.mailers.legado.username'),
-                'destinatario' => $destinatario
-            ]);            
-
             Mail::mailer('legado')
                 ->raw('Teste de email do microserviço.', function ($message) use ($destinatario) {
                     $message->to($destinatario)
                             ->subject('Teste de Envio');
                 });
 
+            $falhas = Mail::failures();
+
             return response()->json([
-                'success' => true,
-                'message' => "Email enviado para: {$destinatario}"
+                'success'   => true,
+                'config'    => $config,
+                'failures'  => $falhas,
+                'message'   => "Email processado. Verifique caixa de entrada e SPAM."
             ]);
 
-        } catch (\Exception $e) {
-            // Registra o erro no log do Laravel
-            Log::error('Erro ao enviar email: ' . $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('Erro email: ' . $e->getMessage());
             
-            // Retorna o erro como JSON para debug
             return response()->json([
                 'success' => false,
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
+                'error'   => $e->getMessage(),
+                'config'  => $config
             ], 500);
         }
     }
