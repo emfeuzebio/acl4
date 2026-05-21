@@ -339,7 +339,7 @@ class UserController extends Controller
                 $query->whereHas('system.users', function($q) use ($userId) {
                     $q->where('users.id', $userId);
                 })
-                ->orWhere('id', 1); // Exceção para o Profile ID 1
+                ->orWhere('id', 1);                     // Exceção para o Profile ID 1
             })
             ->with(['system' => function ($query) {
                 $query->select('id', 'acronym');        // Carrega apenas ID e acronym do system
@@ -348,7 +348,7 @@ class UserController extends Controller
                 $query->where('user_id', $userId);      // Carrega dados do User
             }])
             ->get()
-            ->sortBy([ // Ordena após buscar os dados
+            ->sortBy([                                  // Ordena após buscar os dados
                 ['system.acronym', 'asc'],
                 ['name', 'asc']
             ])
