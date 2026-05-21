@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Exception;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 
@@ -28,16 +27,13 @@ class EmailTesteController extends Controller
                             ->subject('Teste de Envio');
                 });
 
-            $falhas = Mail::failures();
-
             return response()->json([
-                'success'   => true,
-                'config'    => $config,
-                'failures'  => $falhas,
-                'message'   => "Email processado. Verifique caixa de entrada e SPAM."
+                'success' => true,
+                'config'  => $config,
+                'message' => "Email enviado com sucesso para {$destinatario}!"
             ]);
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::error('Erro email: ' . $e->getMessage());
             
             return response()->json([
