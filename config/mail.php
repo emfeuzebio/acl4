@@ -34,6 +34,7 @@ return [
     */
 
     'mailers' => [
+        //ACL4
         'smtp' => [
             'transport' => 'smtp',
             'url' => env('MAIL_URL'),
@@ -62,6 +63,21 @@ return [
                 'name' => env('MAIL_LEGADO_FROM_NAME', 'Guillon Ribeiro'),
             ],
         ],    
+        
+        // Teste
+        'teste' => [
+            'transport' => 'smtp',
+            'host' => env('MAIL_HOST', 'smtp.mailgun.org'),
+            'port' => env('MAIL_PORT', 587),
+            'encryption' => env('MAIL_ENCRYPTION', 'tls'),
+            'username' => env('MAIL_USERNAME'),
+            'password' => env('MAIL_PASSWORD'),
+            'timeout' => null,
+            'from' => [
+                'address' => 'guillon@das.febnet.org.br',
+                'name' => 'Guillon Ribeiro',
+            ],
+        ],        
         
         // Meu gmail pessoal para testes, não usar em produção
         'gmail' => [
