@@ -13,6 +13,13 @@ class EmailTesteController extends Controller
         try {
             $destinatario = 'emfeuzebio72@gmail.com';
 
+            Log::info('Tentando enviar email', [
+                'host' => config('mail.mailers.legado.host'),
+                'port' => config('mail.mailers.legado.port'),
+                'username' => config('mail.mailers.legado.username'),
+                'destinatario' => $destinatario
+            ]);            
+
             Mail::mailer('legado')
                 ->raw('Teste de email do microserviço.', function ($message) use ($destinatario) {
                     $message->to($destinatario)
