@@ -13,7 +13,7 @@ class EmailTesteController extends Controller
 
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('cache:clear');        
-            
+
         $destinatario = 'emfeuzebio72@gmail.com';
         
         $config = [
@@ -25,11 +25,11 @@ class EmailTesteController extends Controller
         ];
 
         try {
-            // Mail::mailer('legado')
-            Mail::mailer('gmail')
-                ->raw('Teste de email desde Meu GMail.', function ($message) use ($destinatario) {
+            Mail::mailer('legado')
+                ->raw('Teste de email do microserviço.', function ($message) use ($destinatario) {
                     $message->to($destinatario)
-                            ->subject('Teste de Envio');
+                            ->subject('Teste de Envio')
+                            ->from('guillon@das.febnet.org.br', 'Guillon Ribeiro');
                 });
 
             return response()->json([

@@ -55,10 +55,13 @@ return [
             'username' => env('MAIL_LEGADO_USERNAME', 'guillon@das.febnet.org.br'),
             'password' => env('MAIL_LEGADO_PASSWORD'),
             'timeout' => null,
-            'local_domain' => env('MAIL_EHLO_DOMAIN'),
             'auth_mode' => null,
             'verify_peer' => false,
-        ],     
+            'from' => [
+                'address' => env('MAIL_LEGADO_FROM_ADDRESS', 'guillon@das.febnet.org.br'),
+                'name' => env('MAIL_LEGADO_FROM_NAME', 'Guillon Ribeiro'),
+            ],
+        ],    
         
         // Meu gmail pessoal para testes, não usar em produção
         'gmail' => [
