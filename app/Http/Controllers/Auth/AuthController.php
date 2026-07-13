@@ -119,6 +119,7 @@ class AuthController extends Controller
                  *  No User Model, getJWTCustomClaims() já monta o payload com as informações do usuário
                  */
                 Token::updateOrCreate(
+                    ['token' => $token], // ← Busca APENAS pelo token (é único)
                     ['user_id' => $payload['user_id'], 'token' => $token, 'status' => 'active'], // Verifica user_id + token
                     [
                         'expires_at' => $payload['exp'],                // quando expira o token
@@ -527,18 +528,40 @@ class AuthController extends Controller
                 return response()->json(['error' => 'Token não fornecido.'], 400);
             }
 
-            // 🔧 FORÇA O REFRESH MESMO SE O TOKEN ESTIVER EXPiRADO
-            // O parâmetro `true` no final permite refresh de token expirado
-            $newToken = JWTAuth::refresh($token, null, null, true);
+            // 🔧 1. Autentica o usuário a partir do token (extrai o payload)
+            try {
+                $user = JWTAuth::setToken($token)->authenticate();
+            } catch (TokenExpiredException $e) {
+                // Token expirado, mas ainda podemos extrair o usuário
+                $payload = JWTAuth::setToken($token)->getPayload();
+                $user = User::find($payload->get('sub'));
+            }
+
+            if (!$user) {
+                return response()->json(['error' => 'Usuário não encontrado.'], 404);
+            }
+
+            // 🔧 2. Gera um novo token a partir do usuário
+            $newToken = JWTAuth::fromUser($user);
+            $payload = JWTAuth::setToken($newToken)->getPayload();
+
+            // 🔧 3. ✅ PERSISTE O NOVO TOKEN NA TABELA (igual ao PASSO 5 do login)
+            Token::updateOrCreate(
+                ['user_id' => $payload['user_id'], 'token' => $newToken, 'status' => 'active'],
+                [
+                    'expires_at' => $payload['exp'],
+                    'updated_at' => $payload['iat'],
+                    'status' => 'active',
+                    'ip' => $request->ip(),
+                    'browser' => $request->header('User-Agent'),
+                ]
+            );
 
             return response()->json([
                 'message' => 'Token renovado com sucesso!',
                 'token' => $newToken,
             ]);
 
-        } catch (TokenExpiredException $e) {
-            // Tentativa com token expirado falhou
-            return response()->json(['error' => 'Token expirado, faça login novamente.'], 401);
         } catch (TokenInvalidException $e) {
             return response()->json(['error' => 'Token inválido.'], 401);
         } catch (JWTException $e) {
