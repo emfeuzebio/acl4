@@ -520,53 +520,39 @@ class AuthController extends Controller
 
     public function refresh(Request $request)
     {
-        // 🔍 LOG 1: Ver o token do header
-        Log::info('🔍 Bearer Token:', ['token' => $request->bearerToken()]);
-        
-        // 🔍 LOG 2: Ver o token do body (fallback)
-        Log::info('🔍 Input Token:', ['token' => $request->input('token')]);
-        
-        // 🔍 LOG 3: Ver todos os headers
-        Log::info('🔍 Todos os headers:', $request->headers->all());
-
         try {
-            $token = $request->bearerToken() ?? $request->input('token');
+            // Pega o token do header Authorization
+            $token = $request->bearerToken();
 
             if (!$token) {
                 return response()->json(['error' => 'Token não fornecido.'], 400);
             }
 
-            Log::info('✅ Token recebido:', ['token' => substr($token, 0, 50) . '...']);
-
-            // 🔧 FORÇA O REFRESH USANDO O TOKEN ATUAL (MESMO SE EXPiRADO)
-            // O JWTAuth::refresh() só funciona com tokens válidos.
-            // Para renovar tokens expirados, precisamos usar JWTAuth::setToken() e refresh() com o token expirado.
-            try {
-                $newToken = JWTAuth::refresh($token);
-            } catch (TokenExpiredException $e) {
-                // Token expirado: tenta renovar com o refresh do JWT
-                $newToken = JWTAuth::refresh($token, null, null, true);
-            }
+            // 🔧 MÉTODO CORRETO PARA RENOVAR TOKEN
+            // 1. Define o token no JWTAuth
+            JWTAuth::setToken($token);
+            
+            // 2. Verifica se o token é válido (não precisa estar ativo)
+            $payload = JWTAuth::getPayload();
+            
+            // 3. Gera um novo token a partir do token atual
+            $newToken = JWTAuth::refresh($token);
 
             return response()->json([
                 'message' => 'Token renovado com sucesso!',
                 'token' => $newToken,
             ]);
-            
+
         } catch (TokenExpiredException $e) {
-            Log::error('❌ TokenExpiredException:', ['message' => $e->getMessage()]);
-            return response()->json(['error' => 'Token expirado'], 401);
+            return response()->json(['error' => 'Token expirado, faça login novamente.'], 401);
         } catch (TokenInvalidException $e) {
-            Log::error('❌ TokenInvalidException:', ['message' => $e->getMessage()]);
-            return response()->json(['error' => 'Token inválido'], 401);
+            return response()->json(['error' => 'Token inválido.'], 401);
         } catch (JWTException $e) {
-            Log::error('❌ JWTException:', ['message' => $e->getMessage()]);
             return response()->json(['error' => 'Token inválido ou expirado'], 401);
         } catch (Exception $e) {
-            Log::error('❌ Exception:', ['message' => $e->getMessage()]);
             return response()->json(['error' => 'Erro ao renovar token'], 401);
         }
-    }  
+    }
 
     public function forceRefresh(Request $request)
     {
