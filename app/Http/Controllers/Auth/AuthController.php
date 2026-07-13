@@ -595,10 +595,11 @@ public function refresh(Request $request)
             return response()->json(['error' => 'Token não fornecido.'], 400);
         }
 
-        // 1. Autentica o usuário
+        // 🔧 1. Extrai o usuário do payload do token (mesmo expirado)
         try {
             $user = JWTAuth::setToken($token)->authenticate();
         } catch (TokenExpiredException $e) {
+            // Token expirado: extrai o user_id do payload
             $payload = JWTAuth::setToken($token)->getPayload();
             $user = User::find($payload->get('sub'));
         }
@@ -607,36 +608,18 @@ public function refresh(Request $request)
             return response()->json(['error' => 'Usuário não encontrado.'], 404);
         }
 
-        // ✅ 2. Gera novo token COM TODAS AS CLAIMS
-        $claims = $user->getJWTCustomClaims();
-        $newToken = JWTAuth::claims($claims)->fromUser($user);
+        // 🔧 2. Gera novo token IGUAL ao selectSystem()
+        $newToken = JWTAuth::fromUser($user);
 
-        $payload = JWTAuth::setToken($newToken)->getPayload();
-
-        // ✅ 3. Busca o token antigo e ATUALIZA com o novo
-        $tokenExistente = Token::where('token', $token)->first();
-
-        if ($tokenExistente) {
-            // Se encontrou o token antigo, ATUALIZA
-            $tokenExistente->update([
-                'token' => $newToken,
-                'expires_at' => $payload['exp'],
-                'updated_at' => now(),
-                'status' => 'active',
-                'ip' => $request->ip(),
-                'browser' => $request->header('User-Agent'),
-            ]);
-        } else {
-            // Se não encontrou (fallback), CRIA um novo
-            Token::create([
-                'user_id' => $payload['user_id'],
-                'token' => $newToken,
-                'expires_at' => $payload['exp'],
-                'status' => 'active',
-                'ip' => $request->ip(),
-                'browser' => $request->header('User-Agent'),
-            ]);
-        }
+        // 🔧 3. Atualiza o token na tabela (substitui o antigo)
+        Token::where('token', $token)->update([
+            'token' => $newToken,
+            'expires_at' => JWTAuth::setToken($newToken)->getPayload()->get('exp'),
+            'updated_at' => now(),
+            'status' => 'active',
+            'ip' => $request->ip(),
+            'browser' => $request->header('User-Agent'),
+        ]);
 
         return response()->json([
             'message' => 'Token renovado com sucesso!',
@@ -650,8 +633,7 @@ public function refresh(Request $request)
     } catch (Exception $e) {
         return response()->json(['error' => 'Erro ao renovar token'], 401);
     }
-}    
-  
+}  
 
     public function forceRefresh(Request $request)
     {
