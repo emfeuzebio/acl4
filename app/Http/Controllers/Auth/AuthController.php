@@ -541,7 +541,10 @@ class AuthController extends Controller
             }
 
             // ✅ 2. Gera novo token COM TODAS AS CLAIMS (usando o método do model)
-            $newToken = JWTAuth::fromUser($user, $user->getJWTCustomClaims());
+            // $newToken = JWTAuth::fromUser($user, $user->getJWTCustomClaims());
+
+            $claims = $user->getJWTCustomClaims();
+            $newToken = JWTAuth::claims($claims)->fromUser($user);
 
             $payload = JWTAuth::setToken($newToken)->getPayload();
 
