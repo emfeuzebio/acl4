@@ -15,9 +15,14 @@ class CheckJWTToken
 {
     public function handle(Request $request, Closure $next)
     {
+        // 🔧 IGNORAR VALIDAÇÃO PARA ROTA DE REFRESH
+        // O refresh precisa funcionar com token expirado
+        if ($request->is('api/auth/refresh') || $request->routeIs('auth.refresh')) {
+            return $next($request);
+        }
+
         try {
             $user = JWTAuth::parseToken()->authenticate();
-            // die('qqqqqqqqqqqqqqqqqq');
 
             if (! $user) {
                 return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_NOT_FOUND);
