@@ -27,6 +27,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
 use Tymon\JWTAuth\Exceptions\TokenExpiredException;
+use Tymon\JWTAuth\Exceptions\TokenInvalidException;
 
 class AuthController extends Controller
 {
@@ -519,25 +520,44 @@ class AuthController extends Controller
 
     public function refresh(Request $request)
     {
+        // 🔍 LOG 1: Ver o token do header
+        Log::info('🔍 Bearer Token:', ['token' => $request->bearerToken()]);
+        
+        // 🔍 LOG 2: Ver o token do body (fallback)
+        Log::info('🔍 Input Token:', ['token' => $request->input('token')]);
+        
+        // 🔍 LOG 3: Ver todos os headers
+        Log::info('🔍 Todos os headers:', $request->headers->all());
+
         try {
-            // Pega o token do header Authorization ou do body
             $token = $request->bearerToken() ?? $request->input('token');
 
             if (!$token) {
                 return response()->json(['error' => 'Token não fornecido.'], 400);
             }
 
-            // Renova o token
+            Log::info('✅ Token recebido:', ['token' => substr($token, 0, 50) . '...']);
+
             $newToken = JWTAuth::refresh($token);
             
             return response()->json([
                 'message' => 'Token renovado com sucesso!',
                 'token' => $newToken,
             ]);
-        } catch (Exception $e) {
+        } catch (TokenExpiredException $e) {
+            Log::error('❌ TokenExpiredException:', ['message' => $e->getMessage()]);
+            return response()->json(['error' => 'Token expirado'], 401);
+        } catch (TokenInvalidException $e) {
+            Log::error('❌ TokenInvalidException:', ['message' => $e->getMessage()]);
+            return response()->json(['error' => 'Token inválido'], 401);
+        } catch (JWTException $e) {
+            Log::error('❌ JWTException:', ['message' => $e->getMessage()]);
             return response()->json(['error' => 'Token inválido ou expirado'], 401);
+        } catch (Exception $e) {
+            Log::error('❌ Exception:', ['message' => $e->getMessage()]);
+            return response()->json(['error' => 'Erro ao renovar token'], 401);
         }
-    }    
+    }  
 
     public function forceRefresh(Request $request)
     {
