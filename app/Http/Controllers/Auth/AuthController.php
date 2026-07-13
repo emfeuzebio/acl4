@@ -538,12 +538,21 @@ class AuthController extends Controller
 
             Log::info('✅ Token recebido:', ['token' => substr($token, 0, 50) . '...']);
 
-            $newToken = JWTAuth::refresh($token);
-            
+            // 🔧 FORÇA O REFRESH USANDO O TOKEN ATUAL (MESMO SE EXPiRADO)
+            // O JWTAuth::refresh() só funciona com tokens válidos.
+            // Para renovar tokens expirados, precisamos usar JWTAuth::setToken() e refresh() com o token expirado.
+            try {
+                $newToken = JWTAuth::refresh($token);
+            } catch (TokenExpiredException $e) {
+                // Token expirado: tenta renovar com o refresh do JWT
+                $newToken = JWTAuth::refresh($token, null, null, true);
+            }
+
             return response()->json([
                 'message' => 'Token renovado com sucesso!',
                 'token' => $newToken,
             ]);
+            
         } catch (TokenExpiredException $e) {
             Log::error('❌ TokenExpiredException:', ['message' => $e->getMessage()]);
             return response()->json(['error' => 'Token expirado'], 401);
