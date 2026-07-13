@@ -520,7 +520,7 @@ class AuthController extends Controller
     }
 
     // criando novo token mas dorado
-    public function refreshOLD2(Request $request)
+    public function refresh(Request $request)
     {
         try {
             $token = $request->bearerToken();
@@ -548,16 +548,29 @@ class AuthController extends Controller
             $payload = JWTAuth::setToken($newToken)->getPayload();
 
             // 3. Persiste na tabela
-            Token::updateOrCreate(
-                ['user_id' => $payload['user_id'], 'token' => $newToken, 'status' => 'active'],
-                [
-                    'expires_at' => $payload['exp'],
-                    'updated_at' => $payload['iat'],
-                    'status' => 'active',
-                    'ip' => $request->ip(),
-                    'browser' => $request->header('User-Agent'),
-                ]
-            );
+            // Token::updateOrCreate(
+            //     ['user_id' => $payload['user_id'], 'token' => $newToken, 'status' => 'active'],
+            //     [
+            //         'expires_at' => $payload['exp'],
+            //         'updated_at' => $payload['iat'],
+            //         'status' => 'active',
+            //         'ip' => $request->ip(),
+            //         'browser' => $request->header('User-Agent'),
+            //     ]
+            // );
+
+            // ✅ 3. ATUALIZA o token existente (substitui o antigo pelo novo)
+            // Busca pelo token ANTIGO e atualiza com o NOVO
+            Token::where('token', $token)
+            ->update([
+                'token' => $newToken,
+                'expires_at' => $payload['exp'],
+                'updated_at' => now(),
+                'status' => 'active',
+                'ip' => $request->ip(),
+                'browser' => $request->header('User-Agent'),
+            ]);
+
 
             return response()->json([
                 'message' => 'Token renovado com sucesso!',
@@ -573,7 +586,7 @@ class AuthController extends Controller
         }
     }
 
-public function refresh(Request $request)
+public function refreshERRO(Request $request)
 {
     try {
         $token = $request->bearerToken();
