@@ -528,10 +528,11 @@ public function refresh(Request $request)
             return response()->json(['error' => 'Token não fornecido.'], 400);
         }
 
-        // 1. Autentica o usuário
+        // 🔧 1. Tenta autenticar o usuário (igual ao selectSystem)
         try {
-            $user = JWTAuth::setToken($token)->authenticate();
+            $user = JWTAuth::parseToken()->authenticate();
         } catch (TokenExpiredException $e) {
+            // 🔧 2. Se o token expirou, extrai o usuário do payload
             $payload = JWTAuth::setToken($token)->getPayload();
             $user = User::find($payload->get('sub'));
         }
@@ -540,13 +541,17 @@ public function refresh(Request $request)
             return response()->json(['error' => 'Usuário não encontrado.'], 404);
         }
 
-        // ✅ 2. Gera novo token COM TODAS AS CLAIMS (igual ao login)
-        $claims = $user->getJWTCustomClaims();
-        $newToken = JWTAuth::claims($claims)->fromUser($user);
+        // 🔧 3. Renova o token usando JWTAuth::refresh (que mantém as claims)
+        try {
+            $newToken = JWTAuth::refresh($token);
+        } catch (JWTException $e) {
+            // Se o refresh falhar, gera um novo token do usuário
+            $newToken = JWTAuth::fromUser($user);
+        }
 
         $payload = JWTAuth::setToken($newToken)->getPayload();
 
-        // 3. Persiste na tabela
+        // 4. Persiste na tabela
         Token::updateOrCreate(
             ['user_id' => $payload['user_id'], 'token' => $newToken, 'status' => 'active'],
             [
