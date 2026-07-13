@@ -521,22 +521,15 @@ class AuthController extends Controller
     public function refresh(Request $request)
     {
         try {
-            // Pega o token do header Authorization
             $token = $request->bearerToken();
 
             if (!$token) {
                 return response()->json(['error' => 'Token não fornecido.'], 400);
             }
 
-            // 🔧 MÉTODO CORRETO PARA RENOVAR TOKEN
-            // 1. Define o token no JWTAuth
-            JWTAuth::setToken($token);
-            
-            // 2. Verifica se o token é válido (não precisa estar ativo)
-            $payload = JWTAuth::getPayload();
-            
-            // 3. Gera um novo token a partir do token atual
-            $newToken = JWTAuth::refresh($token);
+            // 🔧 FORÇA O REFRESH MESMO SE O TOKEN ESTIVER EXPiRADO
+            // O parâmetro `true` no final permite refresh de token expirado
+            $newToken = JWTAuth::refresh($token, null, null, true);
 
             return response()->json([
                 'message' => 'Token renovado com sucesso!',
@@ -544,6 +537,7 @@ class AuthController extends Controller
             ]);
 
         } catch (TokenExpiredException $e) {
+            // Tentativa com token expirado falhou
             return response()->json(['error' => 'Token expirado, faça login novamente.'], 401);
         } catch (TokenInvalidException $e) {
             return response()->json(['error' => 'Token inválido.'], 401);
