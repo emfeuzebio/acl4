@@ -519,63 +519,58 @@ class AuthController extends Controller
         }
     }
 
-public function refresh(Request $request)
-{
-    try {
-        $token = $request->bearerToken();
-
-        if (!$token) {
-            return response()->json(['error' => 'Token não fornecido.'], 400);
-        }
-
-        // 🔧 1. Tenta autenticar o usuário (igual ao selectSystem)
+    public function refresh(Request $request)
+    {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-        } catch (TokenExpiredException $e) {
-            // 🔧 2. Se o token expirou, extrai o usuário do payload
-            $payload = JWTAuth::setToken($token)->getPayload();
-            $user = User::find($payload->get('sub'));
-        }
+            $token = $request->bearerToken();
 
-        if (!$user) {
-            return response()->json(['error' => 'Usuário não encontrado.'], 404);
-        }
+            if (!$token) {
+                return response()->json(['error' => 'Token não fornecido.'], 400);
+            }
 
-        // 🔧 3. Renova o token usando JWTAuth::refresh (que mantém as claims)
-        try {
-            $newToken = JWTAuth::refresh($token);
+            // 1. Autentica o usuário
+            try {
+                $user = JWTAuth::setToken($token)->authenticate();
+            } catch (TokenExpiredException $e) {
+                $payload = JWTAuth::setToken($token)->getPayload();
+                $user = User::find($payload->get('sub'));
+            }
+
+            if (!$user) {
+                return response()->json(['error' => 'Usuário não encontrado.'], 404);
+            }
+
+            // ✅ 2. Gera novo token COM TODAS AS CLAIMS (igual ao login)
+            $claims = $user->getJWTCustomClaims();
+            $newToken = JWTAuth::claims($claims)->fromUser($user);
+
+            $payload = JWTAuth::setToken($newToken)->getPayload();
+
+            // 3. Persiste na tabela
+            Token::updateOrCreate(
+                ['user_id' => $payload['user_id'], 'token' => $newToken, 'status' => 'active'],
+                [
+                    'expires_at' => $payload['exp'],
+                    'updated_at' => $payload['iat'],
+                    'status' => 'active',
+                    'ip' => $request->ip(),
+                    'browser' => $request->header('User-Agent'),
+                ]
+            );
+
+            return response()->json([
+                'message' => 'Token renovado com sucesso!',
+                'token' => $newToken,
+            ]);
+
+        } catch (TokenInvalidException $e) {
+            return response()->json(['error' => 'Token inválido.'], 401);
         } catch (JWTException $e) {
-            // Se o refresh falhar, gera um novo token do usuário
-            $newToken = JWTAuth::fromUser($user);
+            return response()->json(['error' => 'Token inválido ou expirado'], 401);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Erro ao renovar token'], 401);
         }
-
-        $payload = JWTAuth::setToken($newToken)->getPayload();
-
-        // 4. Persiste na tabela
-        Token::updateOrCreate(
-            ['user_id' => $payload['user_id'], 'token' => $newToken, 'status' => 'active'],
-            [
-                'expires_at' => $payload['exp'],
-                'updated_at' => $payload['iat'],
-                'status' => 'active',
-                'ip' => $request->ip(),
-                'browser' => $request->header('User-Agent'),
-            ]
-        );
-
-        return response()->json([
-            'message' => 'Token renovado com sucesso!',
-            'token' => $newToken,
-        ]);
-
-    } catch (TokenInvalidException $e) {
-        return response()->json(['error' => 'Token inválido.'], 401);
-    } catch (JWTException $e) {
-        return response()->json(['error' => 'Token inválido ou expirado'], 401);
-    } catch (Exception $e) {
-        return response()->json(['error' => 'Erro ao renovar token'], 401);
     }
-}
 
     public function forceRefresh(Request $request)
     {
