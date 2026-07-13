@@ -519,60 +519,58 @@ class AuthController extends Controller
         }
     }
 
-    public function refresh(Request $request)
-    {
-        try {
-            $token = $request->bearerToken();
+public function refresh(Request $request)
+{
+    try {
+        $token = $request->bearerToken();
 
-            if (!$token) {
-                return response()->json(['error' => 'Token não fornecido.'], 400);
-            }
-
-            // 1. Autentica o usuário
-            try {
-                $user = JWTAuth::setToken($token)->authenticate();
-            } catch (TokenExpiredException $e) {
-                $payload = JWTAuth::setToken($token)->getPayload();
-                $user = User::find($payload->get('sub'));
-            }
-
-            if (!$user) {
-                return response()->json(['error' => 'Usuário não encontrado.'], 404);
-            }
-
-            // ✅ 2. Gera novo token COM TODAS AS CLAIMS (usando o método do model)
-            // $newToken = JWTAuth::fromUser($user, $user->getJWTCustomClaims());
-
-            $claims = $user->getJWTCustomClaims();
-            $newToken = JWTAuth::claims($claims)->fromUser($user);
-
-            $payload = JWTAuth::setToken($newToken)->getPayload();
-
-            // 3. Persiste na tabela
-            Token::updateOrCreate(
-                ['user_id' => $payload['user_id'], 'token' => $newToken, 'status' => 'active'],
-                [
-                    'expires_at' => $payload['exp'],
-                    'updated_at' => $payload['iat'],
-                    'status' => 'active',
-                    'ip' => $request->ip(),
-                    'browser' => $request->header('User-Agent'),
-                ]
-            );
-
-            return response()->json([
-                'message' => 'Token renovado com sucesso!',
-                'token' => $newToken,
-            ]);
-
-        } catch (TokenInvalidException $e) {
-            return response()->json(['error' => 'Token inválido.'], 401);
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Token inválido ou expirado'], 401);
-        } catch (Exception $e) {
-            return response()->json(['error' => 'Erro ao renovar token'], 401);
+        if (!$token) {
+            return response()->json(['error' => 'Token não fornecido.'], 400);
         }
+
+        // 1. Autentica o usuário
+        try {
+            $user = JWTAuth::setToken($token)->authenticate();
+        } catch (TokenExpiredException $e) {
+            $payload = JWTAuth::setToken($token)->getPayload();
+            $user = User::find($payload->get('sub'));
+        }
+
+        if (!$user) {
+            return response()->json(['error' => 'Usuário não encontrado.'], 404);
+        }
+
+        // ✅ 2. Gera novo token COM TODAS AS CLAIMS (igual ao login)
+        $claims = $user->getJWTCustomClaims();
+        $newToken = JWTAuth::claims($claims)->fromUser($user);
+
+        $payload = JWTAuth::setToken($newToken)->getPayload();
+
+        // 3. Persiste na tabela
+        Token::updateOrCreate(
+            ['user_id' => $payload['user_id'], 'token' => $newToken, 'status' => 'active'],
+            [
+                'expires_at' => $payload['exp'],
+                'updated_at' => $payload['iat'],
+                'status' => 'active',
+                'ip' => $request->ip(),
+                'browser' => $request->header('User-Agent'),
+            ]
+        );
+
+        return response()->json([
+            'message' => 'Token renovado com sucesso!',
+            'token' => $newToken,
+        ]);
+
+    } catch (TokenInvalidException $e) {
+        return response()->json(['error' => 'Token inválido.'], 401);
+    } catch (JWTException $e) {
+        return response()->json(['error' => 'Token inválido ou expirado'], 401);
+    } catch (Exception $e) {
+        return response()->json(['error' => 'Erro ao renovar token'], 401);
     }
+}
 
     public function forceRefresh(Request $request)
     {
@@ -690,7 +688,6 @@ class AuthController extends Controller
         }
     }
 
-    // Login sem banco de dados
     public function loginWithoutBD(Request $request)
     {
         // Recupera as credenciais do request
@@ -707,37 +704,6 @@ class AuthController extends Controller
         }
 
         return response()->json(compact('token'));
-    }
-
-    public function updateOLD(Request $request)
-    {
-        try {        
-            // Verifica se o token foi enviado no cabeçalho Authorization
-            if (!$token = $request->bearerToken()) {
-                return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
-            }            
-
-            // Valida e obtém o usuário autenticado
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
-            }
-
-            // Validação dos campos
-            $validated = $request->validate([
-                'name' => 'required|string|min:6',
-                'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
-                'phone' => 'string|min:10|max:15|nullable',
-            ]);
-
-            // Aplica os campos validados no modelo
-            $user->fill($validated);
-            $user->save();
-
-            return response()->json($user);
-        } catch (Exception $e) {
-            return response()->json(['error' => 'Houve um erro ao Salvar os dados do usuário. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
-        }
     }
 
     public function update(Request $request)
@@ -783,83 +749,6 @@ class AuthController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }    
-
-    public function updatePhotoOLD(Request $request)
-    {
-         try {        
-            // Verifica se o token foi enviado no cabeçalho Authorization
-            if (!$token = $request->bearerToken()) {
-                return response()->json(['error' => 'Token não fornecido'], Response::HTTP_UNAUTHORIZED);
-            }            
-
-            // Valida e obtém o usuário autenticado
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json(['error' => 'Usuário não encontrado'], Response::HTTP_UNAUTHORIZED);
-            }
-
-            // Validação do arquivo de imagem
-            $request->validate([
-                'photo' => 'nullable|sometimes|image|mimes:jpeg,png,jpg|max:2048',
-            ]);
-
-            // Verifica se foi enviado um valor null no FormData
-            $photoInput = $request->input('photo');
-            if ($photoInput === 'null' || $photoInput === null) {
-
-                // VERIFICA SE $user->photo NÃO É NULL ANTES DE TENTAR DELETAR
-                if ($user->photo && !empty($user->photo)) {
-                    // 1. Apagar a foto atual do disk 'public'
-                    Storage::disk('public')->delete($user->photo);
-                }
-
-                // 2. Atualiza no banco para null
-                $user->photo = null;
-                $user->save();
-                
-                return response()->json($user);
-            }            
-
-            // Se há uma nova foto, processa o upload
-            if ($request->hasFile('photo')) {
-                // 1. Apagar a foto atual do disk 'public'
-                if ($user->photo) {
-                    Storage::disk('public')->delete($user->photo);  // Deleta usando o disco 'public'
-                    // Isso procura em: storage/app/public/users/7e72036e-e738-4de7-8b2a-42eccd1d7d7b.jpg
-                }
-
-                // 2. Salva a nova foto na pasta 'users' dentro do disco 'public'
-                $path = $request->file('photo')->store('users', 'public');
-                // $path será: "users/7e72036e-e738-4de7-8b2a-42eccd1d7d7b.jpg"
-
-                // Armazena no banco o caminho relativo ao disco public
-                $user->photo = $path;
-                $user->save();       
-                
-                return response()->json(['message' => 'Foto atualizada com sucesso','user' => $user], Response::HTTP_OK);
-            }
-
-            // Se chegou aqui, não foi enviado nem null nem arquivo
-            return response()->json([
-                'error' => 'Nenhuma operação de foto foi solicitada'
-            ], Response::HTTP_BAD_REQUEST);            
-
-        } catch (ValidationException $e) {
-        // Captura específica para erros de validação
-        return response()->json([
-            'message' => 'Dados de entrada inválidos',
-            'errors' => $e->errors()
-        ], Response::HTTP_UNPROCESSABLE_ENTITY);
-        
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Token inválido'], Response::HTTP_UNAUTHORIZED);
-            
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'Houve um erro ao processar a operação. ' . $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
 
     public function updatePhoto(Request $request)
     {
@@ -994,7 +883,5 @@ class AuthController extends Controller
             return response()->json(['error' => 'Houve um erro ao processar a operação. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
         }
     }
-    
-
     
 }
