@@ -491,7 +491,7 @@ class AuthController extends Controller
         }
     }       
 
-    public function refresh(Request $request)
+    public function refreshOLD(Request $request)
     {
         // TODO terminar, perguntar a lógica ao chat GPT sobre refresh_token
         // Verifica se o refresh token foi enviado
@@ -516,6 +516,28 @@ class AuthController extends Controller
             return response()->json(['error' => 'Refresh token inválido ou expirado' . $e->getMessage()], Response::HTTP_UNAUTHORIZED);   // 401
         }
     }
+
+    public function refresh(Request $request)
+    {
+        try {
+            // Pega o token do header Authorization ou do body
+            $token = $request->bearerToken() ?? $request->input('token');
+
+            if (!$token) {
+                return response()->json(['error' => 'Token não fornecido.'], 400);
+            }
+
+            // Renova o token
+            $newToken = JWTAuth::refresh($token);
+            
+            return response()->json([
+                'message' => 'Token renovado com sucesso!',
+                'token' => $newToken,
+            ]);
+        } catch (Exception $e) {
+            return response()->json(['error' => 'Token inválido ou expirado'], 401);
+        }
+    }    
 
     public function forceRefresh(Request $request)
     {
