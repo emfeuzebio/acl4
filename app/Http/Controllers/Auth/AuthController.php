@@ -119,7 +119,7 @@ class AuthController extends Controller
                  *  No User Model, getJWTCustomClaims() já monta o payload com as informações do usuário
                  */
                 Token::updateOrCreate(
-                    ['token' => $token], // ← Busca APENAS pelo token (é único)
+                    // ['token' => $token], // ← Busca APENAS pelo token (é único) = token. The token has been blacklisted
                     ['user_id' => $payload['user_id'], 'token' => $token, 'status' => 'active'], // Verifica user_id + token
                     [
                         'expires_at' => $payload['exp'],                // quando expira o token
