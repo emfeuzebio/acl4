@@ -528,11 +528,10 @@ class AuthController extends Controller
                 return response()->json(['error' => 'Token não fornecido.'], 400);
             }
 
-            // 🔧 1. Autentica o usuário a partir do token (extrai o payload)
+            // 1. Autentica o usuário
             try {
                 $user = JWTAuth::setToken($token)->authenticate();
             } catch (TokenExpiredException $e) {
-                // Token expirado, mas ainda podemos extrair o usuário
                 $payload = JWTAuth::setToken($token)->getPayload();
                 $user = User::find($payload->get('sub'));
             }
@@ -541,11 +540,12 @@ class AuthController extends Controller
                 return response()->json(['error' => 'Usuário não encontrado.'], 404);
             }
 
-            // 🔧 2. Gera um novo token a partir do usuário
-            $newToken = JWTAuth::fromUser($user);
+            // ✅ 2. Gera novo token COM TODAS AS CLAIMS (usando o método do model)
+            $newToken = JWTAuth::fromUser($user, $user->getJWTCustomClaims());
+
             $payload = JWTAuth::setToken($newToken)->getPayload();
 
-            // 🔧 3. ✅ PERSISTE O NOVO TOKEN NA TABELA (igual ao PASSO 5 do login)
+            // 3. Persiste na tabela
             Token::updateOrCreate(
                 ['user_id' => $payload['user_id'], 'token' => $newToken, 'status' => 'active'],
                 [
