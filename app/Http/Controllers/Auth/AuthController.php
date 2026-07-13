@@ -520,7 +520,7 @@ class AuthController extends Controller
     }
 
     // criando novo token mas dorado
-    public function refreshOLD(Request $request)
+    public function refreshOLD2(Request $request)
     {
         try {
             $token = $request->bearerToken();
@@ -594,14 +594,17 @@ public function refresh(Request $request)
             return response()->json(['error' => 'Usuário não encontrado.'], 404);
         }
 
-        // 2. Gera novo token
-        $newToken = JWTAuth::refresh($token);
+        // ✅ 2. Gera novo token COM TODAS AS CLAIMS (igual ao login)
+        $claims = $user->getJWTCustomClaims();
+        $newToken = JWTAuth::claims($claims)->fromUser($user);
+
         $payload = JWTAuth::setToken($newToken)->getPayload();
 
-        // 3. ✅ ATUALIZA O TOKEN EXISTENTE (em vez de criar um novo)
-        Token::where('token', $token)  // Busca pelo token ANTIGO
+        // ✅ 3. ATUALIZA o token existente (substitui o antigo pelo novo)
+        // Busca pelo token ANTIGO e atualiza com o NOVO
+        Token::where('token', $token)
             ->update([
-                'token' => $newToken,  // Substitui pelo NOVO
+                'token' => $newToken,
                 'expires_at' => $payload['exp'],
                 'updated_at' => now(),
                 'status' => 'active',
