@@ -506,7 +506,7 @@ class AuthController extends Controller
             $tokenRecord = Token::where('token', $token)->first();
 
             if (!$tokenRecord || $tokenRecord->status !== 'active') {
-                return response()->json(['error' => 'Token revogado ou expirado'], Response::HTTP_UNAUTHORIZED);
+                return response()->json(['error' => 'Token revogado ou expirado','code' => 'TOKEN_REVOKED'], Response::HTTP_UNAUTHORIZED);
             }
 
             // 🔧 1. Extrai o systemId do token atual (ou do request)
