@@ -502,6 +502,13 @@ class AuthController extends Controller
                 return response()->json(['error' => 'Token não fornecido.'], Response::HTTP_BAD_REQUEST);
             }
 
+            // Antes de renovar, verificar se o token NÃO está revogado
+            $tokenRecord = Token::where('token', $token)->first();
+
+            if (!$tokenRecord || $tokenRecord->status !== 'active') {
+                return response()->json(['error' => 'Token revogado ou expirado'], Response::HTTP_UNAUTHORIZED);
+            }
+
             // 🔧 1. Extrai o systemId do token atual (ou do request)
             try {
                 $payload = JWTAuth::setToken($token)->getPayload();
