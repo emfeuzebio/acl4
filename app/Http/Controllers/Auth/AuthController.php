@@ -610,21 +610,41 @@ class AuthController extends Controller
         ]);
     }
 
-    public function listTokens()
+    public function listTokens(Request $request)
     {
-        // Verificar se o usuário autenticado é admin (pode ser um middleware ou outra lógica de permissão)
+        // Verificar se o usuário autenticado é admin (opcional)
         // $user = JWTAuth::parseToken()->authenticate();
         // if (!$user || !$user->hasRole('admin')) {
         //     return response()->json(['error' => 'Acesso negado'], 403);
         // }
 
-        // Recuperar todos os tokens e seus status e o respectivo usuário
-        // $tokens = Token::with('user')->orderBy('created_at','desc')->get();
-        $tokens = Token::with('user')->latest('created_at')->get();
-        $tokensResource = TokenResource::collection($tokens);   // Aplica um recurso para a coleção de tokens
+        // 🔧 Query base com relacionamento
+        $query = Token::with('user')->orderBy('id', 'desc');
+
+        // 🔧 Filtro por system_id (obrigatório)
+        if ($request->has('system_id') && $request->system_id !== '') {
+            $query->where('system_id', $request->system_id);
+        }
+
+        // 🔧 Se o parâmetro 'status' for enviado, usa ele
+        if ($request->has('status') && $request->status !== '') {
+            $query->where('status', $request->status);
+        } else {
+            // ✅ Padrão: apenas tokens ativos e revogados
+            $query->whereIn('status', ['active', 'revoked']);
+        }
+
+        // 🔧 Se o parâmetro 'user_id' for enviado, filtra por usuário
+        if ($request->has('user_id') && $request->user_id !== '') {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // 🔧 Executa a consulta
+        $tokens = $query->get();
+        $tokensResource = TokenResource::collection($tokens);
 
         return response()->json($tokensResource);
-    }    
+    }   
 
     public function revoke(Request $request)
     {
