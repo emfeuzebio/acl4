@@ -3,16 +3,16 @@
 
 Olá, {{ $nome ?? 'usuário' }}!
 
-Recebemos uma solicitação para redefinir sua senha.
+Recebemos uma solicitação para redefinir sua senha em **{{ $brand_name }}**.
 
 @component('mail::button', ['url' => $link])
 Redefinir Senha
 @endcomponent
 
-Este link expira em **{{ $expira_em ?? '24 horas' }}**.
+Este link expira em **{{ $expira_em ?? '1 hora' }}**.
 
 Se você não solicitou isso, nenhuma ação é necessária.
 
 Atenciosamente,  
-{{ config('app.name') }}
+{{ $brand_name }}
 @endcomponent

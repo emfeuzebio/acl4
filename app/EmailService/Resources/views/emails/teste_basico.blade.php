@@ -3,7 +3,7 @@
 
 Olá, {{ $nome ?? 'usuário' }}!
 
-{{ $mensagem ?? 'Este é um e-mail de teste do microserviço ACL4.' }}
+{{ $mensagem ?? 'Este é um e-mail de teste.' }}
 
 @if(!empty($link))
 @component('mail::button', ['url' => $link])
@@ -11,8 +11,6 @@ Olá, {{ $nome ?? 'usuário' }}!
 @endcomponent
 @endif
 
-Se você recebeu este e-mail por engano, pode ignorá-lo.
-
 Atenciosamente,  
-{{ config('app.name') }}
+{{ $brand_name }}
 @endcomponent

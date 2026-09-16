@@ -9,12 +9,17 @@ return [
     'keys' => [
         'das_febnet' => [
             'key'          => env('EMAIL_API_KEY_DAS'),
-            'label'        => 'DAS Guillon Ribeiro',
+            'label'        => 'FEB Guillon Ribeiro',
             'from_address' => env('EMAIL_API_KEY_DAS_FROM', 'administrator@fazcomphp.com.br'),
-            'from_name'    => env('EMAIL_API_KEY_DAS_FROM_NAME', 'DAS Guillon Ribeiro'),
+            'from_name'    => env('EMAIL_API_KEY_DAS_FROM_NAME', 'FEB Guillon Ribeiro'),
+
+            // 🔥 NOVO: branding do e-mail
+            'brand_name'   => 'FEB Guillon Ribeiro',
+            'brand_url'    => 'https://das.febnet.org.br',
+            'brand_footer' => 'Federação Espírita Brasileira — Núcleo Espírita Guillon Ribeiro',
         ],
 
-        // Novos consumidores entram aqui
+        // Próximos consumidores herdam o mesmo padrão
     ],
 
     /*

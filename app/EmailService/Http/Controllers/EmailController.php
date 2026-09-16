@@ -20,12 +20,16 @@ class EmailController extends Controller
         try {
             Mail::to($data['to'], $data['to_nome'] ?? null)
                 ->send(new GenericMailable(
-                    tpl:          $data['template'],      // ← era 'template:'
+                    tpl:          $data['template'],
                     assunto:      $data['assunto'],
                     dados:        $data['dados'] ?? [],
                     fromAddress:  $consumer['from_address'] ?? null,
                     fromName:     $consumer['from_name']    ?? null,
-                    replyToEmail: $data['reply_to']         ?? null,   // ← era 'replyTo:'
+                    replyToEmail: $data['reply_to']         ?? null,
+                    // 🔥 NOVO
+                    brandName:    $consumer['brand_name']   ?? null,
+                    brandUrl:     $consumer['brand_url']    ?? null,
+                    brandFooter:  $consumer['brand_footer'] ?? null,
                 ));
 
             Log::info('EmailService: enviado', [
