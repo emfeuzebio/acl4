@@ -32,6 +32,7 @@ return [
         'recuperacao_senha',
         'codigo_2fa',
         'troca_senha_obrigatoria',
+        'troca_senha_realizada',   // ← adicionar
     ],
 
     /*
