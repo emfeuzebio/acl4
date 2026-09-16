@@ -17,8 +17,11 @@ class EmailController extends Controller
         $consumer   = $request->attributes->get('consumer_config');
         $consumerId = $request->attributes->get('consumer_id');
 
+        // 🔥 Injeta o consumer no config para o View Composer acessar
+        config(['email_service.current_consumer' => $consumer]);
+
         try {
-            Mail::to($data['to'], $data['to_nome'] ?? null)
+            Mail::to($data['to'], $data['to_nome'] ?? null)        
                 ->send(new GenericMailable(
                     tpl:          $data['template'],
                     assunto:      $data['assunto'],
