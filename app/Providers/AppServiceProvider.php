@@ -20,21 +20,23 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // 🔥 View Composer para os layouts de e-mail do Laravel
-        // Injeta as variáveis de branding sempre que o layout externo for renderizado
-        View::composer([
-            'mail::html.message',
-            'mail::text.message',
-        ], function ($view) {
+        View::composer('*', function ($view) {
+            $name = $view->getName();
+    
+            // Só age na view principal do Laravel Mail (que envelopa header/footer/layout)
+            if ($name !== 'mail::message') {
+                return;
+            }
+    
             $consumer = config('email_service.current_consumer', []);
-
+    
             $view->with([
                 'brand_name'   => $consumer['brand_name']   ?? config('app.name'),
                 'brand_url'    => $consumer['brand_url']    ?? config('app.url'),
                 'brand_footer' => $consumer['brand_footer'] ?? config('app.name'),
             ]);
         });
-    }    
+    }
 
     /**
      * Bootstrap any application services.

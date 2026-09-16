@@ -2,7 +2,7 @@
     {{-- Header --}}
     @slot('header')
         @component('mail::header', ['url' => $brand_url ?? config('app.url')])
-            [MARKER-V3] {{ $brand_name ?? config('app.name') }}
+            {{ $brand_name ?? config('app.name') }}
         @endcomponent
     @endslot
 
