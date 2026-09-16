@@ -174,6 +174,7 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        App\EmailService\EmailServiceProvider::class,  // ← Micro Servico Email
     ])->toArray(),
 
     /*
