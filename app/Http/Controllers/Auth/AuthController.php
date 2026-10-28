@@ -55,7 +55,7 @@ class AuthController extends Controller
     }
 
     // Login COM token persistente em banco de dados
-    public function login(Request $request)
+    public function loginANT(Request $request)
     {
         try {
 
@@ -142,6 +142,69 @@ class AuthController extends Controller
 
         } catch (JWTException $e) {
             return response()->json(['error' => 'Não foi possível criar o token. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
+        }
+    } 
+    
+    public function login(Request $request)
+    {
+        // injeta systemId no request antes de gerar o token
+        if ($request->filled('systemId')) {
+            request()->merge(['systemId' => $request->input('systemId')]);
+        }
+
+        try {
+            return DB::transaction(function () use ($request) {
+                $credentials = $request->only('email', 'password');
+                $user = User::where('email', $credentials['email'])->first();
+
+                if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+                    return response()->json(['error' => 'Credenciais inválidas'], Response::HTTP_UNAUTHORIZED);
+                }
+
+                if ($user->active != 'Y') {
+                    return response()->json(['error' => 'Usuário Não Ativo.'], Response::HTTP_UNAUTHORIZED);
+                }
+
+                if ($user->status !== 'active') {
+                    throw ValidationException::withMessages([
+                        'email' => 'Sua conta ainda não foi ativada.',
+                    ]);
+                }
+
+                if (! $user->systems->contains('id', $request->systemId)) {
+                    return response()->json(['error' => 'Usuário ainda não têm Acesso a este Sistema.'], Response::HTTP_UNAUTHORIZED);
+                }
+
+                if ($user->profiles()->where('system_id', $request->systemId)->count() == 0) {
+                    return response()->json(['error' => 'Usuário ainda não têm Perfil de Acesso a este Sistema.'], Response::HTTP_UNAUTHORIZED);
+                }
+
+                // invalida token ativo do MESMO sistema para forçar regeneração com systemId
+                Token::where('user_id', $user->id)
+                    ->where('status', 'active')
+                    ->where('expires_at', '>', Carbon::now())
+                    ->update(['status' => 'invalidated']);
+
+                if (! $token = JWTAuth::attempt($credentials)) {
+                    return response()->json(['error' => 'Credenciais inválidas'], Response::HTTP_UNAUTHORIZED);
+                }
+
+                $payload = JWTAuth::setToken($token)->getPayload();
+
+                Token::create([
+                    'user_id'    => $payload['user_id'],
+                    'token'      => $token,
+                    'expires_at' => $payload['exp'],
+                    'status'     => 'active',
+                    'ip'         => $request->ip(),
+                    'browser'    => $request->header('User-Agent'),
+                ]);
+
+                return response()->json(compact('token'));
+            });
+
+        } catch (JWTException $e) {
+            return response()->json(['error' => 'Não foi possível criar o token. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }    
 
