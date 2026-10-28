@@ -414,5 +414,18 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->getKey();
     }
+
+    protected static function booted(): void
+    {
+        static::saving(function (User $user) {
+            if ($user->active === 'Y' && in_array($user->status, ['pending', 'suspended'], true)) {
+                $user->status = 'active';
+            }
+
+            if ($user->active === 'N' && $user->status === 'active') {
+                $user->status = 'suspended';
+            }
+        });
+    }    
     
 }
