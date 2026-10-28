@@ -24,7 +24,7 @@ class UserRequest extends FormRequest
         return [
             'password' => [$this->isMethod('post') ? 'prohibited' : 'nullable', 'string', 'min:6', 'confirmed'],
             'active'   => [$this->isMethod('post') ? 'nullable' : 'required', 'in:Y,N'],
-            'status'   => [$this->isMethod('post') ? 'prohibited' : 'required', 'in:invited,active,suspended'],
+            'status'   => [$this->isMethod('post') ? 'prohibited' : 'required', 'in:invited,pending,active,suspended'],
 
             'name' => 'required|string|min:6',
             'email' => 'required|string|email|max:255|unique:users,email,' . $this->id,

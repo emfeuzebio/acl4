@@ -215,10 +215,11 @@ class AuthController extends Controller
 
                 // STEP 1 - Lest's insert the User
                 $user = User::create([
-                    'name' => trim($request->name),
-                    'email' => trim(strtolower($request->email)),
-                    'password' => Hash::make(trim($request->password)),     // Hash seguro
-                    'active' => 'N',
+                    'name'      => trim($request->name),
+                    'email'     => trim(strtolower($request->email)),
+                    'password'  => Hash::make(trim($request->password)),     // Hash seguro
+                    'active'    => 'N',
+                    'status'    => 'pending',   // <- auto-registro de fora para dentro                    
                 ]); 
 
                 // Caso veio o $systemId, vamos associar o usuário a um sistema específico
