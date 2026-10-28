@@ -109,12 +109,12 @@ class UserController extends Controller
         });
 
         // Convite: gera token + envia e-mail (fora da transação)
-        $invitation = UserInvitation::issueFor($user, auth()->id());
-        $user->notify(new UserInvitationNotification(
-            $user,
-            $invitation->plain_token,
-            $invitation->expires_at,
-        ));
+        // $invitation = UserInvitation::issueFor($user, auth()->id());
+        // $user->notify(new UserInvitationNotification(
+        //     $user,
+        //     $invitation->plain_token,
+        //     $invitation->expires_at,
+        // ));
 
         // JSON do user (mesma forma que a DataTables já recebe hoje), sem campos sensíveis
         return response()->json($user->only([
