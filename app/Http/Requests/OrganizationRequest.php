@@ -21,7 +21,7 @@ class UserRequest extends FormRequest
             'status'   => [$isStore ? 'prohibited' : 'required', 'in:invited,pending,active,suspended'],
 
             'name'  => 'required|string|min:6',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $this->id,
+            // 'email' => 'required|string|email|max:255|unique:users,email,' . $this->id,
             'phone' => 'nullable|string|min:10|max:15|unique:users,phone,' . $this->id,
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ];
