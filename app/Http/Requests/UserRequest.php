@@ -15,7 +15,10 @@ class UserRequest extends FormRequest
     public function rules(): array
     {
         $isStore = $this->isMethod('post');
-        $id = $isStore ? null : $this->input('id');
+        // $id = $isStore ? null : $this->input('id');
+        $id = $isStore
+            ? null
+            : ($this->input('id') ?? $this->route('user') ?? $this->route('id'));        
 
         return [
             'password' => [$isStore ? 'prohibited' : 'nullable', 'string', 'min:6', 'confirmed'],
