@@ -12,6 +12,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 // class User extends Authenticatable
 class User extends Authenticatable implements JWTSubject
@@ -178,6 +179,12 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsToMany(Organization::class, 'acl_organization_user');
     }   
+
+    // One-to-Many - convites de acesso enviados a este User
+    public function invitations(): HasMany
+    {
+        return $this->hasMany(UserInvitation::class);
+    }    
 
     // JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT JWT 
 
