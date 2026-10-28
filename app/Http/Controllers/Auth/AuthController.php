@@ -73,6 +73,13 @@ class AuthController extends Controller
                     return response()->json(['error' => 'Usuário Não Ativo.'], Response::HTTP_UNAUTHORIZED);
                 }
 
+                // no attempt de login, além de email/senha:
+                if ($user->status !== 'active') {
+                    throw ValidationException::withMessages([
+                        'email' => 'Sua conta ainda não foi ativada. Verifique o convite.',
+                    ]);
+                }
+                
                 if (! $user->systems->contains('id', $request->systemId)) {
                     return response()->json(['error' => 'Usuário ainda não têm Acesso a este Sistema.'], Response::HTTP_UNAUTHORIZED);
                 }

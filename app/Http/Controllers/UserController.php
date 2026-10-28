@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Artisan;
 use App\Traits\ACLTrait;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
@@ -92,76 +93,34 @@ class UserController extends Controller
         return response()->json($user);
     }      
 
-    public function store(UserRequest $request)
+    public function store(UserRequest $request): JsonResponse
     {
-        $user = DB::transaction(function() use ($request) {
-            try {
-                // STEP 1 - Lest's insert the User
-                $user = User::create([
-                    // 'organization_id' => $request->organization_id,
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password), // Criptografa a senha
-                    'active' => 'Y',
-                ]); 
+        // Como é convite: o backend define status/password; a request não manda senha.
+        $user = DB::transaction(function () use ($request) {
+            $data = $request->safe()->only(['name', 'email']);
 
-                // STEP 2 - Let's insert thes recpectives Profiles Base
-                // Vamos conceder o Perfil de Acesso padrão (3-Usuário) ao Usuário recém criado
-                // TERMINAR Porém sabemos na Organização onde o User foi Criado Há vários Sistemas, em cada Sistema há vários Perfis
+            return User::create([
+                ...$data,
+                'phone'    => $request->filled('phone') ? $request->phone : null,
+                'password' => null,          // definida no aceite do convite
+                'status'   => 'invited',
+                'active'   => 'Y',           // mantido (decisão 5)
+            ]);
+        });
 
-                    // Obtenha a organização à qual o usuário foi associado
+        // Convite: gera token + envia e-mail (fora da transação)
+        $invitation = UserInvitation::issueFor($user, auth()->id());
+        $user->notify(new UserInvitationNotification(
+            $user,
+            $invitation->plain_token,
+            $invitation->expires_at,
+        ));
 
-                        /* Chat gpt
-
-                        laravel 10 Eloquent
-                        Uma Organization tem vários Systems e tem vários Profiles.
-                        Um User pertence a uma Organization ID = 1.
-                        Após inserir um novo User preciso conceder a este User todos os Profiles de todos os Systems da Organization do User.
-                        Como fazer de forma clara e elegante
-
-                        */
-
-                        // $organization = Organization::findOrFail($request->organization_id);
-
-                        // // Obtenha todos os sistemas dessa organização
-                        // $systems = $organization->systems;
-
-                        // // Para cada sistema, obtemos os profiles e associamos ao usuário
-                        // foreach ($systems as $system) {
-                        //     $profiles = $system->profiles;  // Obtém todos os profiles do sistema
-
-                        //     // Associe todos os profiles desse sistema ao novo usuário
-                        //     foreach ($profiles as $profile) {
-                        //         $user->profiles()->attach($profile->id);  // Método attach para relacionar o usuário com o profile
-                        //     }
-                        // }
-
-                        // $user->profiles()->sync($profiles->pluck('id')->toArray());
-
-
-                    // print_r($profiles->toJson());
-                    // die();
-                    // return false;  
-
-
-                // foreach($actions as $key => $action) {
-                //     Action::create([
-                //         'entity_id' => $entity->id,
-                //         'action' => $descriptions[$key] . ' ' . $entity->model,
-                //         'route' => strtolower($entity->model) . '.' . strtolower($action),
-                //         'description' => $descriptions[$key] . ' ' . $entity->model,
-                //     ]);  
-                // } 
-            }
-            catch(Exception $e) {
-                throw new Exception('EUZ-USER-Exception:' . $e);
-            }
-
-            return $user;
-        });                                           
-
-        return response()->json($user);        
-    }     
+        // JSON do user (mesma forma que a DataTables já recebe hoje), sem campos sensíveis
+        return response()->json($user->only([
+            'id', 'name', 'email', 'phone', 'status', 'active',
+        ]), 201);
+    }    
 
     public function update(UserRequest $request)
     {

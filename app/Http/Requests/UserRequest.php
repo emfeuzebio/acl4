@@ -22,13 +22,14 @@ class UserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            // 'organization_id' => 'required|exists:acl_organizations,id',    // Mandatory and existing foreign key in the acl organizations table
+            'password' => [$this->isMethod('post') ? 'prohibited' : 'nullable', 'string', 'min:6', 'confirmed'],
+            'active'   => [$this->isMethod('post') ? 'nullable' : 'required', 'in:Y,N'],
+            'status'   => [$this->isMethod('post') ? 'prohibited' : 'required', 'in:invited,active,suspended'],
+
             'name' => 'required|string|min:6',
             'email' => 'required|string|email|max:255|unique:users,email,' . $this->id,
-            'password' => 'nullable|string|min:6|confirmed',
             'phone' => 'string|min:10|max:15|nullable|unique:users,phone,' . $this->id,
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'active' => ['required','in:"Y","N"'],
         ];
     }
 
@@ -38,6 +39,7 @@ class UserRequest extends FormRequest
         $this->merge([
             'name' => ucwords(trim(strtolower($this->name))),
             'email' => trim(strtolower($this->email)),
+            'active' => $this->boolean('active') ? 'Y' : 'N',   // <- corrige o checkbox
         ]);
     }      
 }

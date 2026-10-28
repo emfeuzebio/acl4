@@ -28,6 +28,7 @@ class UserRegisterRequest extends FormRequest
             'phone' => 'string|min:10|max:15|nullable',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'active' => ['required','in:"Y","N"'],
+            'status' => ['required','in:"active","inactive","suspended"'],
         ];
     }
 
