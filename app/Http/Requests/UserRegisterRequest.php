@@ -27,8 +27,8 @@ class UserRegisterRequest extends FormRequest
             'password' => 'required|string|min:6|confirmed',
             'phone' => 'string|min:10|max:15|nullable',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'active' => ['required','in:"Y","N"'],
             'status' => ['prohibited'],                     // cliente NÃO escolhe; backend define 'pending'
-            'active' => ['prohibited'],                     // cliente NÃO escolhe; backend define 'N'
             'system_id' => ['required','integer','exists:acl_systems,id'],  // ajuste ao nome real da tabela            
         ];
     }
