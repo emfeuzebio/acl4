@@ -53,98 +53,8 @@ class AuthController extends Controller
         // atualizar o status dos tokens expirados
         Token::where('expires_at', '<', now())->update(['status' => 'expired']);
     }
-
-    // Login COM token persistente em banco de dados
-    public function loginANT(Request $request)
-    {
-        try {
-
-            return DB::transaction(function () use ($request) {
-
-                // PASSO 1 - Autenticar usuário sem gerar token ainda
-                $credentials = $request->only('email', 'password');
-                $user = User::where('email', $credentials['email'])->first();
-
-                if (! $user || ! Hash::check($credentials['password'], $user->password)) {
-                    return response()->json(['error' => 'Credenciais inválidas'], Response::HTTP_UNAUTHORIZED);   // 401
-                }
-
-                if ($user->active != 'Y') {
-                    return response()->json(['error' => 'Usuário Não Ativo.'], Response::HTTP_UNAUTHORIZED);
-                }
-
-                // no attempt de login, além de email/senha:
-                if ($user->status !== 'active') {
-                    throw ValidationException::withMessages([
-                        'email' => 'Sua conta ainda não foi ativada. Verifique o convite.',
-                    ]);
-                }
-                
-                if (! $user->systems->contains('id', $request->systemId)) {
-                    return response()->json(['error' => 'Usuário ainda não têm Acesso a este Sistema.'], Response::HTTP_UNAUTHORIZED);
-                }
-
-                $countProfilesOnSystem = $user->profiles()->where('system_id', $request->systemId)->count();
-                // echo "count: {$countProfilesOnSystem}";
-
-                if ($countProfilesOnSystem == 0) {
-                    return response()->json(['error' => 'Usuário ainda não têm Perfil de Acesso a este Sistema.'], Response::HTTP_UNAUTHORIZED);
-                }
-
-                // $profiles: Collection dos Profiles do usuário dentro daquele system
-                // $profiles = $user->profiles()
-                //     ->where('system_id', $request->systemId)
-                //     ->get();                
-                // dd($profiles);
-
-                // PASSO 2 - Verifica se já existe um token ativo para o usuário
-                $existingToken = Token::where('user_id', $user->id)
-                    ->where('status', 'active')                     // Verifica se está ativo
-                    ->where('expires_at', '>', Carbon::now())       // Verifica se ainda está válido
-                    ->first();
-
-                // PASSO 3 - Caso exista, reutiliza o mesmo, SENÃO cria um novo
-                if ($existingToken) {
-                    $token = $existingToken->token;     // Se já existir um token válido, reutiliza o mesmo
-                } else {
-                    // senão, cria um novo se as credenciais estiverem corretas
-                    if (! $token = JWTAuth::attempt($credentials)) {
-                        return response()->json(['error' => 'Credenciais inválidas'], Response::HTTP_UNAUTHORIZED);   // 401
-                    }
-                }
-
-                // PASSO 4 - Cria a instância do token e pega o payload no formato de array
-                $payload = JWTAuth::setToken($token)->getPayload();
-                // dd($payload);
-
-                // Recalcula e renova a data de expiração - o Model esta fazendo isso
-
-                /**
-                 * PASSO 5 - Persiste o Token
-                 *  Cria um novo token no banco de dados ou atualiza se já existir se for o mesmo (user_id, Token e active)
-                 *  permitir que um usuário tenha vários tokens ativos (multi-dispositivos), mas sem repetição do mesmo token
-                 *  No User Model, getJWTCustomClaims() já monta o payload com as informações do usuário
-                 */
-                Token::updateOrCreate(
-                    // ['token' => $token], // ← Busca APENAS pelo token (é único) = token. The token has been blacklisted
-                    ['user_id' => $payload['user_id'], 'token' => $token, 'status' => 'active'], // Verifica user_id + token
-                    [
-                        'expires_at' => $payload['exp'],                // quando expira o token
-                        'updated_at' => $payload['iat'],                // data de criação/atualização do token
-                        'status' => 'active',                           // status do token
-                        'ip' => $request->ip(),                         // IP do usuário
-                        'browser' => $request->header('User-Agent'),    // User-Agent (browser) do usuário
-                    ]
-                );                       
-
-                return response()->json(compact('token'));
-            });
-
-        } catch (JWTException $e) {
-            return response()->json(['error' => 'Não foi possível criar o token. ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);   // 500
-        }
-    } 
     
+    // Login COM token persistente em banco de dados e systemId
     public function login(Request $request)
     {
         // injeta systemId no request antes de gerar o token
@@ -338,7 +248,7 @@ class AuthController extends Controller
         }
     }
 
-    public function forgotPassword(Request $request)
+    public function forgotPasswordANT(Request $request)
     {
         try {
             // Validação
@@ -396,7 +306,53 @@ class AuthController extends Controller
         }    
     }    
 
-    public function resetPassword(Request $request)
+    public function forgotPassword(Request $request)
+    {
+        try {
+            $request->validate([
+                'email'     => 'required|string|email|max:255',
+                'system_id' => 'nullable|integer|exists:acl_systems,id',
+            ]);
+
+            $user = User::where('email', $request->email)->first();
+            if (! $user) {
+                return response()->json(['message' => 'Usuário não encontrado.'], Response::HTTP_NOT_FOUND);
+            }
+
+            $token = Str::random(64);
+
+            DB::table('password_reset_tokens')->updateOrInsert(
+                ['email' => $user->email],
+                [
+                    'token'      => Hash::make($token),
+                    'created_at' => Carbon::now(),
+                ]
+            );
+
+            // Com system_id -> URL do próprio sistema; sem -> mslogin (comportamento atual)
+            if ($request->filled('system_id')) {
+                $system  = System::findOrFail($request->system_id);
+                $baseUrl = rtrim($system->url, '/');
+            } else {
+                $baseUrl = rtrim(env('FRONTEND_URL'), '/');
+            }
+
+            $resetUrl = $baseUrl . '/#/pages/resetpassword/?token=' . $token
+                    . '&email=' . urlencode($user->email);
+
+            Mail::to($user->email)->send(new ForgotPasswordMail($user->name, $resetUrl));
+
+            return response()->json(['message' => 'Um e-mail foi enviado com instruções para redefinição da senha.'], Response::HTTP_OK);
+
+        } catch (ValidationException $e) {
+            return response()->json(['message' => 'Erro de validação.', 'errors' => $e->errors()], Response::HTTP_UNPROCESSABLE_ENTITY);
+        } catch (Exception $e) {
+            Log::error('Erro em forgotPassword: ' . $e->getMessage());
+            return response()->json(['message' => 'Erro interno ao enviar e-mail.'], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }    
+
+    public function resetPasswordANT(Request $request)
     {
         $request->validate([
             'email' => 'required|string|email|max:255',
@@ -450,6 +406,52 @@ class AuthController extends Controller
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     } 
+
+    public function resetPassword(Request $request)
+    {
+        $min = (int) env('PASSWORD_MIN_LENGTH', 6);
+
+        $request->validate([
+            'email'       => 'required|string|email|max:255',
+            'token'       => 'required|string',
+            'system_id'   => 'nullable|integer|exists:acl_systems,id',
+            'password'    => 'required|string|min:' . $min . '|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{' . $min . ',}$/',
+        ]);
+
+        $record = DB::table('password_reset_tokens')->where('email', $request->email)->first();
+        if (! $record) {
+            return response()->json(['message' => 'Token não encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (! Hash::check($request->token, $record->token)) {
+            return response()->json(['message' => 'Token inválido ou expirado.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $user = User::where('email', $request->email)->first();
+        if (! $user) {
+            return response()->json(['message' => 'Usuário não encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            DB::transaction(function () use ($user, $request) {
+                $user->password = Hash::make($request->password);
+                $user->save();
+
+                DB::table('password_reset_tokens')->where('email', $request->email)->delete();
+
+                Mail::to($user->email)->send(new NotifyUserMail(
+                    "Alteração de Senha",
+                    $user->name,
+                    "Sua senha foi alterada com sucesso.",
+                ));
+            });
+
+            return response()->json(['message' => 'Senha redefinida com sucesso.'], Response::HTTP_OK);
+
+        } catch (Exception $e) {
+            return response()->json(['message' => 'Erro ao redefinir a senha.', 'error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }    
 
     public function logout(Request $request)
     {
