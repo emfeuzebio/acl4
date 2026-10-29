@@ -65,23 +65,23 @@ Route::middleware(['auth:api', EnsureSystemAdmin::class])->prefix('admin')->grou
     Route::put   ('users/{id}',               [AdminUserController::class, 'update']);
     Route::delete('users/{id}',               [AdminUserController::class, 'destroy']);
 
-        // // ações
-        // Route::post('users/{id}/activate',        [AdminUserActionController::class, 'activate']);
-        // Route::post('users/{id}/suspend',         [AdminUserActionController::class, 'suspend']);
-        // Route::post('users/{id}/resend-invite',   [AdminUserActionController::class, 'resendInvite']);
-        // Route::post('users/{id}/force-reset',     [AdminUserActionController::class, 'forceReset']);
+    // ações
+    Route::post('users/{id}/activate',        [AdminUserActionController::class, 'activate']);
+    Route::post('users/{id}/suspend',         [AdminUserActionController::class, 'suspend']);
+    Route::post('users/{id}/resend-invite',   [AdminUserActionController::class, 'resendInvite']);
+    Route::post('users/{id}/force-reset',     [AdminUserActionController::class, 'forceReset']);
 
-        // // perfis
-        // Route::get   ('users/{id}/profiles',              [AdminUserProfileController::class, 'index']);
-        // Route::post  ('users/{id}/profiles/{profileId}',  [AdminUserProfileController::class, 'grant']);
-        // Route::delete('users/{id}/profiles/{profileId}',  [AdminUserProfileController::class, 'revoke']);
+    // // perfis
+    Route::get   ('users/{id}/profiles',              [AdminUserProfileController::class, 'index']);
+    Route::post  ('users/{id}/profiles/{profileId}',  [AdminUserProfileController::class, 'grant']);
+    Route::delete('users/{id}/profiles/{profileId}',  [AdminUserProfileController::class, 'revoke']);
 
-        // // consultas
-        // Route::get('users/{id}/authorizations',   [AdminUserQueryController::class, 'authorizations']);
-        // Route::get('users/{id}/history',          [AdminUserQueryController::class, 'history']);
+    // // consultas
+    Route::get('users/{id}/authorizations',   [AdminUserQueryController::class, 'authorizations']);
+    Route::get('users/{id}/history',          [AdminUserQueryController::class, 'history']);
 
-        // // auditoria global
-        // Route::get('audit',                       [AdminAuditController::class, 'index']);
+    // // auditoria global
+    Route::get('audit',                       [AdminAuditController::class, 'index']);
 });
 
 
