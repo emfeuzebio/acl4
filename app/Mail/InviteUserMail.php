@@ -10,21 +10,15 @@ class InviteUserMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public string $name;
-    public string $inviteUrl;
-    public string $expiresAt;
-
-    public function __construct(string $name, string $inviteUrl, string $expiresAt)
-    {
-        $this->name      = $name;
-        $this->inviteUrl = $inviteUrl;
-        $this->expiresAt = $expiresAt;
-    }
+    public function __construct(
+        public string $name,
+        public string $inviteUrl,
+        public string $expiresAt,
+    ) {}
 
     public function build()
     {
-        return $this
-            ->subject('Convite para acessar ' . config('app.name'))
-            ->markdown('emails.InviteUserMail');
+        return $this->subject('Convite para acessar ' . config('app.name'))
+                    ->markdown('emails.InviteUserMail');
     }
 }

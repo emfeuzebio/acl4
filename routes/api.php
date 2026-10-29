@@ -4,6 +4,14 @@ use App\Http\Controllers\Api\EmailTesteController;
 use App\Http\Controllers\Auth\AuthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\InviteApiController;
+
+use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminUserActionController;
+use App\Http\Controllers\Admin\AdminUserProfileController;
+use App\Http\Controllers\Admin\AdminUserQueryController;
+use App\Http\Controllers\Admin\AdminAuditController;
+use App\Http\Middleware\EnsureSystemAdmin;
 
 /*
 |--------------------------------------------------------------------------
@@ -45,6 +53,37 @@ Route::get('/email/teste', [EmailTesteController::class, 'enviar']);
 Route::GET('/test', function (Request $request) {
     return response()->json(['token' => 'ACL 4 - Guard API Response Ok']);
 });
+
+Route::get ('auth/invite/{token}', [InviteApiController::class, 'show']);
+Route::post('auth/invite/{token}', [InviteApiController::class, 'accept']);
+
+Route::middleware(['auth:api', EnsureSystemAdmin::class])->prefix('admin')->group(function () {
+    // usuários
+    Route::get   ('users',                    [AdminUserController::class, 'index']);
+    Route::post  ('users',                    [AdminUserController::class, 'store']);
+    Route::get   ('users/{id}',               [AdminUserController::class, 'show']);
+    Route::put   ('users/{id}',               [AdminUserController::class, 'update']);
+    Route::delete('users/{id}',               [AdminUserController::class, 'destroy']);
+
+        // // ações
+        // Route::post('users/{id}/activate',        [AdminUserActionController::class, 'activate']);
+        // Route::post('users/{id}/suspend',         [AdminUserActionController::class, 'suspend']);
+        // Route::post('users/{id}/resend-invite',   [AdminUserActionController::class, 'resendInvite']);
+        // Route::post('users/{id}/force-reset',     [AdminUserActionController::class, 'forceReset']);
+
+        // // perfis
+        // Route::get   ('users/{id}/profiles',              [AdminUserProfileController::class, 'index']);
+        // Route::post  ('users/{id}/profiles/{profileId}',  [AdminUserProfileController::class, 'grant']);
+        // Route::delete('users/{id}/profiles/{profileId}',  [AdminUserProfileController::class, 'revoke']);
+
+        // // consultas
+        // Route::get('users/{id}/authorizations',   [AdminUserQueryController::class, 'authorizations']);
+        // Route::get('users/{id}/history',          [AdminUserQueryController::class, 'history']);
+
+        // // auditoria global
+        // Route::get('audit',                       [AdminAuditController::class, 'index']);
+});
+
 
 // Rota Protegida (para testar o token)
 // Route::middleware('auth:api')->get('/user', function (Request $request) {

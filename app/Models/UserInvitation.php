@@ -32,14 +32,19 @@ class UserInvitation extends Model
      * Cria um convite e devolve o token em claro em ->plain_token
      * (o banco guarda só o hash).
      */
-    public static function issueFor(User $user, ?int $createdBy = null, int $hours = 48): self
-    {
+    public static function issueFor(
+        User $user,
+        ?int $createdBy = null,
+        int $hours = 48,
+        ?string $acceptUrl = null,
+    ): self {
         $token = Str::random(64);
 
         $invitation = static::create([
             'user_id'    => $user->id,
             'token_hash' => hash('sha256', $token),
             'expires_at' => Carbon::now()->addHours($hours),
+            'accept_url' => $acceptUrl,
             'created_by' => $createdBy,
         ]);
 
@@ -47,7 +52,7 @@ class UserInvitation extends Model
 
         return $invitation;
     }
-
+    
     public function isValid(): bool
     {
         return $this->accepted_at === null && $this->expires_at->isFuture();
