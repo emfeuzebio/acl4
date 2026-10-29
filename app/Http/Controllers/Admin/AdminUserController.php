@@ -7,11 +7,13 @@ use App\Http\Requests\Admin\AdminUserStoreRequest;
 use App\Http\Requests\Admin\AdminUserUpdateRequest;
 use App\Mail\InviteUserMail;
 use App\Models\System;
+use App\Models\Token;
 use App\Models\User;
 use App\Models\UserInvitation;
 use App\Services\AuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
@@ -21,18 +23,25 @@ class AdminUserController extends Controller
     {
         $systemId = $request->attributes->get('system_id');
 
-        $users = User::query()
+        $query = User::query()
             ->whereHas('systems', fn ($q) => $q->where('acl_systems.id', $systemId))
-            ->when($request->filled('status'), fn ($q) => $q->where('status', $request->status))
-            ->when($request->filled('search'), function ($q) use ($request) {
-                $s = '%' . $request->search . '%';
-                $q->where(fn ($w) => $w->where('name', 'like', $s)->orWhere('email', 'like', $s));
-            })
-            ->with(['profiles' => fn ($q) => $q->where('system_id', $systemId)])
-            ->orderBy('name')
-            ->paginate($request->integer('per_page', 25));
+            ->with(['profiles' => fn ($q) => $q->where('system_id', $systemId)]);
 
-        return response()->json($users);
+        $filtrosPermitidos = ['status', 'active'];
+        foreach ($request->all() as $campo => $valor) {
+            if (in_array($campo, $filtrosPermitidos) && $request->filled($campo)) {
+                $query->where($campo, $valor);
+            }
+        }
+
+        if ($request->filled('search')) {
+            $s = '%' . $request->search . '%';
+            $query->where(fn ($w) => $w->where('name', 'like', $s)->orWhere('email', 'like', $s));
+        }
+
+        $users = $query->orderBy('name')->get();
+
+        return response()->json($users, Response::HTTP_OK);
     }
 
     public function show(Request $request, int $id): JsonResponse
@@ -44,10 +53,10 @@ class AdminUserController extends Controller
             ->find($id);
 
         if (! $user) {
-            return response()->json(['error' => 'Usuário não encontrado.'], 404);
+            return response()->json(['error' => 'Usuário não encontrado.'], Response::HTTP_NOT_FOUND);
         }
 
-        return response()->json($user);
+        return response()->json($user, Response::HTTP_OK);
     }
 
     public function store(AdminUserStoreRequest $request): JsonResponse
@@ -89,7 +98,10 @@ class AdminUserController extends Controller
             after: $user->only(['id', 'name', 'email', 'status', 'active']),
         );
 
-        return response()->json($user->only(['id', 'name', 'email', 'phone', 'status', 'active']), 201);
+        return response()->json(
+            $user->only(['id', 'name', 'email', 'phone', 'status', 'active']),
+            Response::HTTP_CREATED,
+        );
     }
 
     public function update(AdminUserUpdateRequest $request, int $id): JsonResponse
@@ -99,7 +111,7 @@ class AdminUserController extends Controller
         $user = User::whereHas('systems', fn ($q) => $q->where('acl_systems.id', $systemId))->find($id);
 
         if (! $user) {
-            return response()->json(['error' => 'Usuário não encontrado.'], 404);
+            return response()->json(['error' => 'Usuário não encontrado.'], Response::HTTP_NOT_FOUND);
         }
 
         $before = $user->only(['name', 'email', 'phone']);
@@ -112,7 +124,10 @@ class AdminUserController extends Controller
             after: $user->only(['name', 'email', 'phone']),
         );
 
-        return response()->json($user->only(['id', 'name', 'email', 'phone', 'status', 'active']));
+        return response()->json(
+            $user->only(['id', 'name', 'email', 'phone', 'status', 'active']),
+            Response::HTTP_OK,
+        );
     }
 
     public function destroy(Request $request, int $id): JsonResponse
@@ -122,25 +137,33 @@ class AdminUserController extends Controller
         $user = User::whereHas('systems', fn ($q) => $q->where('acl_systems.id', $systemId))->find($id);
 
         if (! $user) {
-            return response()->json(['error' => 'Usuário não encontrado.'], 404);
+            return response()->json(['error' => 'Usuário não encontrado.'], Response::HTTP_NOT_FOUND);
         }
 
         if ($user->id === auth('api')->id()) {
-            return response()->json(['error' => 'Você não pode excluir a si próprio.'], 409);
+            return response()->json(['error' => 'Você não pode excluir a si próprio.'], Response::HTTP_CONFLICT);
         }
 
         $deps = [];
 
-        if ($user->profiles()->count() > 0)                $deps[] = 'perfis de acesso';
-        if ($user->systems()->count() > 1)                 $deps[] = 'outros sistemas';
-        if (\App\Models\Token::where('user_id', $user->id)->where('status', 'active')->exists()) $deps[] = 'tokens ativos';
-        if (UserInvitation::where('user_id', $user->id)->whereNull('accepted_at')->exists())     $deps[] = 'convites pendentes';
+        if ($user->profiles()->count() > 0) {
+            $deps[] = 'perfis de acesso';
+        }
+        if ($user->systems()->count() > 1) {
+            $deps[] = 'outros sistemas';
+        }
+        if (Token::where('user_id', $user->id)->where('status', 'active')->exists()) {
+            $deps[] = 'tokens ativos';
+        }
+        if (UserInvitation::where('user_id', $user->id)->whereNull('accepted_at')->exists()) {
+            $deps[] = 'convites pendentes';
+        }
 
         if (! empty($deps)) {
             return response()->json([
                 'error'        => 'Não é possível excluir: existem dependências.',
                 'dependencies' => $deps,
-            ], 409);
+            ], Response::HTTP_CONFLICT);
         }
 
         $before = $user->only(['id', 'name', 'email', 'status', 'active']);
@@ -152,6 +175,6 @@ class AdminUserController extends Controller
             AuditService::log('user.delete', $systemId, null, before: $before, after: null);
         });
 
-        return response()->json(['message' => 'Usuário excluído.']);
+        return response()->json(['message' => 'Usuário excluído.'], Response::HTTP_OK);
     }
 }
