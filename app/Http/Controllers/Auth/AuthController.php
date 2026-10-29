@@ -352,61 +352,6 @@ class AuthController extends Controller
         }
     }    
 
-    public function resetPasswordANT(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|string|email|max:255',
-            'token' => 'required|string',
-            'password' => 'required|string|min:6|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/',
-        ]);
-
-        $record = DB::table('password_reset_tokens')
-            ->where('email', $request->email)
-            ->first();
-
-        if (!$record) {
-            return response()->json(['message' => 'Token não encontrado.'], Response::HTTP_NOT_FOUND);
-        }
-
-        if (!Hash::check($request->token, $record->token)) {
-            return response()->json(['message' => 'Token inválido ou expirado.'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $user = User::where('email', $request->email)->first();
-        if (!$user) {
-            return response()->json(['message' => 'Usuário não encontrado.'], Response::HTTP_NOT_FOUND);
-        }
-
-        try {
-            DB::transaction(function () use ($user, $request) {
-                // Atualiza a senha
-                $user->password = Hash::make($request->password);
-                $user->save();
-
-                // Remove o token de reset
-                DB::table('password_reset_tokens')->where('email', $request->email)->delete();
-
-                // Notifica por e-mail
-                Mail::to($user->email)->send(new NotifyUserMail(
-                    "Alteração de Senha", 
-                    $user->name, 
-                    "Sua senha foi alterada com sucesso.",
-                ));
-            });
-
-            return response()->json(['message' => 'Senha redefinida com sucesso.'], Response::HTTP_OK);
-
-        } catch (Exception $e) {
-            // Logue o erro se necessário
-            // Log::error('Erro ao redefinir senha', ['error' => $e->getMessage()]);
-
-            return response()->json([
-                'message' => 'Erro ao redefinir a senha. Tente novamente mais tarde.',
-                'error' => $e->getMessage()
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    } 
-
     public function resetPassword(Request $request)
     {
         $min = (int) env('PASSWORD_MIN_LENGTH', 6);
@@ -415,7 +360,8 @@ class AuthController extends Controller
             'email'       => 'required|string|email|max:255',
             'token'       => 'required|string',
             'system_id'   => 'nullable|integer|exists:acl_systems,id',
-            'password'    => 'required|string|min:' . $min . '|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{' . $min . ',}$/',
+            // 'password'    => 'required|string|min:' . $min . '|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{' . $min . ',}$/',
+            'password'    => 'required|string|min:' . $min . '|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{' . $min . ',}$/',
         ]);
 
         $record = DB::table('password_reset_tokens')->where('email', $request->email)->first();
@@ -923,10 +869,11 @@ class AuthController extends Controller
             }
 
             // Validando os campos
-            // $validated = $request->validate([
+            $min = (int) env('PASSWORD_MIN_LENGTH', 6);
+
             $validated = $request->validate([
                 'senhaAtual' => 'required|string',
-                'novaSenha' => 'required|string|min:6|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/',
+                'novaSenha' => 'required|string|min:' . $min . '|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{' . $min . ',}$/',
             ]);
 
             // Verificar se a senha atual fornecida é a mesma que a senha armazenada
