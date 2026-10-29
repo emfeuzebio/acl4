@@ -14,11 +14,13 @@ class InviteUserMail extends Mailable
         public string $name,
         public string $inviteUrl,
         public string $expiresAt,
+        public string $systemName,
     ) {}
 
     public function build()
     {
-        return $this->subject('Convite para acessar ' . config('app.name'))
-                    ->markdown('emails.InviteUserMail');
+        return $this
+            ->subject('Convite para acessar ' . $this->systemName)
+            ->markdown('emails.InviteUserMail');
     }
 }

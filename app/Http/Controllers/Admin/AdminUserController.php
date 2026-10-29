@@ -90,6 +90,7 @@ class AdminUserController extends Controller
             $user->name,
             $acceptUrl,
             $invitation->expires_at->diffForHumans(),
+            $system->name,
         ));
 
         AuditService::log(
