@@ -10,13 +10,19 @@ use Illuminate\Support\Str;
 class UserInvitation extends Model
 {
     protected $fillable = [
-        'user_id', 'token_hash', 'expires_at', 'accepted_at', 'created_by',
+        'user_id', 'token_hash', 'expires_at', 'accept_url', 'accepted_at', 'created_by',
     ];
 
     protected $casts = [
         'expires_at'  => 'datetime',
         'accepted_at' => 'datetime',
     ];
+
+    /**
+     * Token em claro, disponível apenas em memória após issueFor().
+     * NÃO é persistido no banco.
+     */
+    public ?string $plain_token = null;
 
     public function user(): BelongsTo
     {
@@ -28,10 +34,6 @@ class UserInvitation extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    /**
-     * Cria um convite e devolve o token em claro em ->plain_token
-     * (o banco guarda só o hash).
-     */
     public static function issueFor(
         User $user,
         ?int $createdBy = null,
@@ -52,7 +54,7 @@ class UserInvitation extends Model
 
         return $invitation;
     }
-    
+
     public function isValid(): bool
     {
         return $this->accepted_at === null && $this->expires_at->isFuture();
