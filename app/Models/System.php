@@ -20,6 +20,8 @@ class System extends Model
             'icon',
             'description', 
             'active',
+            'mail_from_name',
+            'mail_from_address',            
         ];
 
     // Sistema é FILHO de Organizacao.

@@ -91,6 +91,8 @@ class AdminUserController extends Controller
             $acceptUrl,
             $invitation->expires_at->diffForHumans(),
             $system->name,
+            $system->mail_from_address,
+            $system->mail_from_name,
         ));
 
         AuditService::log(
@@ -156,7 +158,7 @@ class AdminUserController extends Controller
         if (Token::where('user_id', $user->id)->where('status', 'active')->exists()) {
             $deps[] = 'tokens ativos';
         }
-        
+
         // if (UserInvitation::where('user_id', $user->id)->whereNull('accepted_at')->exists()) {
         //     $deps[] = 'convites pendentes';
         // }

@@ -95,6 +95,8 @@ class AdminUserActionController extends Controller
             $acceptUrl,
             $invitation->expires_at->diffForHumans(),
             $system->name,
+            $system->mail_from_address,
+            $system->mail_from_name,
         ));
 
         AuditService::log('invite.resend', $systemId, $user);
