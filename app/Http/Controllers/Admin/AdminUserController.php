@@ -156,9 +156,10 @@ class AdminUserController extends Controller
         if (Token::where('user_id', $user->id)->where('status', 'active')->exists()) {
             $deps[] = 'tokens ativos';
         }
-        if (UserInvitation::where('user_id', $user->id)->whereNull('accepted_at')->exists()) {
-            $deps[] = 'convites pendentes';
-        }
+        
+        // if (UserInvitation::where('user_id', $user->id)->whereNull('accepted_at')->exists()) {
+        //     $deps[] = 'convites pendentes';
+        // }
 
         if (! empty($deps)) {
             return response()->json([
