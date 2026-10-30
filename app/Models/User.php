@@ -414,18 +414,20 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->getKey();
     }
-
+    
     protected static function booted(): void
     {
         static::saving(function (User $user) {
+            // ativação
             if ($user->active === 'Y' && in_array($user->status, ['pending', 'suspended'], true)) {
                 $user->status = 'active';
             }
 
-            if ($user->active === 'N' && $user->status === 'active') {
+            // suspensão (não mexe em 'pending', que é o estado inicial do auto-registro)
+            if ($user->active === 'N' && in_array($user->status, ['active', 'invited'], true)) {
                 $user->status = 'suspended';
             }
         });
-    }    
+    }
     
 }
