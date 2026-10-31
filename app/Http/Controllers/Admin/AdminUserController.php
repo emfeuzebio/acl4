@@ -158,10 +158,9 @@ class AdminUserController extends Controller
         if (Token::where('user_id', $user->id)->where('status', 'active')->exists()) {
             $deps[] = 'tokens ativos';
         }
-
-        // if (UserInvitation::where('user_id', $user->id)->whereNull('accepted_at')->exists()) {
-        //     $deps[] = 'convites pendentes';
-        // }
+        if (UserInvitation::where('user_id', $user->id)->whereNull('accepted_at')->exists()) {
+            $deps[] = 'convites pendentes';
+        }
 
         if (! empty($deps)) {
             return response()->json([
@@ -172,12 +171,29 @@ class AdminUserController extends Controller
 
         $before = $user->only(['id', 'name', 'email', 'status', 'active']);
 
-        DB::transaction(function () use ($user, $systemId, $before) {
-            $user->systems()->detach($systemId);
-            $user->delete();
+        try {
+            DB::transaction(function () use ($user, $systemId, $before) {
+                $user->systems()->detach($systemId);
+                $user->delete();
 
-            AuditService::log('user.delete', $systemId, null, before: $before, after: null);
-        });
+                AuditService::log('user.delete', $systemId, null, before: $before, after: null);
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // FK 1451: registro referenciado em outra tabela
+            if ($e->getCode() === '23000' && str_contains($e->getMessage(), '1451')) {
+                return response()->json([
+                    'error' => 'Não é possível excluir: o usuário possui registros vinculados em outras tabelas (organizações, sistemas, perfis ou tokens).',
+                    'dependencies' => ['registros vinculados'],
+                ], Response::HTTP_CONFLICT);
+            }
+
+            // outros erros de banco
+            \Log::error('Erro ao excluir usuário', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+
+            return response()->json([
+                'error' => 'Erro ao excluir o usuário. Tente novamente ou contate o suporte.',
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
 
         return response()->json(['message' => 'Usuário excluído.'], Response::HTTP_OK);
     }
