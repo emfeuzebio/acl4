@@ -28,6 +28,18 @@ class AdminUserActionController extends Controller
             return response()->json(['error' => 'Usuário não encontrado.'], 404);
         }
 
+        // Regra: não ativar sem perfil de acesso no sistema
+        $hasProfile = $user->profiles()
+            ->where('acl_profiles.system_id', $systemId)
+            ->where('acl_profiles.active', 'Y')
+            ->exists();
+
+        if (! $hasProfile) {
+            return response()->json([
+                'error' => 'Não é possível ativar um usuário sem perfil de acesso. Conceda um perfil antes de ativar.',
+            ], 422);
+        }
+
         $before = $user->only(['active', 'status']);
 
         $user->update(['active' => 'Y']); // booted sincroniza status = active
