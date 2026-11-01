@@ -21,8 +21,6 @@ class UserRegisterRequest extends FormRequest
             'password'  => 'required|string|min:' . $min . '|confirmed|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{' . $min . ',}$/',
             'phone'     => 'nullable|string|min:10|max:15|unique:users,phone',
             'photo'     => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'active'    => ['prohibited'],   // backend define 'N'
-            'status'    => ['prohibited'],   // backend define 'pending'
             'system_id' => ['required', 'integer', 'exists:acl_systems,id'],
         ];
     }
@@ -43,13 +41,15 @@ class UserRegisterRequest extends FormRequest
             'phone.unique'       => 'Este telefone já está cadastrado.',
             'system_id.required' => 'O sistema de origem é obrigatório.',
             'system_id.exists'   => 'Sistema de origem inválido.',
-            'active.prohibited'  => 'O campo active é definido pelo sistema.',
-            'status.prohibited'  => 'O campo status é definido pelo sistema.',
         ];
     }
 
     protected function prepareForValidation(): void
     {
+        // ✅ Remove campos que o sistema define (ignorados silenciosamente)
+        $this->request->remove('active');
+        $this->request->remove('status');
+
         $this->merge([
             'name'  => ucwords(trim(strtolower((string) $this->name))),
             'email' => trim(strtolower((string) $this->email)),
