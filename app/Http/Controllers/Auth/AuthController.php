@@ -228,12 +228,15 @@ class AuthController extends Controller
                 $systemName = $system->name;
 
                 Mail::to($user->email)->send(new NotifyUserMail(
-                    "Registro de Usuário.", 
-                    $user->name, 
-                    "Seu pedido de Registro no sistema {$systemName} foi executado com sucesso.\n" . 
+                    "Registro de Usuário.",
+                    $user->name,
+                    "Seu pedido de Registro no sistema {$systemName} foi executado com sucesso.\n" .
                     "Aguarde o Administrador analisar e lhe conceder o Perfil de Acesso necessário.\n" .
                     "Então, um novo E-mail lhe será enviado.",
-                ));                
+                    $system->name,
+                    $system->mail_from_address,
+                    $system->mail_from_name,
+                ));               
 
                 return response()->json([
                     'message' => 'Usuário registrado com sucesso!',
@@ -385,11 +388,18 @@ class AuthController extends Controller
 
                 DB::table('password_reset_tokens')->where('email', $request->email)->delete();
 
+                $system = $request->filled('system_id')
+                    ? System::find($request->system_id)
+                    : null;
+
                 Mail::to($user->email)->send(new NotifyUserMail(
                     "Alteração de Senha",
                     $user->name,
                     "Sua senha foi alterada com sucesso.",
-                ));
+                    $system?->name,
+                    $system?->mail_from_address,
+                    $system?->mail_from_name,
+                ));                
             });
 
             return response()->json(['message' => 'Senha redefinida com sucesso.'], Response::HTTP_OK);
@@ -901,9 +911,12 @@ class AuthController extends Controller
 
             // Notifica o Usuário da operação
             Mail::to($user->email)->send(new NotifyUserMail(
-                "Alteração de Senha.", 
-                $user->name, 
+                "Alteração de Senha.",
+                $user->name,
                 "A operação que você solicitou a partir do {$systemName} para alterar sua senha de acesso foi executada com sucesso.",
+                $system?->name,
+                $system?->mail_from_address,
+                $system?->mail_from_name,
             ));
 
             return response()->json(['message' => 'Senha alterada com sucesso.'], Response::HTTP_OK);

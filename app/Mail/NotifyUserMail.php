@@ -10,27 +10,27 @@ class NotifyUserMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $subject;
-    public $name;
-    public $text;
-
-    public function __construct($subject,$name, $text)
-    {
-        $this->subject = $subject; 
-        $this->name = $name;
-        $this->text = $text;
-    }
+    public function __construct(
+        public string $subject,
+        public string $name,
+        public string $text,
+        public ?string $systemName = null,
+        public ?string $fromAddress = null,
+        public ?string $fromName = null,
+    ) {}
 
     public function build()
     {
-        /**
-         * Email usando view com Markdown FUNCIONANDO
-         * No Laravel quando você usa Markdown views com: ->markdown('emails.nomeView')
-         * O Laravel automaticamente torna públicas todas as propriedades públicas da classe 
-         * Mailable e as disponibiliza na view.
-         */
-        return $this
-            ->subject($this->subject)               // define o assunto do email
-            ->markdown('emails.NotifyUserMail');    // especifica a view com o corpo do email
+        $mail = $this
+            ->subject($this->subject)
+            ->markdown('emails.NotifyUserMail', [
+                'systemName' => $this->systemName ?? config('app.name'),
+            ]);
+
+        if ($this->fromAddress) {
+            $mail->from($this->fromAddress, $this->fromName ?: $this->systemName);
+        }
+
+        return $mail;
     }
 }
