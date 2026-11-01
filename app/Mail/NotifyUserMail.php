@@ -11,12 +11,12 @@ class NotifyUserMail extends Mailable
     use Queueable, SerializesModels;
 
     public function __construct(
-        public string $subject,
-        public string $name,
-        public string $text,
-        public ?string $systemName = null,
-        public ?string $fromAddress = null,
-        public ?string $fromName = null,
+        public $subject,
+        public $name,
+        public $text,
+        public $systemName = null,
+        public $fromAddress = null,
+        public $fromName = null,
     ) {}
 
     public function build()
