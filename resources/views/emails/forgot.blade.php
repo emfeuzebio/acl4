@@ -1,4 +1,3 @@
-
 @component('mail::message')
 # Recuperação de Senha
 
@@ -14,6 +13,6 @@ Redefinir Senha
 
 Se você não solicitou isso, nenhuma ação é necessária.
 
-Atenciosamente,  
-{{ config('app.name') }}
+Atenciosamente,
+Equipe de Administração do {{ $systemName ?? config('app.name') }}
 @endcomponent

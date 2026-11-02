@@ -232,7 +232,7 @@ class AuthController extends Controller
                     $user->name,
                     "Seu pedido de Registro no sistema {$systemName} foi executado com sucesso.\n" .
                     "Aguarde o Administrador analisar e lhe conceder o Perfil de Acesso necessário.\n" .
-                    "Então, um novo E-mail lhe será enviado.",
+                    "Então, um novo e-mail lhe será enviado.",
                     $system->name,
                     $system->mail_from_address,
                     $system->mail_from_name,

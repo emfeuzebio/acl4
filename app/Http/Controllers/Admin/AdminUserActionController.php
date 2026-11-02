@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ForgotPasswordMail;
 use App\Mail\InviteUserMail;
 use App\Models\System;
 use App\Models\Token;
@@ -137,7 +138,13 @@ class AdminUserActionController extends Controller
             . '/#/pages/resetpassword/?token=' . $token
             . '&email=' . urlencode($user->email);
 
-        Mail::to($user->email)->send(new \App\Mail\ForgotPasswordMail($user->name, $resetUrl));
+        Mail::to($user->email)->send(new ForgotPasswordMail(
+            $user->name,
+            $resetUrl,
+            $system->name,
+            $system->mail_from_address,
+            $system->mail_from_name,
+        ));        
 
         AuditService::log('password.force_reset', $systemId, $user);
 

@@ -12,26 +12,36 @@ class ForgotPasswordMail extends Mailable
 
     public $name;
     public $resetUrl;
+    public $systemName;
+    public $fromAddress;
+    public $fromName;
 
-    public function __construct($name, $resetUrl)
-    {
-        $this->name = $name;
-        $this->resetUrl = $resetUrl;
+    public function __construct(
+        $name,
+        $resetUrl,
+        $systemName = null,
+        $fromAddress = null,
+        $fromName = null,
+    ) {
+        $this->name        = $name;
+        $this->resetUrl    = $resetUrl;
+        $this->systemName  = $systemName;
+        $this->fromAddress = $fromAddress;
+        $this->fromName    = $fromName;
     }
 
     public function build()
     {
-        // com Markdown FUNCIONANDO
-        return $this
-            // ->subject(config('app.name') . ' - Recuperação de Senha')
+        $mail = $this
             ->subject('Recuperação de Senha')
-            ->markdown('emails.forgot');
+            ->markdown('emails.forgot', [
+                'systemName' => $this->systemName ?? config('app.name'),
+            ]);
 
-        // com HTML    
-        // return $this->view('emails.auth.forgot')
-        //     ->with([
-        //         'name' => $this->name,
-        //         'url' => $this->resetUrl,
-        //     ]);            
+        if ($this->fromAddress) {
+            $mail->from($this->fromAddress, $this->fromName ?: $this->systemName);
+        }
+
+        return $mail;
     }
 }
