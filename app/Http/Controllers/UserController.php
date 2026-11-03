@@ -187,11 +187,16 @@ class UserController extends Controller
                 }
 
                 // Notifica o usuário por email
+                $system = $user->systems()->first();   // sistema do user-alvo
+
                 Mail::to($user->email)->send(new NotifyUserMail(
                     $subject,
                     $user->name,
-                    $text
-                ));
+                    $text,
+                    $system?->name,
+                    $system?->mail_from_address,
+                    $system?->mail_from_name,
+                ));                
             }
 
             return response()->json($user);
@@ -446,48 +451,51 @@ class UserController extends Controller
         try {
             $user = User::find($request->user_id);
 
-            if (!$user) {
+            if (! $user) {
                 throw new Exception('Usuário não encontrado.');
-            }            
-    
+            }
+
             if ($user->active == 'N') {
                 throw new Exception('Impossível Conceder/Revogar Perfis a um Usuário Não Ativo.');
-            }            
+            }
 
             $role = Profile::findOrFail($request->role_id);
             $roleName = $role->name;
-    
-            if ($request->operation == 'assignRole') {
-                $user->profiles()->attach($request->role_id);   // assign de Role (attach)
+
+            if ($request->operation === 'assignRole') {
+                $user->profiles()->attach($request->role_id);
 
                 $subject = "Concessão de Perfil de Acesso a Usuário.";
-                // $text = htmlspecialchars("O Perfil de Acesso '{$roleName}' lhe foi Concedido com sucesso.");    // Usar assim para não quebrar Email
-                $text = "O Perfil de Acesso '{$roleName}' lhe foi Concedido com sucesso.";    // Usar assim para não quebrar Email
-            } elseif ($request->operation == 'revokeRole') {
-                $user->profiles()->detach($request->role_id);   // Revoke the a Role (detach)
+                $text = "O Perfil de Acesso '{$roleName}' lhe foi Concedido com sucesso.";
+            } elseif ($request->operation === 'revokeRole') {
+                $user->profiles()->detach($request->role_id);
 
                 $subject = "Revogação de Perfil de Acesso a Usuário.";
                 $text = "O Perfil de Acesso '{$roleName}' lhe foi Revogado com sucesso.";
+            } else {
+                throw new Exception('Operação inválida.');
             }
 
-            // Notifica o usuário por email
+            $system = System::find($role->system_id);
+
             Mail::to($user->email)->send(new NotifyUserMail(
                 $subject,
                 $user->name,
-                $text
-            ));        
-                
+                $text,
+                $system?->name,
+                $system?->mail_from_address,
+                $system?->mail_from_name,
+            ));
+
             return response()->json(['sucesso' => true, 'message' => 'Salvo com sucesso.'], Response::HTTP_OK);
 
         } catch (Exception $e) {
-
-            // Get all gerenical errors 
             return response()->json([
                 'sucesso' => false,
                 'message' => $e->getMessage(),
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-    }    
+    }
 
     /**
      * Assign ou Revoke a Systems to User
