@@ -332,18 +332,25 @@ class AuthController extends Controller
                 ]
             );
 
-            // Com system_id -> URL do próprio sistema; sem -> mslogin (comportamento atual)
-            if ($request->filled('system_id')) {
-                $system  = System::findOrFail($request->system_id);
-                $baseUrl = rtrim($system->url, '/');
-            } else {
-                $baseUrl = rtrim(env('FRONTEND_URL'), '/');
-            }
+            // Com system_id -> URL e dados do sistema; sem -> mslogin (ACL4)
+            $system = $request->filled('system_id')
+                ? System::findOrFail($request->system_id)
+                : null;
+
+            $baseUrl = $system
+                ? rtrim($system->url, '/')
+                : rtrim(env('FRONTEND_URL'), '/');
 
             $resetUrl = $baseUrl . '/#/pages/resetpassword/?token=' . $token
                     . '&email=' . urlencode($user->email);
 
-            Mail::to($user->email)->send(new ForgotPasswordMail($user->name, $resetUrl));
+            Mail::to($user->email)->send(new ForgotPasswordMail(
+                $user->name,
+                $resetUrl,
+                $system?->name,
+                $system?->mail_from_address,
+                $system?->mail_from_name,
+            ));
 
             return response()->json(['message' => 'Um e-mail foi enviado com instruções para redefinição da senha.'], Response::HTTP_OK);
 
@@ -353,7 +360,7 @@ class AuthController extends Controller
             Log::error('Erro em forgotPassword: ' . $e->getMessage());
             return response()->json(['message' => 'Erro interno ao enviar e-mail.'], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-    }    
+    }   
 
     public function resetPassword(Request $request)
     {
