@@ -1,4 +1,4 @@
-@component('mail::message')
+@component('mail::message', ['systemName' => $systemName ?? config('app.name')])
 # Recuperação de Senha
 
 Olá, {{ $name ?? 'usuário' }}!
